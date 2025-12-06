@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payment - ZiM Commerce</title>
+    <link rel="stylesheet" href="/DIPLOMSKI/frontend/css/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <header class="main-header">
+      <div class="container header-container">
+        <div class="logo">
+          <i class="fas fa-couch logo-icon"></i>
+          <span>ZIM COMMERCE</span>
+        </div>
+
+        <nav class="main-nav">
+          <ul class="nav-links">
+            <li><a href="index.html" class="nav-link">Home</a></li>
+            <li><a href="products.html" class="nav-link">Products</a></li>
+            <li><a href="about.html" class="nav-link">About Us</a></li>
+            <li><a href="profile.html" class="nav-link">Profile</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container page-container">
+      <div class="simple-card">
+        <h2 class="text-center mb-4">Add a payment card</h2>
+
+        <!-- Card Type -->
+        <div class="form-group mb-4">
+          <h3 class="form-section-title">Card Type</h3>
+          <div class="d-flex gap-3">
+            <button class="btn btn-outline active">Visa</button>
+            <button class="btn btn-outline">MasterCard</button>
+            <button class="btn btn-outline">American Express</button>
+          </div>
+        </div>
+
+        <!-- Card Number -->
+        <div class="form-group mb-4">
+          <h3 class="form-section-title">Card Number</h3>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="1234 5678 9012 3456"
+            maxlength="19"
+          />
+        </div>
+
+        <!-- Expiration & Security -->
+        <div class="form-row mb-4">
+          <div class="form-group">
+            <h3 class="form-section-title">Expire</h3>
+            <div class="d-flex gap-2">
+              <select class="form-control">
+                <option>Month</option>
+                <option>01</option>
+                <option>02</option>
+                <!-- More months -->
+              </select>
+              <select class="form-control">
+                <option>Year</option>
+                <option>2025</option>
+                <option>2026</option>
+                <!-- More years -->
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <h3 class="form-section-title">Security Code</h3>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="CVV"
+              maxlength="4"
+            />
+          </div>
+        </div>
+
+        <!-- Address -->
+        <div class="form-group mb-4">
+          <h3 class="form-section-title">Address</h3>
+          <div class="form-row mb-2">
+            <input type="text" class="form-control" placeholder="City" />
+            <input type="text" class="form-control" placeholder="State" />
+          </div>
+          <input type="text" class="form-control" placeholder="Full Address" />
+        </div>
+
+        <!-- Agreement -->
+        <div class="form-group mb-4">
+          <div class="d-flex align-center">
+            <input type="checkbox" id="agree" class="mr-2" />
+            <label for="agree">I agree to terms and conditions</label>
+          </div>
+        </div>
+
+        <!-- Buy Button -->
+        <button
+          class="btn btn-primary btn-large"
+          style="width: 100%; padding: 1.2rem"
+        >
+          <i class="fas fa-lock"></i> BUY NOW
+        </button>
+      </div>
+    </main>
+
+    <footer class="main-footer">
+      <div class="container footer-content">
+        <p class="copyright">&copy; 2025 ZIM COMMERCE. All rights reserved.</p>
+      </div>
+    </footer>
+  </body>
+</html>

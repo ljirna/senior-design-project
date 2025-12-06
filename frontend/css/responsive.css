@@ -1,0 +1,34 @@
+/* Tablet Styles */
+@media (max-width: 992px) {
+    .container {
+        padding: 0 20px;
+    }
+    
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .product-detail {
+        gap: var(--spacing-lg);
+    }
+}
+
+/* Mobile Styles */
+@media (max-width: 576px) {
+    .hero h1 {
+        font-size: 2rem;
+    }
+    
+    .products-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .product-actions {
+        flex-direction: column;
+    }
+    
+    .cart-item {
+        padding: var(--spacing-sm);
+        gap: var(--spacing-sm);
+    }
+}

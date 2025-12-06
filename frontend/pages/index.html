@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home - ZiM Commerce</title>
+    <!-- CORRECT PATH FOR PAGES FOLDER -->
+    <link rel="stylesheet" href="../css/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="main-header">
+      <div class="container header-container">
+        <div class="logo">
+          <i class="fas fa-couch logo-icon"></i>
+          <span>ZIM COMMERCE</span>
+        </div>
+
+        <nav class="main-nav">
+          <ul class="nav-links">
+            <li><a href="index.html" class="nav-link active">Home</a></li>
+            <li>
+              <a href="products.html" class="nav-link">Products</a>
+            </li>
+            <li><a href="about.html" class="nav-link">About Us</a></li>
+            <li><a href="profile.html" class="nav-link">Profile</a></li>
+          </ul>
+        </nav>
+
+        <div class="header-actions">
+          <a href="cart.html" class="action-icon">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-count">2</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container page-container">
+      <!-- Highlighted Products Section -->
+      <section class="products-section">
+        <h2 class="text-center">Highlighted Products</h2>
+
+        <div class="products-grid mt-4">
+          <!-- Product 1 -->
+          <div class="product-card">
+            <img
+              src="https://images.unsplash.com/photo-1540574163026-643ea20ade25?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+              alt="Modern Sofa"
+              class="product-image"
+            />
+            <div class="product-content">
+              <h3 class="product-title">Modern Leather Sofa</h3>
+              <p class="product-category">Sofas & Couches</p>
+              <div class="product-price">$1,299.99</div>
+              <div class="product-actions">
+                <button class="btn-add-to-cart">Add to Cart</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Product 2 -->
+          <div class="product-card">
+            <img
+              src="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+              alt="Coffee Table"
+              class="product-image"
+            />
+            <div class="product-content">
+              <h3 class="product-title">Glass Coffee Table</h3>
+              <p class="product-category">Tables</p>
+              <div class="product-price">$299.99</div>
+              <div class="product-actions">
+                <button class="btn-add-to-cart">Add to Cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="main-footer">
+      <div class="container footer-content">
+        <p class="copyright">&copy; 2025 ZIM COMMERCE. All rights reserved.</p>
+      </div>
+    </footer>
+  </body>
+</html>
