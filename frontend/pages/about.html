@@ -11,43 +11,62 @@
     />
   </head>
   <body>
-    <!-- Header - Same as your products page -->
+    <!-- Header - Matching home page -->
     <header class="main-header">
       <div class="container header-container">
-        <!-- Logo -->
         <div class="logo">
           <i class="fas fa-couch logo-icon"></i>
-          <span>ZiM Commerce</span>
+          <span>ZIM COMMERCE</span>
         </div>
 
-        <!-- Navigation -->
         <nav class="main-nav">
           <ul class="nav-links">
             <li><a href="index.html" class="nav-link">Home</a></li>
-            <li><a href="products.html" class="nav-link">Products</a></li>
+            <li class="has-dropdown">
+              <a href="products.html" class="nav-link">Products</a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a href="products.html?category=living" class="dropdown-item"
+                    ><i class="fas fa-couch"></i> Living Room</a
+                  >
+                </li>
+                <li>
+                  <a href="products.html?category=bedroom" class="dropdown-item"
+                    ><i class="fas fa-bed"></i> Bedroom</a
+                  >
+                </li>
+                <li>
+                  <a href="products.html?category=dining" class="dropdown-item"
+                    ><i class="fas fa-utensils"></i> Dining Room</a
+                  >
+                </li>
+                <li>
+                  <a href="products.html?category=office" class="dropdown-item"
+                    ><i class="fas fa-laptop"></i> Home Office</a
+                  >
+                </li>
+                <li>
+                  <a href="products.html?category=outdoor" class="dropdown-item"
+                    ><i class="fas fa-umbrella-beach"></i> Outdoor</a
+                  >
+                </li>
+                <li class="dropdown-divider"></li>
+                <li>
+                  <a href="products.html" class="dropdown-item"
+                    ><i class="fas fa-th-large"></i> All Products</a
+                  >
+                </li>
+              </ul>
+            </li>
             <li><a href="about.html" class="nav-link active">About Us</a></li>
             <li><a href="profile.html" class="nav-link">Profile</a></li>
           </ul>
         </nav>
 
-        <!-- Actions -->
         <div class="header-actions">
-          <div class="search-container">
-            <input
-              type="text"
-              class="search-input"
-              placeholder="Search furniture..."
-            />
-            <button class="search-btn"><i class="fas fa-search"></i></button>
-          </div>
-
-          <a href="profile.html" class="action-icon">
-            <i class="fas fa-user"></i>
-          </a>
-
           <a href="cart.html" class="action-icon">
             <i class="fas fa-shopping-cart"></i>
-            <span class="cart-count">3</span>
+            <span class="cart-count">2</span>
           </a>
         </div>
       </div>
@@ -56,7 +75,7 @@
     <main class="container page-container">
       <!-- About Us Hero Section -->
       <section class="about-hero">
-        <h1 class="about-title">About ZiM Commerce</h1>
+        <h1 class="about-title">About ZIM COMMERCE</h1>
       </section>
 
       <section>
@@ -110,8 +129,12 @@
     </main>
 
     <footer class="main-footer">
-      <div class="container footer-content">
+      <div class="container footer-simple">
         <p class="copyright">&copy; 2025 ZIM COMMERCE. All rights reserved.</p>
+        <p class="copyright">
+          <i class="fas fa-envelope"></i> info@zimcommerce.com
+        </p>
+        <p class="copyright"><i class="fas fa-phone"></i> (555) 123-4567</p>
       </div>
     </footer>
 

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Profile - ZiM Commerce</title>
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/profile.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="container header-container">
+            <div class="logo">
+                <i class="fas fa-couch logo-icon"></i>
+                <span>ZIM COMMERCE</span>
+            </div>
+
+            <nav class="main-nav">
+                <ul class="nav-links">
+                    <li><a href="index.html" class="nav-link">Home</a></li>
+                    <li class="has-dropdown">
+                        <a href="products.html" class="nav-link">Products</a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href="products.html?category=living" class="dropdown-item"
+                                    ><i class="fas fa-couch"></i> Living Room</a
+                                >
+                            </li>
+                            <li>
+                                <a href="products.html?category=bedroom" class="dropdown-item"
+                                    ><i class="fas fa-bed"></i> Bedroom</a
+                                >
+                            </li>
+                            <li>
+                                <a href="products.html?category=dining" class="dropdown-item"
+                                    ><i class="fas fa-utensils"></i> Dining Room</a
+                                >
+                            </li>
+                            <li>
+                                <a href="products.html?category=office" class="dropdown-item"
+                                    ><i class="fas fa-laptop"></i> Home Office</a
+                                >
+                            </li>
+                            <li>
+                                <a href="products.html?category=outdoor" class="dropdown-item"
+                                    ><i class="fas fa-umbrella-beach"></i> Outdoor</a
+                                >
+                            </li>
+                            <li class="dropdown-divider"></li>
+                            <li>
+                                <a href="products.html" class="dropdown-item"
+                                    ><i class="fas fa-th-large"></i> All Products</a
+                                >
+                            </li>
+                        </ul>
+                    </li>
+                    <li><a href="about.html" class="nav-link">About Us</a></li>
+                    <li><a href="profile.html" class="nav-link active">Profile</a></li>
+                </ul>
+            </nav>
+
+            <div class="header-actions">
+                <a href="cart.html" class="action-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count">2</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container page-container">
+        <!-- Profile Header -->
+        <div class="profile-header-compact">
+            <div class="profile-picture-compact">
+                <img
+                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+                    alt="Profile Picture"
+                    class="profile-img-compact"
+                />
+                <button class="change-photo-btn-compact" title="Change profile picture">
+                    <i class="fas fa-camera"></i>
+                </button>
+            </div>
+            <div class="profile-info-compact">
+                <h1 class="profile-name">John Doe</h1>
+                <p class="profile-email-compact">john.doe@example.com</p>
+            </div>
+        </div>
+
+        <!-- Side-by-side sections -->
+        <div class="profile-sections-side-by-side">
+            <!-- Personal Information Card -->
+            <section class="profile-card info-card">
+                <div class="profile-card-header">
+                    <i class="fas fa-user-circle card-icon"></i>
+                    <h2>Personal Information</h2>
+                </div>
+                <div class="info-list-compact">
+                    <div class="info-row">
+                        <div class="info-label">PHONE NUMBER</div>
+                        <div class="info-value">(555) 123-4567</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">STREET ADDRESS</div>
+                        <div class="info-value">123 Main Street</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">CITY</div>
+                        <div class="info-value">New York</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">POSTAL CODE</div>
+                        <div class="info-value">10001</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Account Settings Card -->
+            <section class="profile-card settings-card">
+                <div class="profile-card-header">
+                    <i class="fas fa-cog card-icon"></i>
+                    <h2>Account Settings</h2>
+                </div>
+                <div class="account-actions-list">
+                    <button class="account-action-item edit-profile-btn">
+                        <span class="action-text">Edit Profile Information</span>
+                    </button>
+                    <button class="account-action-item change-password-btn">
+                        <span class="action-text">Change Password</span>
+                    </button>
+                    <button class="account-action-item logout-btn">
+                        <span class="action-text">Log Out of Account</span>
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <!-- Liked Items Section (Below everything) -->
+        <section class="profile-card liked-items-section">
+            <div class="profile-card-header">
+                <i class="fas fa-heart card-icon"></i>
+                <h2>My Liked Items <span class="item-count">(3)</span></h2>
+            </div>
+            <div class="products-grid liked-items-grid">
+                <!-- Liked Item 1 -->
+                <div class="product-card liked-item-card">
+                    <button class="favorite-btn liked" aria-label="Remove from favorites">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <img
+                        src="https://images.unsplash.com/photo-1540574163026-643ea20ade25?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                        alt="Modern Sofa"
+                        class="product-image"
+                    />
+                    <div class="product-content">
+                        <h3 class="product-title">Modern Leather Sofa</h3>
+                        <p class="product-category">Living Room • Sofas</p>
+                        <div class="product-price">$1,299.99</div>
+                        <div class="product-actions">
+                            <a href="products.html" class="btn-see-more">View Details</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Liked Item 2 -->
+                <div class="product-card liked-item-card">
+                    <button class="favorite-btn liked" aria-label="Remove from favorites">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <img
+                        src="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                        alt="Coffee Table"
+                        class="product-image"
+                    />
+                    <div class="product-content">
+                        <h3 class="product-title">Glass Coffee Table</h3>
+                        <p class="product-category">Living Room • Tables</p>
+                        <div class="product-price">$299.99</div>
+                        <div class="product-actions">
+                            <a href="products.html" class="btn-see-more">View Details</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Liked Item 3 -->
+                <div class="product-card liked-item-card">
+                    <button class="favorite-btn liked" aria-label="Remove from favorites">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <img
+                        src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                        alt="Dining Table"
+                        class="product-image"
+                    />
+                    <div class="product-content">
+                        <h3 class="product-title">Wooden Dining Table</h3>
+                        <p class="product-category">Dining Room • Tables</p>
+                        <div class="product-price">$799.99</div>
+                        <div class="product-actions">
+                            <a href="products.html" class="btn-see-more">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container footer-simple">
+            <p class="copyright">&copy; 2025 ZIM COMMERCE. All rights reserved.</p>
+            <p class="copyright">
+                <i class="fas fa-envelope"></i> info@zimcommerce.com
+            </p>
+            <p class="copyright"><i class="fas fa-phone"></i> (555) 123-4567</p>
+        </div>
+    </footer>
+
+    <script src="../js/profile.js"></script>
+</body>
+</html>

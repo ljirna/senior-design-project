@@ -14,7 +14,7 @@
 :root {
   /* ===== CREME & BURGUNDY COLOR PALETTE ===== */
   --creme-light: #f8f4e9; /* Light creme background */
-  --creme-medium: #f0ead6; /* Medium creme for cards */
+  --creme-medium: #f0ead6; /* Medium creme for cards, header, footer */
   --creme-dark: #e8dfc8; /* Dark creme for accents */
 
   --burgundy-primary: #800020; /* Primary burgundy */
@@ -120,11 +120,12 @@ a:hover {
 
 /* ===== 4. HEADER & NAVIGATION ===== */
 .main-header {
-  background-color: var(--burgundy-primary); /* Burgundy header */
-  box-shadow: 0 2px 15px rgba(128, 0, 32, 0.2);
+  background-color: var(--creme-medium); /* Same as product cards */
+  box-shadow: 0 2px 10px rgba(140, 120, 100, 0.15); /* Lighter shadow */
   position: sticky;
   top: 0;
   z-index: 1000;
+  border-bottom: 1px solid var(--creme-dark);
 }
 
 .header-container {
@@ -141,11 +142,11 @@ a:hover {
   gap: var(--spacing-xs);
   font-size: 1.5rem;
   font-weight: 700;
-  color: white; /* White on burgundy */
+  color: var(--burgundy-primary); /* Burgundy text on creme */
 }
 
 .logo-icon {
-  color: white; /* White icon */
+  color: var(--burgundy-primary); /* Burgundy icon on creme */
   font-size: 1.8rem;
 }
 
@@ -163,7 +164,7 @@ a:hover {
 }
 
 .nav-link {
-  color: rgba(255, 255, 255, 0.9); /* Semi-transparent white */
+  color: var(--burgundy-primary); /* Burgundy links on creme */
   font-weight: 500;
   padding: 0.5rem 1rem;
   border-radius: 4px;
@@ -171,13 +172,13 @@ a:hover {
 }
 
 .nav-link:hover {
-  background-color: var(--burgundy-dark);
-  color: white;
+  background-color: var(--creme-dark); /* Darker creme on hover */
+  color: var(--burgundy-dark);
 }
 
 .nav-link.active {
-  background-color: var(--burgundy-dark);
-  color: white;
+  background-color: var(--creme-dark);
+  color: var(--burgundy-dark);
 }
 
 /* Header Actions */
@@ -219,21 +220,21 @@ a:hover {
 
 .action-icon {
   font-size: 1.2rem;
-  color: white; /* White on burgundy */
+  color: var(--burgundy-primary); /* Burgundy icons on creme */
   position: relative;
   padding: 0.5rem;
   transition: color 0.3s;
 }
 
 .action-icon:hover {
-  color: var(--creme-light);
+  color: var(--burgundy-dark);
 }
 
 .cart-count {
   position: absolute;
   top: -5px;
   right: -5px;
-  background-color: var(--burgundy-light); /* Light burgundy badge */
+  background-color: var(--burgundy-light);
   color: white;
   border-radius: 50%;
   width: 18px;
@@ -301,7 +302,7 @@ a:hover {
 }
 
 .btn-secondary {
-  background-color: var(--light-brown); /* Light brown instead of gold */
+  background-color: var(--light-brown);
   color: white;
 }
 
@@ -352,7 +353,7 @@ a:hover {
   transform: translateX(-50%);
   width: 80px;
   height: 3px;
-  background-color: var(--burgundy-light); /* Light burgundy underline */
+  background-color: var(--burgundy-light);
 }
 
 .section-header p {
@@ -368,7 +369,7 @@ a:hover {
 
 /* ===== 8. PRODUCT CARD ===== */
 .product-card {
-  background-color: var(--creme-medium); /* Creme cards */
+  background-color: var(--creme-medium);
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 3px 15px rgba(62, 39, 35, 0.1);
@@ -397,7 +398,7 @@ a:hover {
   position: absolute;
   top: 15px;
   left: 15px;
-  background-color: var(--burgundy-light); /* Light burgundy badge */
+  background-color: var(--burgundy-light);
   color: white;
   padding: 0.3rem 0.8rem;
   border-radius: 4px;
@@ -412,7 +413,7 @@ a:hover {
 .product-title {
   font-size: 1.1rem;
   margin-bottom: var(--spacing-xs);
-  color: var(--burgundy-primary); /* Burgundy titles */
+  color: var(--burgundy-primary);
 }
 
 .product-category {
@@ -424,12 +425,12 @@ a:hover {
 .product-price {
   font-size: 1.3rem;
   font-weight: 700;
-  color: var(--burgundy-dark); /* Dark burgundy prices */
+  color: var(--burgundy-dark);
   margin-bottom: var(--spacing-sm);
 }
 
 .product-rating {
-  color: var(--light-brown); /* Light brown stars */
+  color: var(--light-brown);
   margin-bottom: var(--spacing-sm);
 }
 
@@ -441,7 +442,7 @@ a:hover {
 
 .btn-add-to-cart {
   flex: 1;
-  background-color: var(--burgundy-primary); /* Burgundy button */
+  background-color: var(--burgundy-primary);
   color: white;
   border: none;
   padding: 0.6rem;
@@ -471,7 +472,7 @@ a:hover {
 
 /* ===== 9. FILTERS SIDEBAR ===== */
 .filters-sidebar {
-  background-color: var(--creme-medium); /* Creme sidebar */
+  background-color: var(--creme-medium);
   padding: var(--spacing-md);
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(62, 39, 35, 0.1);
@@ -556,7 +557,7 @@ a:hover {
 
 .product-price-large {
   font-size: 2rem;
-  color: var(--burgundy-dark); /* Dark burgundy price */
+  color: var(--burgundy-dark);
   margin-bottom: var(--spacing-md);
 }
 
@@ -644,7 +645,7 @@ a:hover {
 }
 
 .cart-items {
-  background-color: var(--creme-medium); /* Creme background */
+  background-color: var(--creme-medium);
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 10px rgba(62, 39, 35, 0.1);
@@ -763,47 +764,21 @@ a:hover {
 
 /* ===== 13. FOOTER ===== */
 .main-footer {
-  background-color: var(--burgundy-primary); /* Burgundy footer */
-  color: white;
-  padding: var(--spacing-xl) 0 var(--spacing-md);
-  margin-top: auto;
+  background-color: var(--creme-medium); /* Same as header and product cards */
+  color: var(--dark-brown);
+  padding: 1rem 0; /* Drastically reduced padding */
+  margin-top: 2rem;
+  border-top: 1px solid var(--creme-dark);
 }
 
 .footer-content {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: var(--spacing-xl);
-  margin-bottom: var(--spacing-xl);
-}
-
-.footer-section h3 {
-  color: var(--creme-light); /* Light creme headings in footer */
-  margin-bottom: var(--spacing-md);
-}
-
-.footer-links {
-  list-style: none;
-}
-
-.footer-links li {
-  margin-bottom: var(--spacing-xs);
-}
-
-.footer-links a {
-  color: rgba(255, 255, 255, 0.8);
-  transition: color 0.3s;
-}
-
-.footer-links a:hover {
-  color: white;
-}
-
-.footer-bottom {
-  text-align: center;
-  padding-top: var(--spacing-md);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* This aligns items to the left */
+  justify-content: flex-start; /* Add this too */
+  gap: 0.5rem; /* Minimal gap between lines */
+  padding: 0;
+  text-align: left; /* Add this */
 }
 
 /* ===== 14. UTILITY CLASSES ===== */
@@ -921,7 +896,68 @@ a:hover {
   color: var(--burgundy-primary);
 }
 
-/* ===== 15. RESPONSIVE DESIGN ===== */
+/* ===== 15. COPYRIGHT & CONTACT STYLING ===== */
+.copyright {
+  color: var(--medium-brown);
+  margin: 0;
+  font-size: 0.9rem;
+  text-align: left; /* Ensure this is left */
+  width: 100%; /* Make sure it takes full width */
+}
+
+/* ===== 16. PRODUCT CARD ENHANCEMENTS ===== */
+.favorite-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.favorite-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.favorite-btn i {
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.btn-see-more {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: var(--burgundy-primary);
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  text-align: center;
+  transition: background-color 0.3s ease;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  width: 100%;
+}
+
+.btn-see-more:hover {
+  background-color: var(--burgundy-dark);
+}
+
+.product-card {
+  position: relative;
+}
+
+/* ===== 17. RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
   h1 {
     font-size: 2rem;
@@ -957,6 +993,15 @@ a:hover {
   .form-row {
     grid-template-columns: 1fr;
   }
+
+  /* Adjust footer for mobile */
+  .footer-content {
+    padding: 0 var(--spacing-sm);
+  }
+
+  .copyright {
+    font-size: 0.8rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -967,7 +1012,462 @@ a:hover {
   .search-input {
     width: 150px;
   }
+
+  .logo {
+    font-size: 1.3rem;
+  }
+
+  .logo-icon {
+    font-size: 1.5rem;
+  }
 }
-.copyright {
-  color: white;
+/* ===== DROPDOWN MENU STYLES ===== */
+.nav-links li {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: var(--creme-medium);
+  min-width: 220px;
+  border-radius: 4px;
+  box-shadow: 0 8px 25px rgba(62, 39, 35, 0.15);
+  padding: 0.5rem 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  border: 1px solid var(--creme-dark);
+}
+
+.dropdown-menu::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 20px;
+  width: 12px;
+  height: 12px;
+  background-color: var(--creme-medium);
+  transform: rotate(45deg);
+  border-left: 1px solid var(--creme-dark);
+  border-top: 1px solid var(--creme-dark);
+}
+
+.dropdown-item {
+  display: block;
+  padding: 0.7rem 1.5rem;
+  color: var(--burgundy-primary);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.dropdown-item:hover {
+  background-color: var(--creme-dark);
+  color: var(--burgundy-dark);
+  padding-left: 1.8rem;
+}
+
+.dropdown-item i {
+  width: 20px;
+  text-align: center;
+  margin-right: 0.7rem;
+  color: var(--light-brown);
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: var(--creme-dark);
+  margin: 0.5rem 1rem;
+}
+
+/* Show dropdown on hover */
+.nav-links li:hover .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Active state for dropdown parent */
+.nav-links li:hover > .nav-link {
+  background-color: var(--creme-dark);
+  color: var(--burgundy-dark);
+}
+
+/* Make sure Products link shows it has dropdown */
+.nav-links .has-dropdown {
+  position: relative;
+}
+
+.nav-links .has-dropdown::after {
+  content: "\f078";
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+/* Remove bullets from ALL navigation lists */
+.nav-links,
+.dropdown-menu {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+/* ===== PROFILE PAGE STYLES ===== */
+
+/* Profile Header - Compact Layout */
+.profile-header-compact {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+    padding: 2rem;
+    background-color: var(--creme-medium);
+    border-radius: 12px;
+    border: 1px solid var(--creme-dark);
+    box-shadow: 0 4px 20px rgba(62, 39, 35, 0.1);
+}
+
+.profile-picture-compact {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    flex-shrink: 0;
+}
+
+.profile-img-compact {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--burgundy-primary);
+    box-shadow: 0 6px 20px rgba(128, 0, 32, 0.2);
+}
+
+.change-photo-btn-compact {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: var(--burgundy-primary);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+.change-photo-btn-compact:hover {
+    background: var(--burgundy-dark);
+    transform: scale(1.1);
+}
+
+.profile-info-compact {
+    flex: 1;
+}
+
+.profile-name {
+    color: var(--burgundy-primary);
+    margin-bottom: 0.5rem;
+    font-size: 2.2rem;
+}
+
+.profile-email-compact {
+    color: var(--medium-brown);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.profile-email-compact::before {
+    content: "\f0e0";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 0.9rem;
+}
+
+.user-role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.2rem;
+    background: var(--burgundy-primary);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+/* Side-by-side sections container */
+.profile-sections-side-by-side {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+}
+
+@media (max-width: 992px) {
+    .profile-sections-side-by-side {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+
+/* Profile Cards */
+.profile-card {
+    background-color: var(--creme-medium);
+    border-radius: 12px;
+    padding: 1.8rem;
+    border: 1px solid var(--creme-dark);
+    box-shadow: 0 4px 15px rgba(62, 39, 35, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profile-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(62, 39, 35, 0.12);
+}
+
+.profile-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--creme-dark);
+}
+
+.profile-card-header h2 {
+    color: var(--burgundy-primary);
+    margin-bottom: 0;
+    font-size: 1.5rem;
+}
+
+.card-icon {
+    font-size: 1.5rem;
+    color: var(--burgundy-light);
+}
+
+.item-count {
+    color: var(--burgundy-light);
+    font-weight: 600;
+}
+
+/* Information Card - Left side */
+.info-card {
+    height: 100%;
+}
+
+.info-list-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.info-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--creme-dark);
+}
+
+.info-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.info-label {
+    font-weight: 700;
+    color: var(--burgundy-primary);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.9;
+}
+
+.info-value {
+    color: var(--dark-brown);
+    font-size: 1.1rem;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+/* Settings Card - Right side */
+.settings-card {
+    height: 100%;
+}
+
+.account-actions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.account-action-item {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 1.2rem;
+    background: white;
+    border: 1px solid var(--creme-dark);
+    border-radius: 8px;
+    color: var(--burgundy-primary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: left;
+    width: 100%;
+    border: none;
+    background: transparent;
+}
+
+.account-action-item:hover {
+    background: var(--creme-light);
+    border-color: var(--burgundy-light);
+    transform: translateX(5px);
+    box-shadow: 0 3px 10px rgba(128, 0, 32, 0.1);
+}
+
+.action-icon {
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: var(--creme-light);
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.action-text {
+    flex: 1;
+}
+
+.account-action-item.logout-btn {
+    color: #e74c3c;
+}
+
+.account-action-item.logout-btn .action-icon {
+    background: #fadbd8;
+}
+
+.account-action-item.logout-btn:hover {
+    background: #fadbd8;
+    border-color: #e74c3c;
+}
+
+/* Liked Items Section - Full width below */
+.liked-items-section {
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.liked-items-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.liked-item-card {
+    background-color: white;
+    border: 1px solid var(--creme-dark);
+    transition: all 0.3s ease;
+}
+
+.liked-item-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(62, 39, 35, 0.15);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .profile-header-compact {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+        padding: 1.5rem;
+    }
+    
+    .profile-picture-compact {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .profile-name {
+        font-size: 1.8rem;
+    }
+    
+    .profile-sections-side-by-side {
+        gap: 1.5rem;
+    }
+    
+    .profile-card {
+        padding: 1.5rem;
+    }
+    
+    .info-row {
+        padding-bottom: 1rem;
+    }
+    
+    .info-label {
+        font-size: 0.85rem;
+    }
+    
+    .info-value {
+        font-size: 1rem;
+    }
+    
+    .account-action-item {
+        padding: 1rem;
+        font-size: 0.95rem;
+    }
+    
+    .action-icon {
+        width: 35px;
+        height: 35px;
+        font-size: 1.1rem;
+    }
+    
+    .liked-items-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+}
+
+@media (max-width: 576px) {
+    .profile-header-compact {
+        padding: 1.2rem;
+    }
+    
+    .profile-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .profile-card-header h2 {
+        font-size: 1.3rem;
+    }
+    
+    .liked-items-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .info-list-compact {
+        gap: 1.2rem;
+    }
 }

@@ -23,8 +23,41 @@
         <nav class="main-nav">
           <ul class="nav-links">
             <li><a href="index.html" class="nav-link active">Home</a></li>
-            <li>
+            <li class="has-dropdown">
               <a href="products.html" class="nav-link">Products</a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a href="products.html?category=living" class="dropdown-item"
+                    ><i class="fas fa-couch"></i> Living Room</a
+                  >
+                </li>
+                <li>
+                  <a href="products.html?category=bedroom" class="dropdown-item"
+                    ><i class="fas fa-bed"></i> Bedroom</a
+                  >
+                </li>
+                <li>
+                  <a href="products.html?category=dining" class="dropdown-item"
+                    ><i class="fas fa-utensils"></i> Dining Room</a
+                  >
+                </li>
+                <li>
+                  <a href="products.html?category=office" class="dropdown-item"
+                    ><i class="fas fa-laptop"></i> Home Office</a
+                  >
+                </li>
+                <li>
+                  <a href="products.html?category=outdoor" class="dropdown-item"
+                    ><i class="fas fa-umbrella-beach"></i> Outdoor</a
+                  >
+                </li>
+                <li class="dropdown-divider"></li>
+                <li>
+                  <a href="products.html" class="dropdown-item"
+                    ><i class="fas fa-th-large"></i> All Products</a
+                  >
+                </li>
+              </ul>
             </li>
             <li><a href="about.html" class="nav-link">About Us</a></li>
             <li><a href="profile.html" class="nav-link">Profile</a></li>
@@ -48,6 +81,11 @@
         <div class="products-grid mt-4">
           <!-- Product 1 -->
           <div class="product-card">
+            <!-- Favorite button in top right corner -->
+            <button class="favorite-btn" aria-label="Add to favorites">
+              <i class="far fa-heart"></i>
+            </button>
+
             <img
               src="https://images.unsplash.com/photo-1540574163026-643ea20ade25?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
               alt="Modern Sofa"
@@ -58,13 +96,19 @@
               <p class="product-category">Sofas & Couches</p>
               <div class="product-price">$1,299.99</div>
               <div class="product-actions">
-                <button class="btn-add-to-cart">Add to Cart</button>
+                <!-- Changed from "Add to Cart" to "See More" -->
+                <a href="products.html" class="btn-see-more">See More</a>
               </div>
             </div>
           </div>
 
           <!-- Product 2 -->
           <div class="product-card">
+            <!-- Favorite button in top right corner -->
+            <button class="favorite-btn" aria-label="Add to favorites">
+              <i class="far fa-heart"></i>
+            </button>
+
             <img
               src="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
               alt="Coffee Table"
@@ -75,7 +119,8 @@
               <p class="product-category">Tables</p>
               <div class="product-price">$299.99</div>
               <div class="product-actions">
-                <button class="btn-add-to-cart">Add to Cart</button>
+                <!-- Changed from "Add to Cart" to "See More" -->
+                <a href="products.html" class="btn-see-more">See More</a>
               </div>
             </div>
           </div>
@@ -84,9 +129,37 @@
     </main>
 
     <footer class="main-footer">
-      <div class="container footer-content">
+      <div class="container footer-simple">
         <p class="copyright">&copy; 2025 ZIM COMMERCE. All rights reserved.</p>
+        <p class="copyright">
+          <i class="fas fa-envelope"></i> info@zimcommerce.com
+        </p>
+        <p class="copyright"><i class="fas fa-phone"></i> (555) 123-4567</p>
       </div>
     </footer>
+
+    <script>
+      // JavaScript for favorite button functionality
+      document.addEventListener("DOMContentLoaded", function () {
+        const favoriteBtns = document.querySelectorAll(".favorite-btn");
+
+        favoriteBtns.forEach((btn) => {
+          btn.addEventListener("click", function () {
+            const icon = this.querySelector("i");
+
+            // Toggle between outlined and solid heart
+            if (icon.classList.contains("far")) {
+              icon.classList.remove("far");
+              icon.classList.add("fas");
+              this.style.color = "#e74c3c"; // Red color when active
+            } else {
+              icon.classList.remove("fas");
+              icon.classList.add("far");
+              this.style.color = ""; // Reset to default
+            }
+          });
+        });
+      });
+    </script>
   </body>
 </html>
