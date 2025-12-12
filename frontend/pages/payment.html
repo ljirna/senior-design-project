@@ -1,484 +1,296 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Payment - Zim Commerce</title>
-    <link rel="stylesheet" href="../css/style.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-  </head>
-  <body>
-    <header class="main-header">
-      <div class="container header-container">
-        <div class="logo">
-          <i class="fas fa-couch logo-icon"></i>
-          <span>ZIM COMMERCE</span>
-        </div>
+<main class="page-container">
+  <div class="payment-page">
+    <div class="container">
+      <h1 class="section-title">Complete Your Payment</h1>
 
-        <nav class="main-nav">
-          <ul class="nav-links">
-            <li><a href="index.html" class="nav-link">Home</a></li>
-            <li class="has-dropdown">
-              <a href="products.html" class="nav-link">Products</a>
-              <ul class="dropdown-menu">
-                <li>
-                  <a href="products.html?category=living" class="dropdown-item"
-                    ><i class="fas fa-couch"></i> Living Room</a
-                  >
-                </li>
-                <li>
-                  <a href="products.html?category=bedroom" class="dropdown-item"
-                    ><i class="fas fa-bed"></i> Bedroom</a
-                  >
-                </li>
-                <li>
-                  <a href="products.html?category=dining" class="dropdown-item"
-                    ><i class="fas fa-utensils"></i> Dining Room</a
-                  >
-                </li>
-                <li>
-                  <a href="products.html?category=office" class="dropdown-item"
-                    ><i class="fas fa-laptop"></i> Home Office</a
-                  >
-                </li>
-                <li>
-                  <a href="products.html?category=outdoor" class="dropdown-item"
-                    ><i class="fas fa-umbrella-beach"></i> Outdoor</a
-                  >
-                </li>
-                <li class="dropdown-divider"></li>
-                <li>
-                  <a href="products.html" class="dropdown-item"
-                    ><i class="fas fa-th-large"></i> All Products</a
-                  >
-                </li>
-              </ul>
-            </li>
-            <li><a href="about.html" class="nav-link">About Us</a></li>
-            <li><a href="profile.html" class="nav-link active">Profile</a></li>
-          </ul>
-        </nav>
+      <div class="payment-container">
+        <!-- Payment Methods -->
+        <div class="payment-form-section">
+          <h2 class="section-title">Checkout</h2>
 
-        <div class="header-actions">
-          <a href="cart.html" class="action-icon">
-            <i class="fas fa-shopping-cart"></i>
-          </a>
-        </div>
-      </div>
-    </header>
-
-    <!-- Payment Page Content -->
-    <main class="payment-page">
-      <div class="container">
-        <h1 class="section-title">Complete Your Payment</h1>
-
-        <div class="payment-container">
-          <!-- Payment Methods & Forms -->
-          <div class="payment-form-section">
-            <h2 class="section-title">Checkout</h2>
-
-            <div class="payment-methods">
-              <!-- Credit/Debit Card -->
-              <div class="payment-method selected" data-method="card">
-                <div class="payment-method-icon">
-                  <i class="far fa-credit-card"></i>
-                </div>
-                <div class="payment-method-info">
-                  <div class="payment-method-name">Credit or Debit Card</div>
-                  <div class="payment-method-desc">
-                    Pay with Visa, MasterCard, or American Express
-                  </div>
-                </div>
-                <div class="payment-method-check">
-                  <i class="fas fa-check-circle"></i>
-                </div>
-              </div>
-            </div>
-
-            <!-- Credit Card Form -->
-            <div class="payment-form active" id="card-form">
-              <div class="card-icons">
-                <i class="fab fa-cc-visa"></i>
-                <i class="fab fa-cc-mastercard"></i>
-                <i class="fab fa-cc-amex"></i>
+          <div class="payment-methods">
+            <div class="payment-method selected" data-method="card">
+              <div class="payment-method-icon">
                 <i class="far fa-credit-card"></i>
               </div>
-
-              <form id="payment-form">
-                <div class="form-group">
-                  <label for="card-number" class="form-label"
-                    >Card Number</label
-                  >
-                  <div class="input-with-icon">
-                    <input
-                      type="text"
-                      id="card-number"
-                      class="form-control"
-                      placeholder="1234 5678 9012 3456"
-                      maxlength="19"
-                      required
-                    />
-                    <i class="fas fa-credit-card input-icon"></i>
-                  </div>
+              <div class="payment-method-info">
+                <div class="payment-method-name">Credit or Debit Card</div>
+                <div class="payment-method-desc">
+                  Pay with Visa, MasterCard, or American Express
                 </div>
+              </div>
+              <div class="payment-method-check">
+                <i class="fas fa-check-circle"></i>
+              </div>
+            </div>
+          </div>
 
-                <div class="form-row">
-                  <div class="form-group">
-                    <label for="expiry-date" class="form-label"
-                      >Expiry Date</label
-                    >
-                    <input
-                      type="text"
-                      id="expiry-date"
-                      class="form-control"
-                      placeholder="MM/YY"
-                      maxlength="5"
-                      required
-                    />
-                  </div>
+          <!-- Credit Card Form -->
+          <div class="payment-form active" id="card-form">
+            <div class="card-icons">
+              <i class="fab fa-cc-visa"></i>
+              <i class="fab fa-cc-mastercard"></i>
+              <i class="fab fa-cc-amex"></i>
+              <i class="far fa-credit-card"></i>
+            </div>
 
-                  <div class="form-group">
-                    <label for="cvv" class="form-label">CVV</label>
-                    <div class="input-with-icon">
-                      <input
-                        type="text"
-                        id="cvv"
-                        class="form-control"
-                        placeholder="123"
-                        maxlength="4"
-                        required
-                      />
-                      <i class="fas fa-lock input-icon"></i>
-                    </div>
-                  </div>
+            <form id="payment-form">
+              <div class="form-group">
+                <label for="card-number" class="form-label">Card Number</label>
+                <div class="input-with-icon">
+                  <input
+                    type="text"
+                    id="card-number"
+                    class="form-control"
+                    placeholder="1234 5678 9012 3456"
+                    maxlength="19"
+                    required
+                  />
+                  <i class="fas fa-credit-card input-icon"></i>
                 </div>
+              </div>
 
+              <div class="form-row">
                 <div class="form-group">
-                  <label for="cardholder-name" class="form-label"
-                    >Cardholder Name</label
+                  <label for="expiry-date" class="form-label"
+                    >Expiry Date</label
                   >
                   <input
                     type="text"
-                    id="cardholder-name"
+                    id="expiry-date"
                     class="form-control"
-                    placeholder="John Doe"
+                    placeholder="MM/YY"
+                    maxlength="5"
                     required
                   />
                 </div>
 
-                <div class="save-card-checkbox">
-                  <input type="checkbox" id="save-card" />
-                  <label for="save-card"
-                    >Save this card for future purchases</label
-                  >
+                <div class="form-group">
+                  <label for="cvv" class="form-label">CVV</label>
+                  <div class="input-with-icon">
+                    <input
+                      type="text"
+                      id="cvv"
+                      class="form-control"
+                      placeholder="123"
+                      maxlength="4"
+                      required
+                    />
+                    <i class="fas fa-lock input-icon"></i>
+                  </div>
                 </div>
-              </form>
+              </div>
 
-              <div class="security-badge">
-                <i class="fas fa-shield-alt"></i>
-                <span
-                  >Your payment information is secured with 256-bit SSL
-                  encryption</span
+              <div class="form-group">
+                <label for="cardholder-name" class="form-label"
+                  >Cardholder Name</label
+                >
+                <input
+                  type="text"
+                  id="cardholder-name"
+                  class="form-control"
+                  placeholder="John Doe"
+                  required
+                />
+              </div>
+
+              <div class="save-card-checkbox">
+                <input type="checkbox" id="save-card" />
+                <label for="save-card"
+                  >Save this card for future purchases</label
                 >
               </div>
-            </div>
+            </form>
 
-            <!-- Payment Actions -->
-            <div class="payment-actions">
-              <button class="btn-back" id="back-to-cart">
-                <i class="fas fa-arrow-left"></i> Back to Cart
-              </button>
-              <button class="btn-pay" id="pay-now">
-                <i class="fas fa-lock"></i> Complete Payment
-              </button>
-            </div>
-          </div>
-
-          <!-- Order Summary -->
-          <div class="order-summary-section">
-            <h2 class="section-title">Order Summary</h2>
-
-            <div class="order-items">
-              <div class="order-item">
-                <span class="order-item-name">Modern Leather Sofa × 1</span>
-                <span class="order-item-price">$1,299.99</span>
-              </div>
-              <div class="order-item">
-                <span class="order-item-name">Glass Coffee Table × 1</span>
-                <span class="order-item-price">$299.99</span>
-              </div>
-              <div class="order-item">
-                <span class="order-item-name">Leather Lounge Chair × 2</span>
-                <span class="order-item-price">$999.98</span>
-              </div>
-              <div class="order-item">
-                <span class="order-item-name">Wooden Side Table × 1</span>
-                <span class="order-item-price">$199.99</span>
-              </div>
-            </div>
-
-            <div class="summary-totals">
-              <div class="summary-row">
-                <span>Subtotal</span>
-                <span>$2,799.95</span>
-              </div>
-              <div class="summary-row">
-                <span>Shipping</span>
-                <span>$49.99</span>
-              </div>
-              <div class="summary-row">
-                <span>Tax</span>
-                <span>$199.99</span>
-              </div>
-              <div class="summary-row total">
-                <span>Total</span>
-                <span>$3,049.93</span>
-              </div>
-            </div>
-
-            <div class="delivery-info">
-              <h3
-                style="
-                  color: var(--burgundy-primary);
-                  margin-bottom: var(--spacing-sm);
-                  font-size: 1.1rem;
-                "
+            <div class="security-badge">
+              <i class="fas fa-shield-alt"></i>
+              <span
+                >Your payment information is secured with 256-bit SSL
+                encryption</span
               >
-                <i class="fas fa-truck"></i> Delivery Information
-              </h3>
-              <div class="delivery-address">
-                <strong>John Smith</strong><br />
-                123 Main Street<br />
-                Apt 4B<br />
-                New York, NY 10001<br />
-                United States<br />
-                <i class="fas fa-phone" style="margin-right: 0.5rem"></i> (123)
-                456-7890
-              </div>
+            </div>
+          </div>
+
+          <!-- Payment Actions -->
+          <div class="payment-actions">
+            <button class="btn-back" id="back-to-cart">
+              <i class="fas fa-arrow-left"></i> Back to Cart
+            </button>
+            <button class="btn-pay" id="pay-now">
+              <i class="fas fa-lock"></i> Complete Payment
+            </button>
+          </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="order-summary-section">
+          <h2 class="section-title">Order Summary</h2>
+
+          <div class="order-items">
+            <div class="order-item">
+              <span class="order-item-name">Modern Leather Sofa × 1</span>
+              <span class="order-item-price">$1,299.99</span>
+            </div>
+            <div class="order-item">
+              <span class="order-item-name">Glass Coffee Table × 1</span>
+              <span class="order-item-price">$299.99</span>
+            </div>
+            <div class="order-item">
+              <span class="order-item-name">Leather Lounge Chair × 2</span>
+              <span class="order-item-price">$999.98</span>
+            </div>
+          </div>
+
+          <div class="summary-totals">
+            <div class="summary-row">
+              <span>Subtotal</span><span>$2,799.95</span>
+            </div>
+            <div class="summary-row">
+              <span>Shipping</span><span>$49.99</span>
+            </div>
+            <div class="summary-row"><span>Tax</span><span>$199.99</span></div>
+            <div class="summary-row total">
+              <span>Total</span><span>$3,049.93</span>
+            </div>
+          </div>
+
+          <div class="delivery-info">
+            <h3 class="delivery-title">
+              <i class="fas fa-truck"></i> Delivery Information
+            </h3>
+            <div class="delivery-address">
+              <strong>John Smith</strong><br />
+              123 Main Street<br />
+              New York, NY 10001<br />
+              <i class="fas fa-phone"></i> (123) 456-7890
             </div>
           </div>
         </div>
-      </div>
-    </main>
-
-    <!-- Success Modal -->
-    <div class="modal-overlay" id="success-modal">
-      <div class="success-modal">
-        <div class="success-icon">
-          <i class="fas fa-check"></i>
-        </div>
-
-        <h2>Payment Successful!</h2>
-        <p>
-          Thank you for your purchase. Your order has been confirmed and will be
-          shipped within 3-5 business days.
-        </p>
-
-        <div class="order-details">
-          <div>
-            <span>Order Number:</span>
-            <span><strong>#ZM-2024-78945</strong></span>
-          </div>
-          <div>
-            <span>Total Amount:</span>
-            <span><strong>$3,049.93</strong></span>
-          </div>
-          <div>
-            <span>Estimated Delivery:</span>
-            <span><strong>October 28-30, 2024</strong></span>
-          </div>
-          <div>
-            <span>Payment Method:</span>
-            <span><strong>Credit Card</strong></span>
-          </div>
-        </div>
-
-        <button class="btn-view-order" id="view-order-details">
-          <i class="fas fa-receipt"></i> View Order Details
-        </button>
-        <button class="btn-close-modal" id="continue-shopping">
-          <i class="fas fa-shopping-bag"></i> Continue Shopping
-        </button>
       </div>
     </div>
+  </div>
+</main>
 
-    <footer class="main-footer">
-      <div class="container footer-simple">
-        <p class="copyright">&copy; 2025 ZIM COMMERCE. All rights reserved.</p>
-        <p class="copyright">
-          <i class="fas fa-envelope"></i> zim_comm@hotmail.com
-        </p>
-        <p class="copyright"><i class="fas fa-phone"></i> 033/460-499</p>
-      </div>
-    </footer>
+<!-- Success Modal (Will be shown/hidden by JS) -->
+<div class="modal-overlay" id="success-modal" style="display: none">
+  <div class="success-modal">
+    <div class="success-icon"><i class="fas fa-check"></i></div>
 
-    <!-- JavaScript -->
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        // Format card number input
-        const cardNumberInput = document.getElementById("card-number");
-        cardNumberInput.addEventListener("input", function (e) {
-          let value = e.target.value
-            .replace(/\s+/g, "")
-            .replace(/[^0-9]/gi, "");
-          let matches = value.match(/\d{4,16}/g);
-          let match = (matches && matches[0]) || "";
-          let parts = [];
+    <h2>Payment Successful!</h2>
+    <p>Your order has been confirmed and will be shipped soon.</p>
 
-          for (let i = 0, len = match.length; i < len; i += 4) {
-            parts.push(match.substring(i, i + 4));
+    <div class="order-details">
+      <div><span>Order Number:</span> <strong>#ZM-2024-78945</strong></div>
+      <div><span>Total:</span> <strong>$3,049.93</strong></div>
+      <div><span>Payment:</span> <strong>Credit Card</strong></div>
+    </div>
+
+    <button class="btn-view-order" id="view-order-details">
+      <i class="fas fa-receipt"></i> View Order Details
+    </button>
+    <button class="btn-close-modal" id="continue-shopping">
+      <i class="fas fa-shopping-bag"></i> Continue Shopping
+    </button>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    console.log("Payment page loaded");
+
+    // Format card number input
+    const cardNumberInput = document.getElementById("card-number");
+    if (cardNumberInput) {
+      cardNumberInput.addEventListener("input", function (e) {
+        let value = e.target.value.replace(/\D/g, "");
+        let formattedValue = "";
+        for (let i = 0; i < value.length; i++) {
+          if (i > 0 && i % 4 === 0) {
+            formattedValue += " ";
           }
-
-          if (parts.length) {
-            e.target.value = parts.join(" ");
-          } else {
-            e.target.value = value;
-          }
-        });
-
-        // Format expiry date input
-        const expiryDateInput = document.getElementById("expiry-date");
-        expiryDateInput.addEventListener("input", function (e) {
-          let value = e.target.value
-            .replace(/\s+/g, "")
-            .replace(/[^0-9]/gi, "");
-          if (value.length >= 2) {
-            e.target.value =
-              value.substring(0, 2) + "/" + value.substring(2, 4);
-          }
-        });
-
-        // Payment method selection
-        const paymentMethods = document.querySelectorAll(".payment-method");
-        paymentMethods.forEach((method) => {
-          method.addEventListener("click", function () {
-            // Remove selected class from all methods
-            paymentMethods.forEach((m) => {
-              m.classList.remove("selected");
-              m.querySelector(".payment-method-check i").className =
-                "far fa-circle";
-            });
-
-            // Add selected class to clicked method
-            this.classList.add("selected");
-            this.querySelector(".payment-method-check i").className =
-              "fas fa-check-circle";
-
-            // Show corresponding form
-            const methodType = this.getAttribute("data-method");
-            document.querySelectorAll(".payment-form").forEach((form) => {
-              form.classList.remove("active");
-            });
-            document
-              .getElementById(`${methodType}-form`)
-              .classList.add("active");
-          });
-        });
-
-        // CVV input formatting
-        const cvvInput = document.getElementById("cvv");
-        cvvInput.addEventListener("input", function (e) {
-          e.target.value = e.target.value.replace(/\D/g, "");
-        });
-
-        // Pay Now button
-        const payNowButton = document.getElementById("pay-now");
-        const successModal = document.getElementById("success-modal");
-
-        payNowButton.addEventListener("click", function () {
-          // Validate form
-          const cardNumber = document
-            .getElementById("card-number")
-            .value.replace(/\s+/g, "");
-          const expiryDate = document.getElementById("expiry-date").value;
-          const cvv = document.getElementById("cvv").value;
-          const cardholderName =
-            document.getElementById("cardholder-name").value;
-
-          // Simple validation
-          if (!cardNumber || cardNumber.length < 16) {
-            alert("Please enter a valid card number");
-            return;
-          }
-
-          if (!expiryDate || !expiryDate.includes("/")) {
-            alert("Please enter a valid expiry date (MM/YY)");
-            return;
-          }
-
-          if (!cvv || cvv.length < 3) {
-            alert("Please enter a valid CVV");
-            return;
-          }
-
-          if (!cardholderName) {
-            alert("Please enter the cardholder name");
-            return;
-          }
-
-          // Show loading state
-          this.innerHTML =
-            '<i class="fas fa-spinner fa-spin"></i> Processing...';
-          this.disabled = true;
-
-          // Simulate payment processing
-          setTimeout(() => {
-            // Show success modal
-            successModal.classList.add("active");
-
-            // Reset button
-            this.innerHTML = '<i class="fas fa-lock"></i> Complete Payment';
-            this.disabled = false;
-          }, 2000);
-        });
-
-        // Back to Cart button
-        document
-          .getElementById("back-to-cart")
-          .addEventListener("click", function () {
-            if (
-              confirm(
-                "Are you sure you want to go back to cart? Your payment information will not be saved."
-              )
-            ) {
-              window.location.href = "cart.html";
-            }
-          });
-
-        // Success modal buttons
-        document
-          .getElementById("view-order-details")
-          .addEventListener("click", function () {
-            alert(
-              "In a real application, this would show the order details page."
-            );
-            successModal.classList.remove("active");
-          });
-
-        document
-          .getElementById("continue-shopping")
-          .addEventListener("click", function () {
-            successModal.classList.remove("active");
-            window.location.href = "index.html";
-          });
-
-        // Close modal when clicking outside
-        successModal.addEventListener("click", function (e) {
-          if (e.target === this) {
-            this.classList.remove("active");
-          }
-        });
-
-        // Close modal with Escape key
-        document.addEventListener("keydown", function (e) {
-          if (e.key === "Escape") {
-            successModal.classList.remove("active");
-          }
-        });
+          formattedValue += value[i];
+        }
+        e.target.value = formattedValue.substring(0, 19);
       });
-    </script>
-  </body>
-</html>
+    }
+
+    // Format expiry date input
+    const expiryInput = document.getElementById("expiry-date");
+    if (expiryInput) {
+      expiryInput.addEventListener("input", function (e) {
+        let value = e.target.value.replace(/\D/g, "");
+        if (value.length >= 2) {
+          value = value.substring(0, 2) + "/" + value.substring(2);
+        }
+        e.target.value = value.substring(0, 5);
+      });
+    }
+
+    // Back to cart button
+    const backToCartBtn = document.getElementById("back-to-cart");
+    if (backToCartBtn) {
+      backToCartBtn.addEventListener("click", function () {
+        window.location.hash = "cart";
+      });
+    }
+
+    // Pay now button
+    const payNowBtn = document.getElementById("pay-now");
+    if (payNowBtn) {
+      payNowBtn.addEventListener("click", function () {
+        const cardNumber = document.getElementById("card-number").value;
+        const expiry = document.getElementById("expiry-date").value;
+        const cvv = document.getElementById("cvv").value;
+        const name = document.getElementById("cardholder-name").value;
+
+        if (!cardNumber || !expiry || !cvv || !name) {
+          if (typeof showToast === "function") {
+            showToast("Please fill in all payment details", "error");
+          } else {
+            alert("Please fill in all payment details");
+          }
+          return;
+        }
+
+        // Simulate payment processing
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        this.disabled = true;
+
+        setTimeout(() => {
+          // Show success modal
+          const modal = document.getElementById("success-modal");
+          if (modal) {
+            modal.style.display = "flex";
+          }
+
+          // Reset button
+          this.innerHTML = '<i class="fas fa-lock"></i> Complete Payment';
+          this.disabled = false;
+        }, 2000);
+      });
+    }
+
+    // Modal buttons
+    const continueShoppingBtn = document.getElementById("continue-shopping");
+    if (continueShoppingBtn) {
+      continueShoppingBtn.addEventListener("click", function () {
+        const modal = document.getElementById("success-modal");
+        if (modal) {
+          modal.style.display = "none";
+        }
+        window.location.hash = "home";
+      });
+    }
+
+    const viewOrderBtn = document.getElementById("view-order-details");
+    if (viewOrderBtn) {
+      viewOrderBtn.addEventListener("click", function () {
+        if (typeof showToast === "function") {
+          showToast("Order details will be available in your profile", "info");
+        } else {
+          alert("Order details will be available in your profile");
+        }
+      });
+    }
+  });
+</script>

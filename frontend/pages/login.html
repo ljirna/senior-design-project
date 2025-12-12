@@ -1,0 +1,78 @@
+<main class="page-container">
+  <div
+    class="container"
+    style="max-width: 400px; margin: 0 auto; padding: 2rem 1rem"
+  >
+    <h1
+      style="
+        text-align: center;
+        color: var(--burgundy-primary);
+        margin-bottom: 2rem;
+      "
+    >
+      Sign In
+    </h1>
+
+    <form id="loginForm" class="login-form">
+      <div class="form-group">
+        <label for="email" class="form-label">Email Address</label>
+        <input
+          type="email"
+          id="email"
+          class="form-control"
+          required
+          placeholder="your@email.com"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password" class="form-label">Password</label>
+        <input
+          type="password"
+          id="password"
+          class="form-control"
+          required
+          placeholder="Your password"
+        />
+      </div>
+
+      <button
+        type="submit"
+        class="btn"
+        style="
+          width: 100%;
+          background-color: var(--burgundy-primary);
+          color: white;
+          padding: 1rem;
+          margin-top: 1rem;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+        "
+      >
+        Sign In
+      </button>
+
+      <p
+        style="
+          text-align: center;
+          margin-top: 1.5rem;
+          color: var(--medium-brown);
+        "
+      >
+        Don't have an account?
+        <a
+          href="#home"
+          style="color: var(--burgundy-primary); text-decoration: none"
+        >
+          Continue as guest
+        </a>
+      </p>
+    </form>
+  </div>
+</main>
+
+<script>
+  // Login page scripts are handled by router.js initPageScripts
+  // No need for additional script here as router.js will initialize the form
+</script>

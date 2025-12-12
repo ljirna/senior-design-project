@@ -1,0 +1,83 @@
+<main class="container page-container">
+  <!-- Highlighted Products Section -->
+  <section class="products-section">
+    <h2 class="text-center">Highlighted Products</h2>
+
+    <div class="products-grid mt-4">
+      <!-- Product 1 -->
+      <div class="product-card">
+        <button class="favorite-btn" aria-label="Add to favorites">
+          <i class="far fa-heart"></i>
+        </button>
+
+        <img
+          src="https://images.unsplash.com/photo-1540574163026-643ea20ade25?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+          alt="Modern Sofa"
+          class="product-image"
+        />
+        <div class="product-content">
+          <h3 class="product-title">Modern Leather Sofa</h3>
+          <p class="product-category">Sofas & Couches</p>
+          <div class="product-price">$1,299.99</div>
+          <div class="product-actions">
+            <!-- FIX: Update href for SPA router -->
+            <a href="#single-product/1" class="btn-see-more">See More</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product 2 -->
+      <div class="product-card">
+        <button class="favorite-btn" aria-label="Add to favorites">
+          <i class="far fa-heart"></i>
+        </button>
+
+        <img
+          src="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+          alt="Coffee Table"
+          class="product-image"
+        />
+        <div class="product-content">
+          <h3 class="product-title">Glass Coffee Table</h3>
+          <p class="product-category">Tables</p>
+          <div class="product-price">$299.99</div>
+          <div class="product-actions">
+            <!-- FIX: Update href for SPA router -->
+            <a href="#single-product/2" class="btn-see-more">See More</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  // This script will run when the page loads
+  document.addEventListener("DOMContentLoaded", function () {
+    console.log("Home page loaded");
+
+    // Initialize favorite buttons
+    const favoriteBtns = document.querySelectorAll(".favorite-btn");
+    favoriteBtns.forEach((btn) => {
+      btn.addEventListener("click", function () {
+        const icon = this.querySelector("i");
+        if (icon.classList.contains("far")) {
+          icon.classList.remove("far");
+          icon.classList.add("fas");
+          this.style.color = "#e74c3c";
+          // You might want to use your showToast function here
+          if (typeof showToast === "function") {
+            showToast("Added to favorites!", "success");
+          }
+        } else {
+          icon.classList.remove("fas");
+          icon.classList.add("far");
+          this.style.color = "";
+          if (typeof showToast === "function") {
+            showToast("Removed from favorites!", "info");
+          }
+        }
+      });
+    });
+  });
+</script>

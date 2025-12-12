@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- BASE TAG for correct paths -->
+    <base href="/diplomski/frontend/">
+    
+    <title>ZIM Commerce</title>
+
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="css/style.css?v=1.1" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    
+    <!-- Preload critical CSS for faster loading -->
+    <style>
+      /* Critical CSS - Load immediately */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f8f4e9;
+        color: #3e2723;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      #app {
+        flex: 1;
+        animation: fadeIn 0.3s ease;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0.8; }
+        to { opacity: 1; }
+      }
+      
+      /* Loading animation */
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #e8dfc8;
+        border-top-color: #800020;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 2rem auto;
+      }
+      
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ================= HEADER ================= -->
+    <header class="main-header">
+      <div class="container header-container">
+        <div class="logo">
+          <i class="fas fa-couch logo-icon"></i>
+          <span>ZIM COMMERCE</span>
+        </div>
+
+        <nav class="main-nav">
+          <ul class="nav-links">
+            <li><a href="#home" class="nav-link" id="nav-home">Home</a></li>
+
+            <li class="has-dropdown">
+              <a href="#products" class="nav-link" id="nav-products">Products</a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a href="#products?category=living" class="dropdown-item">
+                    <i class="fas fa-couch"></i> Living Room
+                  </a>
+                </li>
+                <li>
+                  <a href="#products?category=bedroom" class="dropdown-item">
+                    <i class="fas fa-bed"></i> Bedroom
+                  </a>
+                </li>
+                <li>
+                  <a href="#products?category=dining" class="dropdown-item">
+                    <i class="fas fa-utensils"></i> Dining Room
+                  </a>
+                </li>
+                <li>
+                  <a href="#products?category=office" class="dropdown-item">
+                    <i class="fas fa-laptop"></i> Home Office
+                  </a>
+                </li>
+                <li>
+                  <a href="#products?category=outdoor" class="dropdown-item">
+                    <i class="fas fa-umbrella-beach"></i> Outdoor
+                  </a>
+                </li>
+
+                <li class="dropdown-divider"></li>
+
+                <li>
+                  <a href="#products" class="dropdown-item">
+                    <i class="fas fa-th-large"></i> All Products
+                  </a>
+                </li>
+              </ul>
+            </li>
+
+            <li><a href="#about" class="nav-link" id="nav-about">About Us</a></li>
+            <li><a href="#profile" class="nav-link" id="nav-profile">Profile</a></li>
+          </ul>
+        </nav>
+
+        <div class="header-actions">
+          <a href="#cart" class="action-icon" id="nav-cart">
+            <i class="fas fa-shopping-cart"></i>
+            <!-- Cart badge will be added by router.js -->
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- ================= PAGE CONTENT ROOT ================= -->
+    <main id="app" class="container page-container">
+      <!-- Router will inject HTML here -->
+      <div class="loading-container" style="text-align: center; padding: 4rem 1rem;">
+        <div class="spinner"></div>
+        <p style="margin-top: 1rem; color: #800020; font-weight: 600;">Loading ZIM Commerce...</p>
+        <p style="margin-top: 0.5rem; color: #5d4037; font-size: 0.9rem;">
+          If this takes too long, check your internet connection
+        </p>
+      </div>
+    </main>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="main-footer">
+      <div class="container footer-simple">
+        <p>&copy; 2025 ZIM COMMERCE. All rights reserved.</p>
+        <p><i class="fas fa-envelope"></i> zim_comm@hotmail.com</p>
+        <p><i class="fas fa-phone"></i> 033/460-499</p>
+      </div>
+    </footer>
+
+    <!-- ================= SPA ROUTER ================= -->
+    <!-- Load router with error handling -->
+    <script>
+      // Fallback if router fails
+      function showError(message) {
+        document.getElementById('app').innerHTML = `
+          <div style="text-align:center; padding:3rem; color:#800020;">
+            <h2>Application Error</h2>
+            <p>${message}</p>
+            <button onclick="location.reload()" 
+                    style="margin-top:1rem; padding:0.8rem 1.5rem; background:#800020; color:white; border:none; border-radius:4px; cursor:pointer;">
+              Reload Page
+            </button>
+          </div>
+        `;
+      }
+      
+      // Load router with timeout
+      function loadRouter() {
+        const script = document.createElement('script');
+        script.src = 'JS/router.js?v=1.1';
+        script.onerror = () => {
+          showError('Failed to load router.js. Please check if the file exists in JS/ folder.');
+        };
+        script.onload = () => {
+          console.log('Router loaded successfully');
+        };
+        document.body.appendChild(script);
+      }
+      
+      // Start loading router
+      window.addEventListener('DOMContentLoaded', loadRouter);
+    </script>
+    
+    <!-- Optional: Google Analytics or other scripts -->
+    <noscript>
+      <div style="position:fixed; top:0; left:0; right:0; background:#e74c3c; color:white; padding:1rem; text-align:center; z-index:10000;">
+        <strong>JavaScript Required:</strong> This website requires JavaScript to function properly.
+      </div>
+    </noscript>
+  </body>
+</html>

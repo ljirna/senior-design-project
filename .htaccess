@@ -1,0 +1,29 @@
+RewriteEngine On
+
+# If accessing the root, redirect to frontend/index.html
+RewriteRule ^$ frontend/index.html [L]
+
+# API requests go to backend
+RewriteRule ^backend(/.*)?$ backend$1 [L]
+
+# Immediately skip source map files - they're optional debug files
+RewriteRule \.(map)$ - [L,R=404]
+
+# First check if the requested file exists in the root
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# If file doesn't exist in root, but might exist in frontend directory, check the frontend directory
+RewriteCond %{REQUEST_URI} !^/backend/
+RewriteCond %{REQUEST_URI} !^/frontend/
+RewriteCond %{DOCUMENT_ROOT}/frontend/$1 -f [OR]
+RewriteCond %{DOCUMENT_ROOT}/frontend/$1 -d
+RewriteRule ^(.*)$ frontend/$1 [L]
+
+# If file doesn't exist in frontend directory, serve the SPA index
+RewriteCond %{REQUEST_URI} !^/backend/
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ frontend/index.html [L]
+
+# API requests are handled by backend/.htaccess

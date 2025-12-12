@@ -1,91 +1,173 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Products - ZiM Commerce</title>
-    <link rel="stylesheet" href="../css/style.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-  </head>
-  <body>
-    <!-- Header - Matching home page -->
-    <header class="main-header">
-      <div class="container header-container">
-        <div class="logo">
-          <i class="fas fa-couch logo-icon"></i>
-          <span>ZIM COMMERCE</span>
-        </div>
+<main class="page-container">
+  <div class="container">
+    <h1>Our Products</h1>
+    
+    <!-- Products Grid -->
+    <div class="products-grid" id="products-content">
+      <!-- Product 1 -->
+      <div class="product-card">
+        <button class="favorite-btn" aria-label="Add to favorites">
+          <i class="far fa-heart"></i>
+        </button>
 
-        <nav class="main-nav">
-          <ul class="nav-links">
-            <li><a href="index.html" class="nav-link">Home</a></li>
-            <li class="has-dropdown">
-              <a href="products.html" class="nav-link active">Products</a>
-              <ul class="dropdown-menu">
-                <li>
-                  <a href="products.html?category=living" class="dropdown-item"
-                    ><i class="fas fa-couch"></i> Living Room</a
-                  >
-                </li>
-                <li>
-                  <a href="products.html?category=bedroom" class="dropdown-item"
-                    ><i class="fas fa-bed"></i> Bedroom</a
-                  >
-                </li>
-                <li>
-                  <a href="products.html?category=dining" class="dropdown-item"
-                    ><i class="fas fa-utensils"></i> Dining Room</a
-                  >
-                </li>
-                <li>
-                  <a href="products.html?category=office" class="dropdown-item"
-                    ><i class="fas fa-laptop"></i> Home Office</a
-                  >
-                </li>
-                <li>
-                  <a href="products.html?category=outdoor" class="dropdown-item"
-                    ><i class="fas fa-umbrella-beach"></i> Outdoor</a
-                  >
-                </li>
-                <li class="dropdown-divider"></li>
-                <li>
-                  <a href="products.html" class="dropdown-item"
-                    ><i class="fas fa-th-large"></i> All Products</a
-                  >
-                </li>
-              </ul>
-            </li>
-            <li><a href="about.html" class="nav-link">About Us</a></li>
-            <li><a href="profile.html" class="nav-link">Profile</a></li>
-          </ul>
-        </nav>
-
-        <div class="header-actions">
-          <a href="cart.html" class="action-icon">
-            <i class="fas fa-shopping-cart"></i>
-          </a>
+        <img
+          src="https://images.unsplash.com/photo-1540574163026-643ea20ade25?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+          alt="Modern Sofa"
+          class="product-image"
+        />
+        <div class="product-content">
+          <h3 class="product-title">Modern Leather Sofa</h3>
+          <p class="product-category">Sofas & Couches</p>
+          <div class="product-price">$1,299.99</div>
+          <div class="product-actions">
+            <a href="#single-product/1" class="btn-see-more">See More</a>
+          </div>
         </div>
       </div>
-    </header>
 
-    <main class="container page-container">
-      <h1>Our Products</h1>
-      <!-- Your product content here -->
-    </main>
+      <!-- Product 2 -->
+      <div class="product-card">
+        <button class="favorite-btn" aria-label="Add to favorites">
+          <i class="far fa-heart"></i>
+        </button>
 
-    <footer class="main-footer">
-      <div class="container footer-simple">
-        <p class="copyright">&copy; 2025 ZIM COMMERCE. All rights reserved.</p>
-        <p class="copyright">
-          <i class="fas fa-envelope"></i> zim_comm@hotmail.com
-        </p>
-        <p class="copyright"><i class="fas fa-phone"></i> 033/460-499</p>
+        <img
+          src="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+          alt="Coffee Table"
+          class="product-image"
+        />
+        <div class="product-content">
+          <h3 class="product-title">Glass Coffee Table</h3>
+          <p class="product-category">Tables</p>
+          <div class="product-price">$299.99</div>
+          <div class="product-actions">
+            <a href="#single-product/2" class="btn-see-more">See More</a>
+          </div>
+        </div>
       </div>
-    </footer>
 
-    <script src="../js/main.js"></script>
-  </body>
-</html>
+      <!-- Product 3 -->
+      <div class="product-card">
+        <button class="favorite-btn" aria-label="Add to favorites">
+          <i class="far fa-heart"></i>
+        </button>
+
+        <img
+          src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+          alt="Leather Lounge Chair"
+          class="product-image"
+        />
+        <div class="product-content">
+          <h3 class="product-title">Leather Lounge Chair</h3>
+          <p class="product-category">Chairs</p>
+          <div class="product-price">$499.99</div>
+          <div class="product-actions">
+            <a href="#single-product/3" class="btn-see-more">See More</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product 4 -->
+      <div class="product-card">
+        <button class="favorite-btn" aria-label="Add to favorites">
+          <i class="far fa-heart"></i>
+        </button>
+
+        <img
+          src="https://images.unsplash.com/photo-1567016432779-094069958ea5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+          alt="Side Table"
+          class="product-image"
+        />
+        <div class="product-content">
+          <h3 class="product-title">Wooden Side Table</h3>
+          <p class="product-category">Tables</p>
+          <div class="product-price">$199.99</div>
+          <div class="product-actions">
+            <a href="#single-product/4" class="btn-see-more">See More</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product 5 -->
+      <div class="product-card">
+        <button class="favorite-btn" aria-label="Add to favorites">
+          <i class="far fa-heart"></i>
+        </button>
+
+        <img
+          src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+          alt="Dining Table"
+          class="product-image"
+        />
+        <div class="product-content">
+          <h3 class="product-title">Wooden Dining Table</h3>
+          <p class="product-category">Dining Room</p>
+          <div class="product-price">$799.99</div>
+          <div class="product-actions">
+            <a href="#single-product/5" class="btn-see-more">See More</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product 6 -->
+      <div class="product-card">
+        <button class="favorite-btn" aria-label="Add to favorites">
+          <i class="far fa-heart"></i>
+        </button>
+
+        <img
+          src="https://images.unsplash.com/photo-1595526051245-4506e0005bd0?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+          alt="Bed"
+          class="product-image"
+        />
+        <div class="product-content">
+          <h3 class="product-title">King Size Bed</h3>
+          <p class="product-category">Bedroom</p>
+          <div class="product-price">$1,599.99</div>
+          <div class="product-actions">
+            <a href="#single-product/6" class="btn-see-more">See More</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    console.log("Products page loaded");
+    
+    // Initialize favorite buttons
+    document.querySelectorAll(".favorite-btn").forEach(btn => {
+      btn.addEventListener("click", function() {
+        const icon = this.querySelector("i");
+        if (icon.classList.contains("far")) {
+          icon.classList.remove("far");
+          icon.classList.add("fas");
+          if (typeof showToast === 'function') {
+            showToast("Added to favorites!", "success");
+          }
+        } else {
+          icon.classList.remove("fas");
+          icon.classList.add("far");
+          if (typeof showToast === 'function') {
+            showToast("Removed from favorites!", "info");
+          }
+        }
+      });
+    });
+    
+    // Category filter buttons
+    document.querySelectorAll('.category-btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const href = this.getAttribute('href');
+        window.location.hash = href.substring(1);
+        
+        // Update active state
+        document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  });
+</script>
