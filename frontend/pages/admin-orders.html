@@ -1,0 +1,615 @@
+<!-- ================= ADMIN ORDERS MANAGEMENT ================= -->
+<main class="container page-container">
+  <!-- Page Header with Back Button -->
+  <div class="section-header" style="margin-bottom: 2rem">
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      "
+    >
+      <div>
+        <h1>Orders</h1>
+        <p>Manage user's orders</p>
+      </div>
+      <button
+        class="table-action-btn secondary"
+        onclick="window.location.hash='admin-dashboard'"
+      >
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+      </button>
+    </div>
+  </div>
+
+  <!-- Simple Filter -->
+  <div class="admin-table-section" style="margin-bottom: 1.5rem">
+    <div class="filter-buttons">
+      <button class="filter-btn active" data-filter="pending">
+        Pending Approval
+      </button>
+      <button class="filter-btn" data-filter="approved">Approved</button>
+      <button class="filter-btn" data-filter="rejected">Rejected</button>
+      <button class="filter-btn" data-filter="all">All Orders</button>
+    </div>
+  </div>
+
+  <!-- Orders List -->
+  <div class="row" id="orders-list">
+    <!-- Order 1 - Pending -->
+    <div class="col-lg-6 mb-4">
+      <div class="order-card-admin">
+        <div class="order-header-admin">
+          <div>
+            <h3>#ORD-001</h3>
+            <p class="order-date">Jan 15, 2024 • 14:30</p>
+          </div>
+          <span class="status-badge status-pending">Pending</span>
+        </div>
+
+        <div class="order-customer-admin">
+          <div class="customer-info">
+            <i class="fas fa-user"></i>
+            <div>
+              <strong>John Doe</strong>
+              <p>john@example.com</p>
+            </div>
+          </div>
+          <div class="customer-contact">
+            <i class="fas fa-phone"></i> +1 234 567 8900
+          </div>
+        </div>
+
+        <div class="order-items-admin">
+          <h4>Order Items:</h4>
+          <div class="order-item">
+            <img
+              src="https://images.unsplash.com/photo-1540574163026-643ea20ade25?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+              alt="Modern Sofa"
+            />
+            <div>
+              <strong>Modern Leather Sofa</strong>
+              <p>Quantity: 1 × $1,299.99</p>
+            </div>
+          </div>
+          <div class="order-item">
+            <img
+              src="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+              alt="Coffee Table"
+            />
+            <div>
+              <strong>Glass Coffee Table</strong>
+              <p>Quantity: 1 × $299.99</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="order-summary-admin">
+          <div class="summary-row">
+            <span>Subtotal:</span>
+            <span>$1,599.98</span>
+          </div>
+          <div class="summary-row">
+            <span>Delivery:</span>
+            <span>$49.99</span>
+          </div>
+          <div class="summary-row">
+            <span>Assembly:</span>
+            <span>$79.99</span>
+          </div>
+          <div class="summary-row total">
+            <strong>Total:</strong>
+            <strong>$1,729.96</strong>
+          </div>
+        </div>
+
+        <div class="order-actions-admin">
+          <button class="table-action-btn" onclick="approveOrder(1)">
+            <i class="fas fa-check"></i> Approve
+          </button>
+          <button class="table-action-btn secondary" onclick="rejectOrder(1)">
+            <i class="fas fa-times"></i> Reject
+          </button>
+          <button
+            class="table-action-btn secondary"
+            onclick="viewOrderDetails(1)"
+          >
+            <i class="fas fa-eye"></i> Details
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- You can add more orders here following the same pattern -->
+  </div>
+
+  <!-- Bottom Back Button for mobile -->
+  <div style="text-align: center; margin-top: 2rem; display: none">
+    <button
+      class="table-action-btn secondary"
+      onclick="window.location.hash='admin-dashboard'"
+      style="width: 100%; max-width: 300px"
+    >
+      <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </button>
+  </div>
+</main>
+
+<!-- Rejection Reason Modal -->
+<div class="admin-modal-overlay" id="rejectModal">
+  <div class="admin-modal" style="max-width: 500px">
+    <div class="modal-header">
+      <h3>Reject Order</h3>
+      <button class="modal-close" onclick="closeModal('rejectModal')">
+        &times;
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="reject-order-form">
+        <input type="hidden" id="reject_order_id" />
+
+        <div class="form-group">
+          <label for="reject_reason">Reason for Rejection *</label>
+          <select id="reject_reason" class="form-input" required>
+            <option value="">Select a reason</option>
+            <option value="out_of_stock">Product out of stock</option>
+            <option value="payment_issue">Payment issue</option>
+            <option value="suspicious_activity">Suspicious activity</option>
+            <option value="customer_request">
+              Customer requested cancellation
+            </option>
+            <option value="delivery_unavailable">
+              Delivery unavailable in area
+            </option>
+            <option value="other">Other reason</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="reject_notes">Additional Notes (Optional)</label>
+          <textarea
+            id="reject_notes"
+            class="form-input"
+            rows="3"
+            placeholder="Provide additional details about the rejection..."
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="notify_customer" checked />
+            Notify customer about this rejection
+          </label>
+        </div>
+
+        <button
+          type="submit"
+          class="table-action-btn"
+          style="width: 100%; margin-top: 1rem"
+        >
+          <i class="fas fa-times"></i> Confirm Rejection
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentOrderId = null;
+
+  document.addEventListener("DOMContentLoaded", function () {
+    console.log("Admin orders page loaded");
+
+    // Filter buttons
+    document.querySelectorAll(".filter-btn").forEach((btn) => {
+      btn.addEventListener("click", function () {
+        document
+          .querySelectorAll(".filter-btn")
+          .forEach((b) => b.classList.remove("active"));
+        this.classList.add("active");
+        const filter = this.dataset.filter;
+        filterOrders(filter);
+      });
+    });
+
+    // Reject form
+    document
+      .getElementById("reject-order-form")
+      .addEventListener("submit", function (e) {
+        e.preventDefault();
+        confirmRejection();
+      });
+
+    // Show/hide bottom back button based on screen size
+    function handleResponsiveBackButton() {
+      const topButton = document.querySelector(
+        ".section-header .table-action-btn"
+      );
+      const bottomButton = document.querySelector(
+        ".container > div:last-child"
+      );
+
+      if (window.innerWidth <= 768) {
+        if (topButton) topButton.style.display = "none";
+        if (bottomButton) bottomButton.style.display = "block";
+      } else {
+        if (topButton) topButton.style.display = "flex";
+        if (bottomButton) bottomButton.style.display = "none";
+      }
+    }
+
+    handleResponsiveBackButton();
+    window.addEventListener("resize", handleResponsiveBackButton);
+  });
+
+  function filterOrders(filter) {
+    const orders = document.querySelectorAll("#orders-list .col-lg-6");
+    orders.forEach((order) => {
+      const statusBadge = order.querySelector(".status-badge");
+      if (filter === "all") {
+        order.style.display = "";
+      } else if (filter === "pending") {
+        order.style.display =
+          statusBadge.textContent === "Pending" ? "" : "none";
+      } else if (filter === "approved") {
+        order.style.display =
+          statusBadge.textContent === "Approved" ? "" : "none";
+      } else if (filter === "rejected") {
+        order.style.display =
+          statusBadge.textContent === "Rejected" ? "" : "none";
+      }
+    });
+  }
+
+  function approveOrder(orderId) {
+    currentOrderId = orderId;
+
+    if (typeof showToast === "function") {
+      showToast("Approving order...", "info");
+    }
+
+    // Simulate API call
+    setTimeout(() => {
+      // Update order card
+      const orderCard = document
+        .querySelector(
+          `.order-card-admin .order-header-admin h3[data-order-id="${orderId}"]`
+        )
+        ?.closest(".order-card-admin");
+      if (orderCard) {
+        const statusBadge = orderCard.querySelector(".status-badge");
+        statusBadge.textContent = "Approved";
+        statusBadge.className = "status-badge status-delivered";
+
+        // Update action buttons
+        const actionsDiv = orderCard.querySelector(".order-actions-admin");
+        actionsDiv.innerHTML = `
+          <button class="table-action-btn secondary" onclick="viewOrderDetails(${orderId})">
+            <i class="fas fa-eye"></i> View Details
+          </button>
+          <button class="table-action-btn secondary" onclick="undoApproval(${orderId})">
+            <i class="fas fa-undo"></i> Undo
+          </button>
+        `;
+      }
+
+      if (typeof showToast === "function") {
+        showToast("Order approved successfully!", "success");
+      }
+    }, 1000);
+  }
+
+  function rejectOrder(orderId) {
+    currentOrderId = orderId;
+    document.getElementById("reject_order_id").value = orderId;
+    document.getElementById("reject-order-form").reset();
+    openModal("rejectModal");
+  }
+
+  function confirmRejection() {
+    const orderId = document.getElementById("reject_order_id").value;
+    const reason = document.getElementById("reject_reason").value;
+    const notes = document.getElementById("reject_notes").value;
+    const notify = document.getElementById("notify_customer").checked;
+
+    if (!reason) {
+      if (typeof showToast === "function") {
+        showToast("Please select a reason for rejection", "error");
+      }
+      return;
+    }
+
+    if (typeof showToast === "function") {
+      showToast("Rejecting order...", "info");
+    }
+
+    // Simulate API call
+    setTimeout(() => {
+      // Update order card
+      const orderCard = document
+        .querySelector(
+          `.order-card-admin .order-header-admin h3[data-order-id="${orderId}"]`
+        )
+        ?.closest(".order-card-admin");
+      if (orderCard) {
+        const statusBadge = orderCard.querySelector(".status-badge");
+        statusBadge.textContent = "Rejected";
+        statusBadge.className = "status-badge status-cancelled";
+
+        // Update action buttons
+        const actionsDiv = orderCard.querySelector(".order-actions-admin");
+        actionsDiv.innerHTML = `
+          <button class="table-action-btn secondary" onclick="viewOrderDetails(${orderId})">
+            <i class="fas fa-eye"></i> View Details
+          </button>
+          <button class="table-action-btn" onclick="approveOrder(${orderId})">
+            <i class="fas fa-check"></i> Approve
+          </button>
+        `;
+      }
+
+      if (typeof showToast === "function") {
+        showToast("Order rejected successfully!", "success");
+      }
+
+      closeModal("rejectModal");
+    }, 1000);
+  }
+
+  function undoApproval(orderId) {
+    if (typeof showToast === "function") {
+      showToast("Reverting approval...", "info");
+    }
+
+    // Simulate API call
+    setTimeout(() => {
+      // Update order card
+      const orderCard = document
+        .querySelector(
+          `.order-card-admin .order-header-admin h3[data-order-id="${orderId}"]`
+        )
+        ?.closest(".order-card-admin");
+      if (orderCard) {
+        const statusBadge = orderCard.querySelector(".status-badge");
+        statusBadge.textContent = "Pending";
+        statusBadge.className = "status-badge status-pending";
+
+        // Update action buttons
+        const actionsDiv = orderCard.querySelector(".order-actions-admin");
+        actionsDiv.innerHTML = `
+          <button class="table-action-btn" onclick="approveOrder(${orderId})">
+            <i class="fas fa-check"></i> Approve
+          </button>
+          <button class="table-action-btn secondary" onclick="rejectOrder(${orderId})">
+            <i class="fas fa-times"></i> Reject
+          </button>
+          <button class="table-action-btn secondary" onclick="viewOrderDetails(${orderId})">
+            <i class="fas fa-eye"></i> Details
+          </button>
+        `;
+      }
+
+      if (typeof showToast === "function") {
+        showToast("Approval reverted!", "success");
+      }
+    }, 1000);
+  }
+
+  function viewOrderDetails(orderId) {
+    // Redirect to order details page
+    window.location.hash = `admin-order-detail/${orderId}`;
+  }
+
+  function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.add("active");
+    }
+  }
+
+  function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.remove("active");
+    }
+  }
+</script>
+
+<style>
+  /* Order Card Styles */
+  .order-card-admin {
+    background: white;
+    border-radius: 8px;
+    border: 1px solid var(--creme-dark);
+    box-shadow: 0 2px 10px rgba(62, 39, 35, 0.1);
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .order-card-admin:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(62, 39, 35, 0.15);
+  }
+
+  .order-header-admin {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 1.5rem 1rem;
+    border-bottom: 1px solid var(--creme-dark);
+  }
+
+  .order-header-admin h3 {
+    color: var(--burgundy-primary);
+    margin: 0;
+  }
+
+  .order-date {
+    color: var(--medium-brown);
+    font-size: 0.9rem;
+    margin: 0.3rem 0 0;
+  }
+
+  .order-customer-admin {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--creme-dark);
+  }
+
+  .customer-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .customer-info i {
+    color: var(--burgundy-light);
+    font-size: 1.2rem;
+  }
+
+  .customer-info strong {
+    color: var(--burgundy-primary);
+    display: block;
+  }
+
+  .customer-info p {
+    color: var(--medium-brown);
+    margin: 0;
+    font-size: 0.9rem;
+  }
+
+  .customer-contact {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--medium-brown);
+    font-size: 0.9rem;
+  }
+
+  .customer-contact i {
+    color: var(--burgundy-light);
+  }
+
+  .order-items-admin {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--creme-dark);
+  }
+
+  .order-items-admin h4 {
+    color: var(--burgundy-primary);
+    margin-bottom: 1rem;
+    font-size: 1rem;
+  }
+
+  .order-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background: var(--creme-light);
+    border-radius: 4px;
+  }
+
+  .order-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .order-item img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid var(--creme-dark);
+  }
+
+  .order-item strong {
+    color: var(--burgundy-primary);
+    display: block;
+    font-size: 0.95rem;
+  }
+
+  .order-item p {
+    color: var(--medium-brown);
+    margin: 0.2rem 0 0;
+    font-size: 0.85rem;
+  }
+
+  .order-summary-admin {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--creme-dark);
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    color: var(--medium-brown);
+  }
+
+  .summary-row.total {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--creme-dark);
+    color: var(--burgundy-primary);
+    font-size: 1.1rem;
+  }
+
+  .order-actions-admin {
+    padding: 1rem 1.5rem;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .order-actions-admin .table-action-btn {
+    flex: 1;
+    text-align: center;
+  }
+
+  /* Grid Layout */
+  .row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .row {
+      grid-template-columns: 1fr;
+    }
+
+    .section-header > div {
+      flex-direction: column;
+      gap: 1rem;
+    }
+  }
+
+  /* Form Styles */
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--medium-brown);
+    font-weight: 600;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid var(--creme-dark);
+    border-radius: 4px;
+    background-color: white;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: var(--burgundy-light);
+  }
+
+  .form-group label input[type="checkbox"] {
+    margin-right: 0.5rem;
+  }
+</style>

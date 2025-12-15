@@ -1,0 +1,215 @@
+<main class="page-container">
+  <div
+    class="container"
+    style="max-width: 400px; margin: 0 auto; padding: 2rem 1rem"
+  >
+    <h1
+      style="
+        text-align: center;
+        color: var(--burgundy-primary);
+        margin-bottom: 2rem;
+      "
+    >
+      Create Account
+    </h1>
+
+    <form id="registerForm" class="register-form">
+      <div class="form-group">
+        <label for="fullName" class="form-label">Full Name</label>
+        <input
+          type="text"
+          id="fullName"
+          class="form-control"
+          required
+          placeholder="John Doe"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="registerEmail" class="form-label">Email Address</label>
+        <input
+          type="email"
+          id="registerEmail"
+          class="form-control"
+          required
+          placeholder="your@email.com"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="registerPassword" class="form-label">Password</label>
+        <input
+          type="password"
+          id="registerPassword"
+          class="form-control"
+          required
+          placeholder="Create a password"
+        />
+        <small
+          style="
+            color: var(--medium-brown);
+            font-size: 0.85rem;
+            display: block;
+            margin-top: 0.25rem;
+          "
+        >
+          Minimum 8 characters with letters and numbers
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword" class="form-label">Confirm Password</label>
+        <input
+          type="password"
+          id="confirmPassword"
+          class="form-control"
+          required
+          placeholder="Confirm your password"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="phone" class="form-label">Phone Number</label>
+        <input
+          type="tel"
+          id="phone"
+          class="form-control"
+          placeholder="(123) 456-7890"
+        />
+      </div>
+
+      <button
+        type="submit"
+        class="btn"
+        style="
+          width: 100%;
+          background-color: var(--burgundy-primary);
+          color: white;
+          padding: 1rem;
+          margin-top: 1rem;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-weight: 600;
+        "
+      >
+        Create Account
+      </button>
+
+      <!-- Divider -->
+      <div style="display: flex; align-items: center; margin: 1.5rem 0">
+        <div style="flex: 1; height: 1px; background-color: #e8dfc8"></div>
+        <div
+          style="padding: 0 1rem; color: var(--medium-brown); font-size: 0.9rem"
+        >
+          Already have an account?
+        </div>
+        <div style="flex: 1; height: 1px; background-color: #e8dfc8"></div>
+      </div>
+
+      <!-- Back to Login Button -->
+      <button
+        type="button"
+        id="goToLoginBtn"
+        style="
+          width: 100%;
+          background-color: transparent;
+          color: var(--burgundy-primary);
+          padding: 1rem;
+          border: 2px solid var(--burgundy-primary);
+          border-radius: 4px;
+          cursor: pointer;
+          font-weight: 600;
+          transition: all 0.3s ease;
+        "
+        onmouseover="this.style.backgroundColor='#f0ead6'"
+        onmouseout="this.style.backgroundColor='transparent'"
+      >
+        Back to Sign In
+      </button>
+    </form>
+  </div>
+</main>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    console.log("Register page loaded");
+
+    // Back to login button
+    const goToLoginBtn = document.getElementById("goToLoginBtn");
+    if (goToLoginBtn) {
+      goToLoginBtn.addEventListener("click", function () {
+        window.location.hash = "login";
+      });
+    }
+
+    // Registration form submission
+    const registerForm = document.getElementById("registerForm");
+    if (registerForm) {
+      registerForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const fullName = document.getElementById("fullName").value;
+        const email = document.getElementById("registerEmail").value;
+        const password = document.getElementById("registerPassword").value;
+        const confirmPassword =
+          document.getElementById("confirmPassword").value;
+
+        // Basic validation
+        if (password !== confirmPassword) {
+          if (typeof showToast === "function") {
+            showToast("Passwords do not match!", "error");
+          } else {
+            alert("Passwords do not match!");
+          }
+          return;
+        }
+
+        if (password.length < 8) {
+          if (typeof showToast === "function") {
+            showToast("Password must be at least 8 characters!", "error");
+          } else {
+            alert("Password must be at least 8 characters!");
+          }
+          return;
+        }
+
+        // Simulate registration
+        const submitBtn = registerForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML =
+          '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+        submitBtn.disabled = true;
+
+        setTimeout(() => {
+          // Mock user registration
+          const user = {
+            id: Date.now(),
+            name: fullName,
+            email: email,
+            role: "customer",
+            phone: document.getElementById("phone").value || null,
+          };
+
+          // Save user to localStorage (simulating registration)
+          appState.user = user;
+          localStorage.setItem("zimUser", JSON.stringify(user));
+
+          if (typeof showToast === "function") {
+            showToast(
+              "Account created successfully! Welcome to ZIM Commerce!",
+              "success"
+            );
+          }
+
+          // Redirect to profile or home
+          window.location.hash = "profile";
+
+          // Reset button
+          submitBtn.innerHTML = originalText;
+          submitBtn.disabled = false;
+        }, 1500);
+      });
+    }
+  });
+</script>

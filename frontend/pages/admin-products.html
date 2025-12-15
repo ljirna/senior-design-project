@@ -1,0 +1,709 @@
+<!-- ================= ADMIN PRODUCTS MANAGEMENT ================= -->
+<main class="container page-container">
+  <!-- Page Header with Back Button -->
+  <div class="section-header" style="margin-bottom: 2rem">
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      "
+    >
+      <div>
+        <h1>Products</h1>
+        <p>Manage All Products</p>
+      </div>
+      <button
+        class="table-action-btn secondary"
+        onclick="window.location.hash='admin-dashboard'"
+      >
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+      </button>
+    </div>
+  </div>
+
+  <!-- Add Product Button -->
+  <div class="mb-4 text-start">
+    <button class="table-action-btn" id="add-product-btn">
+      <i class="fas fa-plus"></i> Add Product
+    </button>
+  </div>
+
+  <!-- Products Grid -->
+  <div class="row" id="products-grid" style="margin-top: 2rem">
+    <!-- Products will be loaded here -->
+    <div class="col-lg-4 col-md-6 mb-4">
+      <div class="product-card-admin">
+        <img
+          src="https://images.unsplash.com/photo-1540574163026-643ea20ade25?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+          alt="Modern Sofa"
+          class="product-image-admin"
+        />
+        <div class="product-content-admin">
+          <h3 class="product-title-admin">Modern Leather Sofa</h3>
+          <p class="product-category-admin">Sofas & Couches</p>
+          <div class="product-price-admin">$1,299.99</div>
+          <div class="product-meta-admin"></div>
+          <div class="product-actions-admin">
+            <button class="table-action-btn" onclick="editProduct(1)">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button
+              class="table-action-btn secondary"
+              onclick="deleteProduct(1)"
+            >
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6 mb-4">
+      <div class="product-card-admin">
+        <img
+          src="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+          alt="Coffee Table"
+          class="product-image-admin"
+        />
+        <div class="product-content-admin">
+          <h3 class="product-title-admin">Glass Coffee Table</h3>
+          <p class="product-category-admin">Tables</p>
+          <div class="product-price-admin">$299.99</div>
+          <div class="product-meta-admin"></div>
+          <div class="product-actions-admin">
+            <button class="table-action-btn" onclick="editProduct(2)">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button
+              class="table-action-btn secondary"
+              onclick="deleteProduct(2)"
+            >
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6 mb-4">
+      <div class="product-card-admin">
+        <img
+          src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+          alt="Office Chair"
+          class="product-image-admin"
+        />
+        <div class="product-content-admin">
+          <h3 class="product-title-admin">Ergonomic Office Chair</h3>
+          <p class="product-category-admin">Chairs</p>
+          <div class="product-price-admin">$199.99</div>
+          <div class="product-meta-admin"></div>
+          <div class="product-actions-admin">
+            <button class="table-action-btn" onclick="editProduct(3)">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button
+              class="table-action-btn secondary"
+              onclick="deleteProduct(3)"
+            >
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6 mb-4">
+      <div class="product-card-admin">
+        <img
+          src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+          alt="Bed Frame"
+          class="product-image-admin"
+        />
+        <div class="product-content-admin">
+          <h3 class="product-title-admin">King Size Bed Frame</h3>
+          <p class="product-category-admin">Beds</p>
+          <div class="product-price-admin">$899.99</div>
+          <div class="product-meta-admin"></div>
+          <div class="product-actions-admin">
+            <button class="table-action-btn" onclick="editProduct(4)">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button
+              class="table-action-btn secondary"
+              onclick="deleteProduct(4)"
+            >
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6 mb-4">
+      <div class="product-card-admin">
+        <img
+          src="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+          alt="Dining Table"
+          class="product-image-admin"
+        />
+        <div class="product-content-admin">
+          <h3 class="product-title-admin">Oak Dining Table Set</h3>
+          <p class="product-category-admin">Tables</p>
+          <div class="product-price-admin">$1,499.99</div>
+          <div class="product-meta-admin"></div>
+          <div class="product-actions-admin">
+            <button class="table-action-btn" onclick="editProduct(5)">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button
+              class="table-action-btn secondary"
+              onclick="deleteProduct(5)"
+            >
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Add Product Modal -->
+<div class="admin-modal-overlay" id="addProductModal">
+  <div class="admin-modal" style="max-width: 600px">
+    <div class="modal-header">
+      <h3>Add Product</h3>
+      <button class="modal-close" onclick="closeModal('addProductModal')">
+        &times;
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="add-product-form">
+        <div class="form-group">
+          <label for="add_product_name">Product Name *</label>
+          <input
+            type="text"
+            class="form-input"
+            id="add_product_name"
+            required
+          />
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="add_product_category">Category *</label>
+            <select class="form-input" id="add_product_category" required>
+              <option value="">Select Category</option>
+              <option value="1">Sofas & Couches</option>
+              <option value="2">Tables</option>
+              <option value="3">Chairs</option>
+              <option value="4">Beds</option>
+              <option value="5">Storage</option>
+              <option value="6">Outdoor</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="add_product_price">Price ($) *</label>
+            <input
+              type="number"
+              class="form-input"
+              id="add_product_price"
+              step="0.01"
+              min="0"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="add_product_description">Description</label>
+          <textarea
+            class="form-input"
+            id="add_product_description"
+            rows="3"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="add_product_image">Product Image *</label>
+          <input
+            type="file"
+            class="form-input"
+            id="add_product_image"
+            accept="image/*"
+            required
+          />
+          <small style="color: var(--medium-brown)"
+            >Select an image file (JPG, PNG, etc.)</small
+          >
+        </div>
+
+        <button
+          type="submit"
+          class="table-action-btn"
+          style="width: 100%; margin-top: 1rem"
+        >
+          <i class="fas fa-plus"></i> Add Product
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Product Modal -->
+<div class="admin-modal-overlay" id="editProductModal">
+  <div class="admin-modal" style="max-width: 600px">
+    <div class="modal-header">
+      <h3>Edit Product</h3>
+      <button class="modal-close" onclick="closeModal('editProductModal')">
+        &times;
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="edit-product-form">
+        <input type="hidden" id="edit_product_id" />
+
+        <div class="form-group">
+          <label for="edit_product_name">Product Name *</label>
+          <input
+            type="text"
+            class="form-input"
+            id="edit_product_name"
+            required
+          />
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="edit_product_category">Category *</label>
+            <select class="form-input" id="edit_product_category" required>
+              <option value="">Select Category</option>
+              <option value="1">Sofas & Couches</option>
+              <option value="2">Tables</option>
+              <option value="3">Chairs</option>
+              <option value="4">Beds</option>
+              <option value="5">Storage</option>
+              <option value="6">Outdoor</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="edit_product_price">Price ($) *</label>
+            <input
+              type="number"
+              class="form-input"
+              id="edit_product_price"
+              step="0.01"
+              min="0"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="edit_product_description">Description</label>
+          <textarea
+            class="form-input"
+            id="edit_product_description"
+            rows="3"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="edit_product_image">Product Image</label>
+          <input
+            type="file"
+            class="form-input"
+            id="edit_product_image"
+            accept="image/*"
+          />
+          <small style="color: var(--medium-brown)"
+            >Leave empty to keep current image</small
+          >
+        </div>
+
+        <button
+          type="submit"
+          class="table-action-btn"
+          style="width: 100%; margin-top: 1rem"
+        >
+          <i class="fas fa-save"></i> Save Changes
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentProductId = null;
+
+  document.addEventListener("DOMContentLoaded", function () {
+    console.log("Admin products page loaded");
+
+    // Add product button
+    document
+      .getElementById("add-product-btn")
+      .addEventListener("click", function () {
+        openAddProductModal();
+      });
+
+    // Add product form
+    document
+      .getElementById("add-product-form")
+      .addEventListener("submit", function (e) {
+        e.preventDefault();
+        addProduct();
+      });
+
+    // Edit product form
+    document
+      .getElementById("edit-product-form")
+      .addEventListener("submit", function (e) {
+        e.preventDefault();
+        saveProduct();
+      });
+  });
+
+  function openAddProductModal() {
+    document.getElementById("add-product-form").reset();
+    openModal("addProductModal");
+  }
+
+  function editProduct(productId) {
+    currentProductId = productId;
+
+    // In a real app, you would fetch the product data from your API
+    // For now, we'll fill with sample data
+    const products = {
+      1: {
+        name: "Modern Leather Sofa",
+        category: "1",
+        price: "1299.99",
+        description: "A comfortable modern leather sofa for your living room.",
+      },
+      2: {
+        name: "Glass Coffee Table",
+        category: "2",
+        price: "299.99",
+        description: "Stylish glass coffee table for modern interiors.",
+      },
+      3: {
+        name: "Ergonomic Office Chair",
+        category: "3",
+        price: "199.99",
+        description: "Comfortable ergonomic chair for long working hours.",
+      },
+      4: {
+        name: "King Size Bed Frame",
+        category: "4",
+        price: "899.99",
+        description: "Solid wood king size bed frame with storage.",
+      },
+      5: {
+        name: "Oak Dining Table Set",
+        category: "2",
+        price: "1499.99",
+        description: "Complete dining set with 6 chairs made of solid oak.",
+      },
+    };
+
+    const product = products[productId];
+    if (product) {
+      document.getElementById("edit_product_id").value = productId;
+      document.getElementById("edit_product_name").value = product.name;
+      document.getElementById("edit_product_category").value = product.category;
+      document.getElementById("edit_product_price").value = product.price;
+      document.getElementById("edit_product_description").value =
+        product.description;
+
+      openModal("editProductModal");
+    }
+  }
+
+  function addProduct() {
+    const name = document.getElementById("add_product_name").value;
+    const category = document.getElementById("add_product_category").value;
+    const price = document.getElementById("add_product_price").value;
+    const description = document.getElementById(
+      "add_product_description"
+    ).value;
+    const imageFile = document.getElementById("add_product_image").files[0];
+
+    if (!name || !category || !price || !imageFile) {
+      if (typeof showToast === "function") {
+        showToast("Please fill in all required fields", "error");
+      }
+      return;
+    }
+
+    // In a real app, you would:
+    // 1. Upload the image to your server
+    // 2. Get the image URL
+    // 3. Send product data to your API
+
+    // Simulate API call
+    if (typeof showToast === "function") {
+      showToast("Adding product...", "info");
+    }
+
+    setTimeout(() => {
+      if (typeof showToast === "function") {
+        showToast("Product added successfully!", "success");
+      }
+      closeModal("addProductModal");
+
+      // Add the new product to the grid (in a real app, you would reload or append)
+      // For now, we'll just show a success message
+      refreshProductsGrid();
+    }, 1000);
+  }
+
+  function saveProduct() {
+    const productId = document.getElementById("edit_product_id").value;
+    const name = document.getElementById("edit_product_name").value;
+    const category = document.getElementById("edit_product_category").value;
+    const price = document.getElementById("edit_product_price").value;
+    const description = document.getElementById(
+      "edit_product_description"
+    ).value;
+    const imageFile = document.getElementById("edit_product_image").files[0];
+
+    if (!name || !category || !price) {
+      if (typeof showToast === "function") {
+        showToast("Please fill in all required fields", "error");
+      }
+      return;
+    }
+
+    // In a real app, you would:
+    // 1. If there's a new image, upload it
+    // 2. Update product data via API
+
+    if (typeof showToast === "function") {
+      showToast("Updating product...", "info");
+    }
+
+    setTimeout(() => {
+      if (typeof showToast === "function") {
+        showToast("Product updated successfully!", "success");
+      }
+      closeModal("editProductModal");
+
+      // Update the product card in the grid
+      updateProductCard(productId, {
+        name: name,
+        category: category,
+        price: price,
+        description: description,
+      });
+    }, 1000);
+  }
+
+  function deleteProduct(productId) {
+    if (typeof showToast === "function") {
+      showToast("Delete product #" + productId + "?", "warning", 5000);
+    }
+
+    // In a real app, you would show a confirmation dialog
+    // For now, we'll simulate deletion
+    if (confirm("Are you sure you want to delete this product?")) {
+      if (typeof showToast === "function") {
+        showToast("Deleting product...", "info");
+      }
+
+      setTimeout(() => {
+        if (typeof showToast === "function") {
+          showToast("Product deleted successfully!", "success");
+        }
+        // Remove product card from grid
+        removeProductCard(productId);
+      }, 1000);
+    }
+  }
+
+  function updateProductCard(productId, data) {
+    // Find and update the product card
+    const productCards = document.querySelectorAll(
+      "#products-grid .product-card-admin"
+    );
+    productCards.forEach((card) => {
+      const editBtn = card.querySelector(
+        '.table-action-btn[onclick*="editProduct(' + productId + ')"]'
+      );
+      if (editBtn) {
+        // Update card content
+        const title = card.querySelector(".product-title-admin");
+        const category = card.querySelector(".product-category-admin");
+        const price = card.querySelector(".product-price-admin");
+
+        if (title) title.textContent = data.name;
+        if (category) {
+          const categories = {
+            1: "Sofas & Couches",
+            2: "Tables",
+            3: "Chairs",
+            4: "Beds",
+            5: "Storage",
+            6: "Outdoor",
+          };
+          category.textContent = categories[data.category] || "Uncategorized";
+        }
+        if (price) price.textContent = "$" + parseFloat(data.price).toFixed(2);
+      }
+    });
+  }
+
+  function removeProductCard(productId) {
+    // Find and remove the product card
+    const productCards = document.querySelectorAll("#products-grid .col-lg-4");
+    productCards.forEach((col) => {
+      const card = col.querySelector(".product-card-admin");
+      if (card) {
+        const editBtn = card.querySelector(
+          '.table-action-btn[onclick*="editProduct(' + productId + ')"]'
+        );
+        if (editBtn) {
+          col.remove();
+        }
+      }
+    });
+  }
+
+  function refreshProductsGrid() {
+    // In a real app, you would fetch products from your API
+    // For now, we'll just show a toast
+    if (typeof showToast === "function") {
+      showToast("Products refreshed!", "success");
+    }
+  }
+
+  function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.add("active");
+    }
+  }
+
+  function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.remove("active");
+    }
+  }
+</script>
+
+<style>
+  /* Product Card Styles for Admin */
+  .product-card-admin {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(62, 39, 35, 0.1);
+    transition: all 0.3s ease;
+    border: 1px solid var(--creme-dark);
+  }
+
+  .product-card-admin:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(62, 39, 35, 0.15);
+  }
+
+  .product-image-admin {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+
+  .product-content-admin {
+    padding: 1.5rem;
+  }
+
+  .product-title-admin {
+    color: var(--burgundy-primary);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+  }
+
+  .product-category-admin {
+    color: var(--medium-brown);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .product-price-admin {
+    color: var(--burgundy-dark);
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+
+  .product-meta-admin {
+    display: flex;
+    justify-content: space-between;
+    color: var(--medium-brown);
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--creme-dark);
+  }
+
+  .product-meta-admin span {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .product-actions-admin {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .product-actions-admin .table-action-btn {
+    flex: 1;
+    text-align: center;
+    padding: 0.5rem;
+  }
+
+  /* Form Styles */
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--medium-brown);
+    font-weight: 600;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid var(--creme-dark);
+    border-radius: 4px;
+    background-color: white;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: var(--burgundy-light);
+  }
+
+  /* Grid Layout */
+  .row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .row {
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+  }
+</style>

@@ -1,0 +1,531 @@
+<!-- ================= ADMIN USERS MANAGEMENT ================= -->
+<main class="container page-container">
+  <!-- Page Header with Back Button -->
+  <div class="section-header" style="margin-bottom: 2rem">
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      "
+    >
+      <div>
+        <h1>User Information</h1>
+        <p>Manage All Users</p>
+      </div>
+      <button
+        class="table-action-btn secondary"
+        onclick="window.location.hash='admin-dashboard'"
+      >
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+      </button>
+    </div>
+  </div>
+
+  <!-- Users Grid -->
+  <div class="row" id="users-on-admin-dashboard">
+    <!-- User 1 - Admin -->
+    <div class="col-lg-4 col-md-6 mb-4">
+      <div class="speaker">
+        <div class="details">
+          <h3>John Admin</h3>
+          <p><i class="fas fa-envelope"></i> admin@zim.com</p>
+          <p><i class="fas fa-phone"></i> +1 234 567 8900</p>
+          <p><i class="fas fa-map-marker-alt"></i> New York, NY</p>
+          <p><i class="fas fa-calendar"></i> Joined: Jan 10, 2024</p>
+          <p>
+            <i class="fas fa-tag"></i>
+            <span class="badge-admin">Administrator</span>
+          </p>
+          <div class="admin-actions">
+            <button class="table-action-btn" onclick="editUser(1)">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User 2 - Customer -->
+    <div class="col-lg-4 col-md-6 mb-4">
+      <div class="speaker">
+        <div class="details">
+          <h3>Jane Smith</h3>
+          <p><i class="fas fa-envelope"></i> jane@example.com</p>
+          <p><i class="fas fa-phone"></i> +1 234 567 8901</p>
+          <p><i class="fas fa-map-marker-alt"></i> Chicago, IL</p>
+          <p><i class="fas fa-calendar"></i> Joined: Jan 15, 2024</p>
+          <div class="admin-actions">
+            <button class="table-action-btn" onclick="editUser(2)">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Edit User Modal -->
+<div class="admin-modal-overlay" id="editUserModal">
+  <div class="admin-modal" style="max-width: 500px">
+    <div class="modal-header">
+      <h3>Edit User</h3>
+      <button class="modal-close" onclick="closeModal('editUserModal')">
+        &times;
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="edit-user-form">
+        <input type="hidden" id="edit_user_id" />
+
+        <div class="form-group">
+          <label for="edit_user_name">Full Name</label>
+          <input type="text" class="form-input" id="edit_user_name" required />
+        </div>
+
+        <div class="form-group">
+          <label for="edit_user_email">Email</label>
+          <input
+            type="email"
+            class="form-input"
+            id="edit_user_email"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="edit_user_phone">Phone Number</label>
+          <input type="tel" class="form-input" id="edit_user_phone" />
+        </div>
+
+        <div class="form-group">
+          <label for="edit_user_address">Address</label>
+          <input type="text" class="form-input" id="edit_user_address" />
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="edit_user_city">City</label>
+            <input type="text" class="form-input" id="edit_user_city" />
+          </div>
+
+          <div class="form-group">
+            <label for="edit_user_postal">Postal Code</label>
+            <input type="text" class="form-input" id="edit_user_postal" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="edit_user_role">Role</label>
+          <select id="edit_user_role" class="form-input">
+            <option value="customer">Customer</option>
+            <option value="admin">Administrator</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="edit_user_status">Status</label>
+          <select id="edit_user_status" class="form-input">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+
+        <button
+          type="submit"
+          class="table-action-btn"
+          style="width: 100%; margin-top: 1rem"
+        >
+          <i class="fas fa-save"></i> Save Changes
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    console.log("Admin users page loaded");
+
+    // Edit user form
+    document
+      .getElementById("edit-user-form")
+      .addEventListener("submit", function (e) {
+        e.preventDefault();
+        saveUserChanges();
+      });
+  });
+
+  function editUser(userId) {
+    // In a real app, you would fetch user data from API
+    // For now, we'll fill with sample data
+    const users = {
+      1: {
+        name: "John Admin",
+        email: "admin@zim.com",
+        phone: "+1 234 567 8900",
+        address: "123 Main St",
+        city: "New York",
+        postal: "10001",
+        role: "admin",
+        status: "active",
+      },
+      2: {
+        name: "Jane Smith",
+        email: "jane@example.com",
+        phone: "+1 234 567 8901",
+        address: "456 Oak Ave",
+        city: "Chicago",
+        postal: "60601",
+        role: "customer",
+        status: "active",
+      },
+      3: {
+        name: "Robert Johnson",
+        email: "robert@example.com",
+        phone: "+1 234 567 8902",
+        address: "789 Pine Rd",
+        city: "Miami",
+        postal: "33101",
+        role: "customer",
+        status: "inactive",
+      },
+      4: {
+        name: "Maria Garcia",
+        email: "maria@example.com",
+        phone: "+1 234 567 8903",
+        address: "101 Maple St",
+        city: "Los Angeles",
+        postal: "90001",
+        role: "customer",
+        status: "pending",
+      },
+      5: {
+        name: "Michael Brown",
+        email: "michael@example.com",
+        phone: "+1 234 567 8904",
+        address: "202 Elm Blvd",
+        city: "Seattle",
+        postal: "98101",
+        role: "customer",
+        status: "active",
+      },
+    };
+
+    const user = users[userId];
+    if (user) {
+      document.getElementById("edit_user_id").value = userId;
+      document.getElementById("edit_user_name").value = user.name;
+      document.getElementById("edit_user_email").value = user.email;
+      document.getElementById("edit_user_phone").value = user.phone;
+      document.getElementById("edit_user_address").value = user.address;
+      document.getElementById("edit_user_city").value = user.city;
+      document.getElementById("edit_user_postal").value = user.postal;
+      document.getElementById("edit_user_role").value = user.role;
+      document.getElementById("edit_user_status").value =
+        user.status === "pending" ? "active" : user.status;
+
+      openModal("editUserModal");
+    }
+  }
+
+  function saveUserChanges() {
+    const userId = document.getElementById("edit_user_id").value;
+    const name = document.getElementById("edit_user_name").value;
+    const role = document.getElementById("edit_user_role").value;
+    const status = document.getElementById("edit_user_status").value;
+
+    if (typeof showToast === "function") {
+      showToast(`Saving changes for ${name}...`, "info");
+    }
+
+    setTimeout(() => {
+      if (typeof showToast === "function") {
+        showToast("User updated successfully!", "success");
+      }
+      closeModal("editUserModal");
+
+      // Update the user card in the grid
+      updateUserCard(userId, { name, role, status });
+    }, 1000);
+  }
+
+  function updateUserCard(userId, data) {
+    // Find and update the user card
+    const userCards = document.querySelectorAll(
+      "#users-on-admin-dashboard .speaker .details"
+    );
+    userCards.forEach((card) => {
+      const h3 = card.querySelector("h3");
+      if (h3.textContent === getUserNameById(userId)) {
+        // Update name
+        h3.textContent = data.name;
+
+        // Update role badge if exists
+        const roleBadge = card.querySelector(".badge-admin");
+        if (roleBadge) {
+          if (data.role === "admin") {
+            roleBadge.textContent = "Administrator";
+            roleBadge.style.display = "inline-block";
+          } else {
+            roleBadge.style.display = "none";
+          }
+        }
+      }
+    });
+  }
+
+  function toggleUserStatus(userId) {
+    const userCards = document.querySelectorAll(
+      "#users-on-admin-dashboard .speaker .details"
+    );
+    userCards.forEach((card) => {
+      const h3 = card.querySelector("h3");
+      if (h3.textContent === getUserNameById(userId)) {
+        const actionBtn = card.querySelector(
+          ".admin-actions .table-action-btn.secondary"
+        );
+        if (actionBtn.textContent.includes("Deactivate")) {
+          // Change to Activate
+          actionBtn.innerHTML = '<i class="fas fa-user-check"></i> Activate';
+          actionBtn.onclick = function () {
+            toggleUserStatus(userId);
+          };
+          if (typeof showToast === "function") {
+            showToast("User deactivated!", "success");
+          }
+        } else {
+          // Change to Deactivate
+          actionBtn.innerHTML = '<i class="fas fa-user-slash"></i> Deactivate';
+          actionBtn.onclick = function () {
+            toggleUserStatus(userId);
+          };
+          if (typeof showToast === "function") {
+            showToast("User activated!", "success");
+          }
+        }
+      }
+    });
+  }
+
+  function approveUser(userId) {
+    const userCards = document.querySelectorAll(
+      "#users-on-admin-dashboard .speaker .details"
+    );
+    userCards.forEach((card) => {
+      const h3 = card.querySelector("h3");
+      if (h3.textContent === getUserNameById(userId)) {
+        // Remove pending badge
+        const pendingBadge = card.querySelector(".badge-pending");
+        if (pendingBadge) {
+          pendingBadge.style.display = "none";
+        }
+
+        // Update action buttons
+        const actionsDiv = card.querySelector(".admin-actions");
+        if (actionsDiv) {
+          actionsDiv.innerHTML = `
+            <button class="table-action-btn" onclick="editUser(${userId})">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button class="table-action-btn secondary" onclick="toggleUserStatus(${userId})">
+              <i class="fas fa-user-slash"></i> Deactivate
+            </button>
+          `;
+        }
+
+        if (typeof showToast === "function") {
+          showToast("User approved!", "success");
+        }
+      }
+    });
+  }
+
+  function rejectUser(userId) {
+    const userCards = document.querySelectorAll(
+      "#users-on-admin-dashboard .speaker .details"
+    );
+    userCards.forEach((card) => {
+      const h3 = card.querySelector("h3");
+      if (h3.textContent === getUserNameById(userId)) {
+        // Remove the card
+        const speakerDiv = card.closest(".col-lg-4");
+        if (speakerDiv) {
+          speakerDiv.remove();
+        }
+
+        if (typeof showToast === "function") {
+          showToast("User rejected!", "success");
+        }
+      }
+    });
+  }
+
+  function promoteToAdmin(userId) {
+    const userCards = document.querySelectorAll(
+      "#users-on-admin-dashboard .speaker .details"
+    );
+    userCards.forEach((card) => {
+      const h3 = card.querySelector("h3");
+      if (h3.textContent === getUserNameById(userId)) {
+        // Add admin badge
+        const orderInfo = card.querySelector("p:last-of-type");
+        if (orderInfo && !orderInfo.querySelector(".badge-admin")) {
+          const adminBadge = document.createElement("span");
+          adminBadge.className = "badge-admin";
+          adminBadge.textContent = "Administrator";
+          adminBadge.style.cssText =
+            "background-color: rgba(128, 0, 32, 0.1); color: var(--burgundy-primary); padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; margin-left: 0.5rem;";
+          orderInfo.appendChild(adminBadge);
+        }
+
+        // Update action buttons
+        const actionsDiv = card.querySelector(".admin-actions");
+        if (actionsDiv) {
+          actionsDiv.innerHTML = `
+            <button class="table-action-btn" onclick="editUser(${userId})">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+          `;
+        }
+
+        if (typeof showToast === "function") {
+          showToast("User promoted to administrator!", "success");
+        }
+      }
+    });
+  }
+
+  function getUserNameById(userId) {
+    const names = {
+      1: "John Admin",
+      2: "Jane Smith",
+      3: "Robert Johnson",
+      4: "Maria Garcia",
+      5: "Michael Brown",
+    };
+    return names[userId] || "User";
+  }
+
+  function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.add("active");
+    }
+  }
+
+  function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.remove("active");
+    }
+  }
+</script>
+
+<style>
+  /* User Card Styles */
+  .speaker {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 30px;
+    background: white;
+    border-radius: 5px;
+    box-shadow: 0px 2px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+    border: 1px solid var(--creme-dark);
+  }
+
+  .speaker:hover {
+    transform: translateY(-10px);
+    box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.2);
+  }
+
+  .speaker .details {
+    padding: 20px;
+  }
+
+  .speaker .details h3 {
+    color: var(--burgundy-primary);
+    font-weight: 600;
+    margin-bottom: 15px;
+    font-size: 18px;
+  }
+
+  .speaker .details p {
+    color: var(--medium-brown);
+    margin-bottom: 8px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .speaker .details p i {
+    color: var(--burgundy-light);
+    width: 16px;
+  }
+
+  .badge-admin {
+    background-color: rgba(128, 0, 32, 0.1);
+    color: var(--burgundy-primary);
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .badge-pending {
+    background-color: rgba(243, 156, 18, 0.1);
+    color: #f39c12;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .speaker .admin-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .speaker .admin-actions .table-action-btn {
+    flex: 1;
+    padding: 0.5rem;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  /* Grid Layout */
+  .row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  /* Form Styles */
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--medium-brown);
+    font-weight: 600;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid var(--creme-dark);
+    border-radius: 4px;
+    background-color: white;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: var(--burgundy-light);
+  }
+</style>

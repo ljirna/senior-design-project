@@ -48,10 +48,22 @@
           border: none;
           border-radius: 4px;
           cursor: pointer;
+          font-weight: 600;
         "
       >
         Sign In
       </button>
+
+      <!-- Divider -->
+      <div style="display: flex; align-items: center; margin: 1.5rem 0">
+        <div style="flex: 1; height: 1px; background-color: #e8dfc8"></div>
+        <div
+          style="padding: 0 1rem; color: var(--medium-brown); font-size: 0.9rem"
+        >
+          Or
+        </div>
+        <div style="flex: 1; height: 1px; background-color: #e8dfc8"></div>
+      </div>
 
       <p
         style="
@@ -62,10 +74,14 @@
       >
         Don't have an account?
         <a
-          href="#home"
-          style="color: var(--burgundy-primary); text-decoration: none"
+          href="#register"
+          style="
+            color: var(--burgundy-primary);
+            text-decoration: none;
+            font-weight: 600;
+          "
         >
-          Continue as guest
+          Register here
         </a>
       </p>
     </form>
@@ -73,6 +89,17 @@
 </main>
 
 <script>
-  // Login page scripts are handled by router.js initPageScripts
-  // No need for additional script here as router.js will initialize the form
+  // Login form submission - handled by router.js
+  // Add event listener for register button
+  document.addEventListener("DOMContentLoaded", function () {
+    console.log("Login page loaded");
+
+    // Go to register page button
+    const goToRegisterBtn = document.getElementById("goToRegisterBtn");
+    if (goToRegisterBtn) {
+      goToRegisterBtn.addEventListener("click", function () {
+        window.location.hash = "register";
+      });
+    }
+  });
 </script>

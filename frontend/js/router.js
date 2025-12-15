@@ -1,6 +1,6 @@
 // ============================================
 // ZIM COMMERCE - SPA ROUTER
-// Updated for your file structure
+// Updated with registration and admin pages
 // ============================================
 
 // Global state
@@ -9,6 +9,39 @@ const appState = {
   cart: JSON.parse(localStorage.getItem("zimCart")) || [],
   isLoading: false,
 };
+
+// Function to hide/show navbar on admin pages
+function toggleNavbarOnAdminPages(page) {
+  const header = document.querySelector(".main-header");
+  const footer = document.querySelector(".main-footer");
+
+  if (!header || !footer) return;
+
+  // Hide header and footer on admin pages
+  if (page.startsWith("admin-")) {
+    header.style.display = "none";
+    footer.style.display = "none";
+
+    // Also hide any admin link in the navbar if it exists
+    const adminLink = document.querySelector('[href="#admin-dashboard"]');
+    if (adminLink) {
+      adminLink.style.display = "none";
+    }
+  } else {
+    header.style.display = "";
+    footer.style.display = "";
+
+    // Show admin link only if user is admin
+    const adminLink = document.querySelector('[href="#admin-dashboard"]');
+    if (adminLink) {
+      if (isAdmin()) {
+        adminLink.style.display = "block";
+      } else {
+        adminLink.style.display = "none";
+      }
+    }
+  }
+}
 
 // Initialize app
 function initApp() {
@@ -288,6 +321,16 @@ function requiresAuth(page) {
   return protectedPages.includes(page);
 }
 
+// Check if page requires admin privileges
+function requiresAdmin(page) {
+  return page.startsWith("admin-");
+}
+
+// Check if user is admin
+function isAdmin() {
+  return appState.user && appState.user.role === "admin";
+}
+
 // Show authentication modal
 function showAuthModal(page) {
   const modal = document.createElement("div");
@@ -302,6 +345,9 @@ function showAuthModal(page) {
         </button>
         <button onclick="goToLogin()" style="flex:1; padding:0.8rem; background:#800020; color:white; border:none; border-radius:4px; cursor:pointer;">
           Sign In
+        </button>
+        <button onclick="goToRegister()" style="flex:1; padding:0.8rem; background:#5d4037; color:white; border:none; border-radius:4px; cursor:pointer;">
+          Register
         </button>
       </div>
     </div>
@@ -330,16 +376,48 @@ function goToLogin() {
   window.location.hash = "login";
 }
 
+// Go to register page
+function goToRegister() {
+  hideAuthModal();
+  window.location.hash = "register";
+}
+
+// Enable admin CSS when on admin pages
+function enableAdminCSS() {
+  const adminCSS = document.getElementById("admin-css");
+  if (adminCSS) {
+    adminCSS.disabled = false;
+  }
+}
+
+// Disable admin CSS when leaving admin pages
+function disableAdminCSS() {
+  const adminCSS = document.getElementById("admin-css");
+  if (adminCSS) {
+    adminCSS.disabled = true;
+  }
+}
+
 // Load page content
 async function loadPage(page, params = {}) {
   try {
     console.log(`Loading page: ${page}`);
 
-    // Check authentication
+    // Check authentication for protected pages
     if (requiresAuth(page) && !appState.user) {
       showAuthModal(page);
       return;
     }
+
+    // Check admin privileges for admin pages
+    if (requiresAdmin(page) && !isAdmin()) {
+      showToast("Access denied. Admin privileges required.", "error");
+      window.location.hash = "home";
+      return;
+    }
+
+    // Hide navbar on admin pages
+    toggleNavbarOnAdminPages(page);
 
     showLoading(`Loading ${page}...`);
 
@@ -347,6 +425,11 @@ async function loadPage(page, params = {}) {
     let viewName = page;
     if (page.startsWith("single-product") && params.id) {
       viewName = "single-product";
+    }
+
+    // Special handling for admin order detail
+    if (page.startsWith("admin-order-detail") && params.id) {
+      viewName = "admin-order-detail";
     }
 
     // TRY DIFFERENT PATHS for your structure
@@ -400,11 +483,21 @@ async function loadPage(page, params = {}) {
       // Initialize page scripts
       initPageScripts(page, params);
 
+      // Enable/disable admin CSS based on page
+      if (requiresAdmin(page)) {
+        enableAdminCSS();
+      } else {
+        disableAdminCSS();
+      }
+
       hideLoading();
     }, 150);
   } catch (error) {
     console.error("Error loading page:", error);
     hideLoading();
+
+    // Disable admin CSS on error
+    disableAdminCSS();
 
     document.getElementById("app").innerHTML = `
       <div style="text-align:center; padding:3rem; color:#5d4037;">
@@ -432,6 +525,16 @@ function updatePageTitle(page, params) {
     cart: "Shopping Cart - ZIM Commerce",
     payment: "Payment - ZIM Commerce",
     login: "Sign In - ZIM Commerce",
+    register: "Create Account - ZIM Commerce",
+    "forgot-password": "Reset Password - ZIM Commerce",
+    "admin-dashboard": "Admin Dashboard - ZIM Commerce",
+    "admin-orders": "Order Management - ZIM Commerce",
+    "admin-products": "Product Management - ZIM Commerce",
+    "admin-users": "User Management - ZIM Commerce",
+    "admin-categories": "Category Management - ZIM Commerce",
+    "admin-settings": "Store Settings - ZIM Commerce",
+    "admin-reports": "Reports - ZIM Commerce",
+    "admin-order-detail": "Order Details - ZIM Commerce",
   };
 
   document.title = titles[page] || "ZIM Commerce";
@@ -455,6 +558,19 @@ function updateActiveNavLink(page) {
     const productsLink = document.querySelector('[href="#products"]');
     if (productsLink) {
       productsLink.classList.add("active");
+    }
+  }
+
+  // Show/hide admin link based on user role AND current page
+  const adminLink = document.querySelector('[href="#admin-dashboard"]');
+  if (adminLink) {
+    // Don't show admin link on admin pages (navbar is hidden anyway)
+    if (page.startsWith("admin-")) {
+      adminLink.style.display = "none";
+    } else if (isAdmin()) {
+      adminLink.style.display = "block";
+    } else {
+      adminLink.style.display = "none";
     }
   }
 }
@@ -485,6 +601,33 @@ function initPageScripts(page, params) {
       break;
     case "login":
       initLoginPage();
+      break;
+    case "register":
+      initRegisterPage();
+      break;
+    case "admin-dashboard":
+      initAdminDashboard();
+      break;
+    case "admin-orders":
+      initAdminOrders();
+      break;
+    case "admin-products":
+      initAdminProducts();
+      break;
+    case "admin-users":
+      initAdminUsers();
+      break;
+    case "admin-categories":
+      initAdminCategories();
+      break;
+    case "admin-settings":
+      initAdminSettings();
+      break;
+    case "admin-reports":
+      initAdminReports();
+      break;
+    case "admin-order-detail":
+      initAdminOrderDetail(params);
       break;
   }
 }
@@ -686,11 +829,17 @@ function initLoginPage() {
 
       if (email && password) {
         // Mock login - in real app, call your API
+        // For testing admin, use email: admin@zim.com, password: admin123
+        let userRole = "customer";
+        if (email === "admin@zim.com" && password === "admin123") {
+          userRole = "admin";
+        }
+
         const user = {
-          id: 1,
-          name: "John Doe",
+          id: Date.now(),
+          name: userRole === "admin" ? "Admin User" : "John Doe",
           email: email,
-          role: "customer",
+          role: userRole,
         };
 
         appState.user = user;
@@ -705,6 +854,219 @@ function initLoginPage() {
         showToast("Please fill in all fields", "error");
       }
     });
+  }
+
+  // Register button
+  const goToRegisterBtn = document.getElementById("goToRegisterBtn");
+  if (goToRegisterBtn) {
+    goToRegisterBtn.addEventListener("click", function () {
+      window.location.hash = "register";
+    });
+  }
+
+  // Forgot password link
+  const forgotPasswordLink = document.querySelector(
+    'a[href="#forgot-password"]'
+  );
+  if (forgotPasswordLink) {
+    forgotPasswordLink.addEventListener("click", function (e) {
+      e.preventDefault();
+      showToast("Password reset feature coming soon!", "info");
+    });
+  }
+}
+
+// Register page initialization
+function initRegisterPage() {
+  console.log("Initializing register page");
+
+  const registerForm = document.getElementById("registerForm");
+  if (registerForm) {
+    registerForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const fullName = document.getElementById("fullName")?.value;
+      const email = document.getElementById("registerEmail")?.value;
+      const password = document.getElementById("registerPassword")?.value;
+      const confirmPassword = document.getElementById("confirmPassword")?.value;
+
+      // Validation
+      if (!fullName || !email || !password || !confirmPassword) {
+        showToast("Please fill in all required fields", "error");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        showToast("Passwords do not match!", "error");
+        return;
+      }
+
+      if (password.length < 8) {
+        showToast("Password must be at least 8 characters!", "error");
+        return;
+      }
+
+      const termsCheckbox = document.getElementById("terms");
+      if (termsCheckbox && !termsCheckbox.checked) {
+        showToast("You must accept the terms & conditions!", "error");
+        return;
+      }
+
+      // Show loading state
+      const submitBtn = registerForm.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML =
+        '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+      submitBtn.disabled = true;
+
+      // Simulate API call
+      setTimeout(() => {
+        // Create user object
+        const user = {
+          id: Date.now(),
+          name: fullName,
+          email: email,
+          role: "customer",
+          phone: document.getElementById("phone")?.value || null,
+        };
+
+        // Save to state and localStorage
+        appState.user = user;
+        localStorage.setItem("zimUser", JSON.stringify(user));
+
+        // Reset button
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+
+        showToast(
+          "Account created successfully! Welcome to ZIM Commerce!",
+          "success"
+        );
+
+        // Redirect to profile page
+        setTimeout(() => {
+          window.location.hash = "profile";
+        }, 1500);
+      }, 1500);
+    });
+  }
+
+  // Back to login button
+  const goToLoginBtn = document.getElementById("goToLoginBtn");
+  if (goToLoginBtn) {
+    goToLoginBtn.addEventListener("click", function () {
+      window.location.hash = "login";
+    });
+  }
+
+  // Terms and privacy links
+  document
+    .querySelectorAll('a[href="#terms"], a[href="#privacy"]')
+    .forEach((link) => {
+      link.addEventListener("click", function (e) {
+        e.preventDefault();
+        showToast("Terms & Privacy pages coming soon!", "info");
+      });
+    });
+}
+
+// ADMIN PAGE INITIALIZATIONS
+
+function initAdminDashboard() {
+  console.log("Initializing admin dashboard");
+  enableAdminCSS();
+
+  // Update current date and time
+  function updateDateTime() {
+    const now = new Date();
+    const options = {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    };
+    const dateTimeElement = document.getElementById("currentDateTime");
+    if (dateTimeElement) {
+      dateTimeElement.textContent = now.toLocaleDateString("en-US", options);
+    }
+  }
+
+  updateDateTime();
+  setInterval(updateDateTime, 60000);
+}
+
+function initAdminOrders() {
+  console.log("Initializing admin orders");
+  enableAdminCSS();
+
+  // Initialize order management functionality
+  const selectAllCheckbox = document.getElementById("selectAll");
+  if (selectAllCheckbox) {
+    selectAllCheckbox.addEventListener("change", function () {
+      const checkboxes = document.querySelectorAll(
+        'input[type="checkbox"]:not(#selectAll)'
+      );
+      checkboxes.forEach((checkbox) => {
+        checkbox.checked = this.checked;
+      });
+    });
+  }
+}
+
+function initAdminProducts() {
+  console.log("Initializing admin products");
+  enableAdminCSS();
+
+  // Initialize product management functionality
+  const imageUploadArea = document.querySelector(".image-upload-area");
+  if (imageUploadArea) {
+    imageUploadArea.addEventListener("click", function () {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "image/*";
+      input.multiple = true;
+      input.click();
+
+      input.addEventListener("change", function (e) {
+        const files = e.target.files;
+        if (files.length > 0) {
+          showToast(`${files.length} image(s) selected for upload`, "success");
+        }
+      });
+    });
+  }
+}
+
+function initAdminUsers() {
+  console.log("Initializing admin users");
+  enableAdminCSS();
+}
+
+function initAdminCategories() {
+  console.log("Initializing admin categories");
+  enableAdminCSS();
+}
+
+function initAdminSettings() {
+  console.log("Initializing admin settings");
+  enableAdminCSS();
+}
+
+function initAdminReports() {
+  console.log("Initializing admin reports");
+  enableAdminCSS();
+}
+
+function initAdminOrderDetail(params) {
+  console.log("Initializing order detail:", params.id);
+  enableAdminCSS();
+
+  // Load order details based on params.id
+  if (params.id) {
+    console.log(`Loading order #${params.id} details`);
+    // Here you would typically fetch order details from an API
   }
 }
 
@@ -926,6 +1288,12 @@ function parseHash() {
     params.id = parts[1] || "";
   }
 
+  if (pagePath.startsWith("admin-order-detail/")) {
+    const parts = pagePath.split("/");
+    page = "admin-order-detail";
+    params.id = parts[1] || "";
+  }
+
   return { page, params };
 }
 
@@ -933,7 +1301,12 @@ function parseHash() {
 function router() {
   // Store previous hash for login redirect
   const currentHash = window.location.hash;
-  if (currentHash && !currentHash.includes("login")) {
+  if (
+    currentHash &&
+    !currentHash.includes("login") &&
+    !currentHash.includes("register") &&
+    !currentHash.includes("admin-")
+  ) {
     sessionStorage.setItem("prevHash", currentHash);
   }
 
@@ -950,4 +1323,5 @@ window.updateCartQuantity = updateCartQuantity;
 window.removeFromCart = removeFromCart;
 window.hideAuthModal = hideAuthModal;
 window.goToLogin = goToLogin;
+window.goToRegister = goToRegister;
 window.logout = logout;

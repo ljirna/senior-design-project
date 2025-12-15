@@ -1,0 +1,579 @@
+<!-- ================= ADMIN CATEGORIES MANAGEMENT ================= -->
+<main class="container page-container">
+  <!-- Page Header with Back Button -->
+  <div class="section-header" style="margin-bottom: 2rem">
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      "
+    >
+      <div>
+        <h1>Categories</h1>
+        <p>Manage Product Categories</p>
+      </div>
+      <button
+        class="table-action-btn secondary"
+        onclick="window.location.hash='admin-dashboard'"
+      >
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+      </button>
+    </div>
+  </div>
+
+  <!-- Add Category Button -->
+  <div class="mb-4 text-start">
+    <button class="table-action-btn" id="add-category-btn">
+      <i class="fas fa-plus"></i> Add Category
+    </button>
+  </div>
+
+  <!-- Categories Grid -->
+  <div class="row" id="categories-on-admin-dashboard">
+    <!-- Category 1 -->
+    <div class="col-lg-4 col-md-6 mb-4">
+      <div class="speaker">
+        <div class="details">
+          <h3>Sofas & Couches</h3>
+          <p><i class="fas fa-couch"></i> Living room furniture</p>
+          <p><i class="fas fa-truck"></i> Delivery: $49.99</p>
+          <p><i class="fas fa-tools"></i> Assembly: $79.99</p>
+          <div class="admin-actions">
+            <button class="table-action-btn" onclick="editCategory(1)">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button
+              class="table-action-btn secondary"
+              onclick="deleteCategory(1)"
+            >
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category 2 -->
+    <div class="col-lg-4 col-md-6 mb-4">
+      <div class="speaker">
+        <div class="details">
+          <h3>Tables</h3>
+          <p><i class="fas fa-table"></i> Dining and coffee tables</p>
+          <p><i class="fas fa-truck"></i> Delivery: $39.99</p>
+          <p><i class="fas fa-tools"></i> Assembly: $59.99</p>
+          <div class="admin-actions">
+            <button class="table-action-btn" onclick="editCategory(2)">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button
+              class="table-action-btn secondary"
+              onclick="deleteCategory(2)"
+            >
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category 3 -->
+    <div class="col-lg-4 col-md-6 mb-4">
+      <div class="speaker">
+        <div class="details">
+          <h3>Chairs</h3>
+          <p><i class="fas fa-chair"></i> All types of chairs</p>
+          <p><i class="fas fa-truck"></i> Delivery: $29.99</p>
+          <p><i class="fas fa-tools"></i> Assembly: $49.99</p>
+          <div class="admin-actions">
+            <button class="table-action-btn" onclick="editCategory(3)">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button
+              class="table-action-btn secondary"
+              onclick="deleteCategory(3)"
+            >
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category 4 -->
+    <div class="col-lg-4 col-md-6 mb-4">
+      <div class="speaker">
+        <div class="details">
+          <h3>Beds</h3>
+          <p><i class="fas fa-bed"></i> Bedroom furniture</p>
+          <p><i class="fas fa-truck"></i> Delivery: $79.99</p>
+          <p><i class="fas fa-tools"></i> Assembly: $99.99</p>
+          <div class="admin-actions">
+            <button class="table-action-btn" onclick="editCategory(4)">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button
+              class="table-action-btn secondary"
+              onclick="deleteCategory(4)"
+            >
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category 5 -->
+    <div class="col-lg-4 col-md-6 mb-4">
+      <div class="speaker">
+        <div class="details">
+          <h3>Storage</h3>
+          <p><i class="fas fa-archive"></i> Wardrobes and shelves</p>
+          <p><i class="fas fa-truck"></i> Delivery: $59.99</p>
+          <p><i class="fas fa-tools"></i> Assembly: $89.99</p>
+          <div class="admin-actions">
+            <button class="table-action-btn" onclick="editCategory(5)">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button
+              class="table-action-btn secondary"
+              onclick="deleteCategory(5)"
+            >
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category 6 -->
+    <div class="col-lg-4 col-md-6 mb-4">
+      <div class="speaker">
+        <div class="details">
+          <h3>Outdoor</h3>
+          <p><i class="fas fa-umbrella-beach"></i> Garden furniture</p>
+          <p><i class="fas fa-truck"></i> Delivery: $69.99</p>
+          <p><i class="fas fa-tools"></i> Assembly: $89.99</p>
+          <div class="admin-actions">
+            <button class="table-action-btn" onclick="editCategory(6)">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button
+              class="table-action-btn secondary"
+              onclick="deleteCategory(6)"
+            >
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Add/Edit Category Modal -->
+<div class="admin-modal-overlay" id="categoryModal">
+  <div class="admin-modal" style="max-width: 500px">
+    <div class="modal-header">
+      <h3 id="modalTitle">Add Category</h3>
+      <button class="modal-close" onclick="closeModal('categoryModal')">
+        &times;
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="category-form">
+        <input type="hidden" id="category_id" />
+
+        <div class="form-group">
+          <label for="category_name">Category Name *</label>
+          <input type="text" class="form-input" id="category_name" required />
+        </div>
+
+        <div class="form-group">
+          <label for="category_description">Description</label>
+          <textarea
+            class="form-input"
+            id="category_description"
+            rows="2"
+          ></textarea>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="category_delivery">Delivery Fee ($)</label>
+            <input
+              type="number"
+              class="form-input"
+              id="category_delivery"
+              step="0.01"
+              min="0"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="category_assembly">Assembly Fee ($)</label>
+            <input
+              type="number"
+              class="form-input"
+              id="category_assembly"
+              step="0.01"
+              min="0"
+            />
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          class="table-action-btn"
+          style="width: 100%; margin-top: 1rem"
+        >
+          <i class="fas fa-save"></i> Save Category
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  let isEditing = false;
+
+  document.addEventListener("DOMContentLoaded", function () {
+    console.log("Admin categories page loaded");
+
+    // Add category button
+    document
+      .getElementById("add-category-btn")
+      .addEventListener("click", function () {
+        openAddCategoryModal();
+      });
+
+    // Category form
+    document
+      .getElementById("category-form")
+      .addEventListener("submit", function (e) {
+        e.preventDefault();
+        saveCategory();
+      });
+  });
+
+  function openAddCategoryModal() {
+    isEditing = false;
+    document.getElementById("modalTitle").textContent = "Add Category";
+    document.getElementById("category-form").reset();
+    document.getElementById("category_id").value = "";
+    openModal("categoryModal");
+  }
+
+  function editCategory(categoryId) {
+    isEditing = true;
+    document.getElementById("modalTitle").textContent = "Edit Category";
+
+    // Sample category data - in real app, fetch from API
+    const categories = {
+      1: {
+        name: "Sofas & Couches",
+        description: "Living room furniture",
+        delivery: "49.99",
+        assembly: "79.99",
+      },
+      2: {
+        name: "Tables",
+        description: "Dining and coffee tables",
+        delivery: "39.99",
+        assembly: "59.99",
+      },
+      3: {
+        name: "Chairs",
+        description: "All types of chairs",
+        delivery: "29.99",
+        assembly: "49.99",
+      },
+      4: {
+        name: "Beds",
+        description: "Bedroom furniture",
+        delivery: "79.99",
+        assembly: "99.99",
+      },
+      5: {
+        name: "Storage",
+        description: "Wardrobes and shelves",
+        delivery: "59.99",
+        assembly: "89.99",
+      },
+      6: {
+        name: "Outdoor",
+        description: "Garden furniture",
+        delivery: "69.99",
+        assembly: "89.99",
+      },
+    };
+
+    const category = categories[categoryId];
+    if (category) {
+      document.getElementById("category_id").value = categoryId;
+      document.getElementById("category_name").value = category.name;
+      document.getElementById("category_description").value =
+        category.description;
+      document.getElementById("category_delivery").value = category.delivery;
+      document.getElementById("category_assembly").value = category.assembly;
+
+      openModal("categoryModal");
+    }
+  }
+
+  function saveCategory() {
+    const categoryId = document.getElementById("category_id").value;
+    const name = document.getElementById("category_name").value;
+    const description = document.getElementById("category_description").value;
+    const delivery = document.getElementById("category_delivery").value;
+    const assembly = document.getElementById("category_assembly").value;
+
+    if (!name) {
+      if (typeof showToast === "function") {
+        showToast("Please enter category name", "error");
+      }
+      return;
+    }
+
+    if (isEditing) {
+      // Update existing category
+      if (typeof showToast === "function") {
+        showToast(`Updating ${name}...`, "info");
+      }
+
+      setTimeout(() => {
+        if (typeof showToast === "function") {
+          showToast("Category updated!", "success");
+        }
+
+        // Update the category card
+        updateCategoryCard(categoryId, {
+          name,
+          description,
+          delivery,
+          assembly,
+        });
+        closeModal("categoryModal");
+      }, 1000);
+    } else {
+      // Add new category
+      if (typeof showToast === "function") {
+        showToast(`Adding ${name}...`, "info");
+      }
+
+      setTimeout(() => {
+        if (typeof showToast === "function") {
+          showToast("Category added!", "success");
+        }
+
+        // Add new category card
+        addCategoryCard({ name, description, delivery, assembly });
+        closeModal("categoryModal");
+      }, 1000);
+    }
+  }
+
+  function updateCategoryCard(categoryId, data) {
+    // Find and update the category card
+    const categoryCards = document.querySelectorAll(
+      "#categories-on-admin-dashboard .speaker .details"
+    );
+    categoryCards.forEach((card, index) => {
+      if (index + 1 === parseInt(categoryId)) {
+        const h3 = card.querySelector("h3");
+        const description = card.querySelector("p:nth-of-type(1)");
+        const delivery = card.querySelector("p:nth-of-type(2)");
+        const assembly = card.querySelector("p:nth-of-type(3)");
+
+        if (h3) h3.textContent = data.name;
+        if (description)
+          description.innerHTML = `<i class="fas fa-${getCategoryIcon(
+            data.name
+          )}"></i> ${data.description}`;
+        if (delivery)
+          delivery.innerHTML = `<i class="fas fa-truck"></i> Delivery: $${data.delivery}`;
+        if (assembly)
+          assembly.innerHTML = `<i class="fas fa-tools"></i> Assembly: $${data.assembly}`;
+      }
+    });
+  }
+
+  function addCategoryCard(data) {
+    const grid = document.getElementById("categories-on-admin-dashboard");
+    const newId = grid.children.length + 1;
+
+    const categoryCard = document.createElement("div");
+    categoryCard.className = "col-lg-4 col-md-6 mb-4";
+    categoryCard.innerHTML = `
+      <div class="speaker">
+        <div class="details">
+          <h3>${data.name}</h3>
+          <p><i class="fas fa-${getCategoryIcon(data.name)}"></i> ${
+      data.description
+    }</p>
+          <p><i class="fas fa-truck"></i> Delivery: $${data.delivery}</p>
+          <p><i class="fas fa-tools"></i> Assembly: $${data.assembly}</p>
+          <div class="admin-actions">
+            <button class="table-action-btn" onclick="editCategory(${newId})">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button class="table-action-btn secondary" onclick="deleteCategory(${newId})">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    grid.appendChild(categoryCard);
+  }
+
+  function deleteCategory(categoryId) {
+    if (confirm("Are you sure you want to delete this category?")) {
+      if (typeof showToast === "function") {
+        showToast("Deleting category...", "info");
+      }
+
+      setTimeout(() => {
+        // Find and remove the category card
+        const categoryCards = document.querySelectorAll(
+          "#categories-on-admin-dashboard .col-lg-4"
+        );
+        categoryCards.forEach((card, index) => {
+          if (index + 1 === parseInt(categoryId)) {
+            card.remove();
+            if (typeof showToast === "function") {
+              showToast("Category deleted!", "success");
+            }
+          }
+        });
+      }, 1000);
+    }
+  }
+
+  function getCategoryIcon(name) {
+    const icons = {
+      Sofas: "couch",
+      Tables: "table",
+      Chairs: "chair",
+      Beds: "bed",
+      Storage: "archive",
+      Outdoor: "umbrella-beach",
+      Living: "home",
+      Dining: "utensils",
+      Office: "laptop",
+    };
+
+    for (const [key, icon] of Object.entries(icons)) {
+      if (name.includes(key)) {
+        return icon;
+      }
+    }
+
+    return "tag"; // default icon
+  }
+
+  function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.add("active");
+    }
+  }
+
+  function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.remove("active");
+    }
+  }
+</script>
+
+<style>
+  /* Category Card Styles */
+  .speaker {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 30px;
+    background: white;
+    border-radius: 5px;
+    box-shadow: 0px 2px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+    border: 1px solid var(--creme-dark);
+  }
+
+  .speaker:hover {
+    transform: translateY(-10px);
+    box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.2);
+  }
+
+  .speaker .details {
+    padding: 20px;
+  }
+
+  .speaker .details h3 {
+    color: var(--burgundy-primary);
+    font-weight: 600;
+    margin-bottom: 15px;
+    font-size: 18px;
+  }
+
+  .speaker .details p {
+    color: var(--medium-brown);
+    margin-bottom: 8px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .speaker .details p i {
+    color: var(--burgundy-light);
+    width: 16px;
+  }
+
+  .speaker .admin-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .speaker .admin-actions .table-action-btn {
+    flex: 1;
+    padding: 0.5rem;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  /* Grid Layout */
+  .row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  /* Form Styles */
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--medium-brown);
+    font-weight: 600;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid var(--creme-dark);
+    border-radius: 4px;
+    background-color: white;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: var(--burgundy-light);
+  }
+</style>
