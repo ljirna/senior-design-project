@@ -1,10 +1,10 @@
 <?php
 class Database
 {
-    private static $host = 'localhost';
-    private static $dbName = 'restaurant_db';
+    private static $host = '127.0.0.1';
+    private static $dbName = 'zim_furniture_store';
     private static $username = 'root';
-    private static $password = '';
+    private static $password = 'rootroot';
     private static $connection = null;
 
 
