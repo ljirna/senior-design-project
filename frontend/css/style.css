@@ -2926,3 +2926,137 @@ a:hover {
     width: 100%;
   }
 }
+/* Add these styles to your CSS */
+.stripe-element {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  height: 42px;
+}
+
+.stripe-element--focus {
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 1px #4a90e2;
+}
+
+.stripe-element--invalid {
+  border-color: #fa755a;
+}
+
+.error-message {
+  color: #fa755a;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.payment-processing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.payment-processing i {
+  margin-right: 10px;
+  font-size: 20px;
+  color: #4a90e2;
+}
+
+.paypal-container {
+  text-align: center;
+  padding: 30px;
+}
+
+.btn-paypal {
+  background: #003087;
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-paypal:hover {
+  background: #002366;
+}
+/* Stripe Elements */
+.stripe-element {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    height: 42px;
+}
+
+.stripe-element--focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 1px #4a90e2;
+}
+
+.stripe-element--invalid {
+    border-color: #fa755a;
+}
+
+/* Payment Modals */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.success-modal, .error-modal {
+    background: white;
+    padding: 40px;
+    border-radius: 10px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+}
+
+.success-icon {
+    color: #28a745;
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.error-icon {
+    color: #dc3545;
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.btn-close-modal, .btn-try-again {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+}
+
+.btn-close-modal {
+    background: #4a90e2;
+    color: white;
+}
+
+.btn-try-again {
+    background: #dc3545;
+    color: white;
+}

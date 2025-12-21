@@ -1,3 +1,4 @@
+<!-- frontend/pages/payment.html -->
 <main class="page-container">
   <div class="payment-page">
     <div class="container">
@@ -9,7 +10,7 @@
           <h2 class="section-title">Checkout</h2>
 
           <div class="payment-methods">
-            <div class="payment-method selected" data-method="card">
+            <div class="payment-method selected" data-method="card" id="card-method">
               <div class="payment-method-icon">
                 <i class="far fa-credit-card"></i>
               </div>
@@ -17,6 +18,22 @@
                 <div class="payment-method-name">Credit or Debit Card</div>
                 <div class="payment-method-desc">
                   Pay with Visa, MasterCard, or American Express
+                </div>
+              </div>
+              <div class="payment-method-check">
+                <i class="fas fa-check-circle"></i>
+              </div>
+            </div>
+            
+            <!-- Add more payment methods if needed -->
+            <div class="payment-method" data-method="paypal" id="paypal-method">
+              <div class="payment-method-icon">
+                <i class="fab fa-paypal"></i>
+              </div>
+              <div class="payment-method-info">
+                <div class="payment-method-name">PayPal</div>
+                <div class="payment-method-desc">
+                  Pay with your PayPal account
                 </div>
               </div>
               <div class="payment-method-check">
@@ -38,53 +55,31 @@
               <div class="form-group">
                 <label for="card-number" class="form-label">Card Number</label>
                 <div class="input-with-icon">
-                  <input
-                    type="text"
-                    id="card-number"
-                    class="form-control"
-                    placeholder="1234 5678 9012 3456"
-                    maxlength="19"
-                    required
-                  />
+                  <div id="card-number-element" class="stripe-element"></div>
                   <i class="fas fa-credit-card input-icon"></i>
                 </div>
+                <div class="error-message" id="card-number-error"></div>
               </div>
 
               <div class="form-row">
                 <div class="form-group">
-                  <label for="expiry-date" class="form-label"
-                    >Expiry Date</label
-                  >
-                  <input
-                    type="text"
-                    id="expiry-date"
-                    class="form-control"
-                    placeholder="MM/YY"
-                    maxlength="5"
-                    required
-                  />
+                  <label class="form-label">Expiry Date</label>
+                  <div id="card-expiry-element" class="stripe-element"></div>
+                  <div class="error-message" id="card-expiry-error"></div>
                 </div>
 
                 <div class="form-group">
-                  <label for="cvv" class="form-label">CVV</label>
+                  <label class="form-label">CVV</label>
                   <div class="input-with-icon">
-                    <input
-                      type="text"
-                      id="cvv"
-                      class="form-control"
-                      placeholder="123"
-                      maxlength="4"
-                      required
-                    />
+                    <div id="card-cvc-element" class="stripe-element"></div>
                     <i class="fas fa-lock input-icon"></i>
                   </div>
+                  <div class="error-message" id="card-cvc-error"></div>
                 </div>
               </div>
 
               <div class="form-group">
-                <label for="cardholder-name" class="form-label"
-                  >Cardholder Name</label
-                >
+                <label for="cardholder-name" class="form-label">Cardholder Name</label>
                 <input
                   type="text"
                   id="cardholder-name"
@@ -96,18 +91,23 @@
 
               <div class="save-card-checkbox">
                 <input type="checkbox" id="save-card" />
-                <label for="save-card"
-                  >Save this card for future purchases</label
-                >
+                <label for="save-card">Save this card for future purchases</label>
               </div>
             </form>
 
             <div class="security-badge">
               <i class="fas fa-shield-alt"></i>
-              <span
-                >Your payment information is secured with 256-bit SSL
-                encryption</span
-              >
+              <span>Powered by Stripe - Your payment information is secured</span>
+            </div>
+          </div>
+          
+          <!-- PayPal Form (hidden by default) -->
+          <div class="payment-form" id="paypal-form" style="display: none;">
+            <div class="paypal-container">
+              <p>You will be redirected to PayPal to complete your payment.</p>
+              <button class="btn-paypal" id="paypal-button">
+                <i class="fab fa-paypal"></i> Pay with PayPal
+              </button>
             </div>
           </div>
 
@@ -117,8 +117,16 @@
               <i class="fas fa-arrow-left"></i> Back to Cart
             </button>
             <button class="btn-pay" id="pay-now">
-              <i class="fas fa-lock"></i> Complete Payment
+              <i class="fas fa-lock"></i> Pay $<span id="total-amount">0.00</span>
             </button>
+          </div>
+          
+          <!-- Payment Status -->
+          <div id="payment-status" style="display: none;">
+            <div class="payment-processing">
+              <i class="fas fa-spinner fa-spin"></i>
+              <span>Processing your payment...</span>
+            </div>
           </div>
         </div>
 
@@ -126,31 +134,22 @@
         <div class="order-summary-section">
           <h2 class="section-title">Order Summary</h2>
 
-          <div class="order-items">
-            <div class="order-item">
-              <span class="order-item-name">Modern Leather Sofa × 1</span>
-              <span class="order-item-price">$1,299.99</span>
-            </div>
-            <div class="order-item">
-              <span class="order-item-name">Glass Coffee Table × 1</span>
-              <span class="order-item-price">$299.99</span>
-            </div>
-            <div class="order-item">
-              <span class="order-item-name">Leather Lounge Chair × 2</span>
-              <span class="order-item-price">$999.98</span>
-            </div>
+          <div class="order-items" id="order-items">
+            <!-- Dynamically loaded -->
           </div>
 
           <div class="summary-totals">
             <div class="summary-row">
-              <span>Subtotal</span><span>$2,799.95</span>
+              <span>Subtotal</span><span id="subtotal">$0.00</span>
             </div>
             <div class="summary-row">
-              <span>Shipping</span><span>$49.99</span>
+              <span>Delivery Fee</span><span id="delivery-fee">$0.00</span>
             </div>
-            <div class="summary-row"><span>Tax</span><span>$199.99</span></div>
+            <div class="summary-row">
+              <span>Assembly Fee</span><span id="assembly-fee">$0.00</span>
+            </div>
             <div class="summary-row total">
-              <span>Total</span><span>$3,049.93</span>
+              <span>Total</span><span id="order-total">$0.00</span>
             </div>
           </div>
 
@@ -158,11 +157,8 @@
             <h3 class="delivery-title">
               <i class="fas fa-truck"></i> Delivery Information
             </h3>
-            <div class="delivery-address">
-              <strong>John Smith</strong><br />
-              123 Main Street<br />
-              New York, NY 10001<br />
-              <i class="fas fa-phone"></i> (123) 456-7890
+            <div class="delivery-address" id="delivery-address">
+              <!-- Dynamically loaded -->
             </div>
           </div>
         </div>
@@ -171,7 +167,7 @@
   </div>
 </main>
 
-<!-- Success Modal (Will be shown/hidden by JS) -->
+<!-- Success Modal -->
 <div class="modal-overlay" id="success-modal" style="display: none">
   <div class="success-modal">
     <div class="success-icon"><i class="fas fa-check"></i></div>
@@ -180,9 +176,10 @@
     <p>Your order has been confirmed and will be shipped soon.</p>
 
     <div class="order-details">
-      <div><span>Order Number:</span> <strong>#ZM-2024-78945</strong></div>
-      <div><span>Total:</span> <strong>$3,049.93</strong></div>
-      <div><span>Payment:</span> <strong>Credit Card</strong></div>
+      <div><span>Order Number:</span> <strong id="order-number">#</strong></div>
+      <div><span>Total:</span> <strong id="payment-total">$0.00</strong></div>
+      <div><span>Payment:</span> <strong id="payment-method">Credit Card</strong></div>
+      <div><span>Date:</span> <strong id="payment-date">Just now</strong></div>
     </div>
 
     <button class="btn-view-order" id="view-order-details">
@@ -194,103 +191,371 @@
   </div>
 </div>
 
+<!-- Error Modal -->
+<div class="modal-overlay" id="error-modal" style="display: none">
+  <div class="error-modal">
+    <div class="error-icon"><i class="fas fa-times-circle"></i></div>
+
+    <h2>Payment Failed</h2>
+    <p id="error-message">There was an issue processing your payment.</p>
+
+    <button class="btn-try-again" id="try-again">
+      <i class="fas fa-redo"></i> Try Again
+    </button>
+    <button class="btn-close-modal" id="close-error">
+      <i class="fas fa-times"></i> Close
+    </button>
+  </div>
+</div>
+
+<!-- Load Stripe.js -->
+<script src="https://js.stripe.com/v3/"></script>
 <script>
+  // Payment page JavaScript
   document.addEventListener("DOMContentLoaded", function () {
     console.log("Payment page loaded");
-
-    // Format card number input
-    const cardNumberInput = document.getElementById("card-number");
-    if (cardNumberInput) {
-      cardNumberInput.addEventListener("input", function (e) {
-        let value = e.target.value.replace(/\D/g, "");
-        let formattedValue = "";
-        for (let i = 0; i < value.length; i++) {
-          if (i > 0 && i % 4 === 0) {
-            formattedValue += " ";
-          }
-          formattedValue += value[i];
-        }
-        e.target.value = formattedValue.substring(0, 19);
-      });
+    
+    // Global variables
+    let stripe = null;
+    let elements = null;
+    let cardNumber = null;
+    let cardExpiry = null;
+    let cardCvc = null;
+    let paymentIntentId = null;
+    let orderData = null;
+    
+    // Initialize page
+    initPaymentPage();
+    
+    async function initPaymentPage() {
+      try {
+        // 1. Load order data from cart/checkout
+        await loadOrderData();
+        
+        // 2. Initialize Stripe
+        await initializeStripe();
+        
+        // 3. Set up event listeners
+        setupEventListeners();
+        
+      } catch (error) {
+        console.error("Failed to initialize payment page:", error);
+        showError("Failed to load payment page. Please try again.");
+      }
     }
-
-    // Format expiry date input
-    const expiryInput = document.getElementById("expiry-date");
-    if (expiryInput) {
-      expiryInput.addEventListener("input", function (e) {
-        let value = e.target.value.replace(/\D/g, "");
-        if (value.length >= 2) {
-          value = value.substring(0, 2) + "/" + value.substring(2);
-        }
-        e.target.value = value.substring(0, 5);
-      });
-    }
-
-    // Back to cart button
-    const backToCartBtn = document.getElementById("back-to-cart");
-    if (backToCartBtn) {
-      backToCartBtn.addEventListener("click", function () {
+    
+    async function loadOrderData() {
+      // Get order ID from URL or session storage
+      const orderId = getOrderId();
+      if (!orderId) {
         window.location.hash = "cart";
-      });
+        return;
+      }
+      
+      try {
+        // Fetch order details from API
+        const response = await fetch(`/api/orders/${orderId}`);
+        if (!response.ok) throw new Error('Failed to load order');
+        
+        orderData = await response.json();
+        
+        // Update UI with order data
+        updateOrderSummary(orderData);
+        
+      } catch (error) {
+        console.error("Error loading order:", error);
+        showError("Could not load order details. Please try again.");
+      }
     }
-
-    // Pay now button
-    const payNowBtn = document.getElementById("pay-now");
-    if (payNowBtn) {
-      payNowBtn.addEventListener("click", function () {
-        const cardNumber = document.getElementById("card-number").value;
-        const expiry = document.getElementById("expiry-date").value;
-        const cvv = document.getElementById("cvv").value;
-        const name = document.getElementById("cardholder-name").value;
-
-        if (!cardNumber || !expiry || !cvv || !name) {
-          if (typeof showToast === "function") {
-            showToast("Please fill in all payment details", "error");
+    
+    async function initializeStripe() {
+      try {
+        // Get Stripe publishable key from your backend
+        const response = await fetch('/api/stripe/config');
+        const config = await response.json();
+        
+        // Initialize Stripe
+        stripe = Stripe(config.publishableKey);
+        
+        // Create payment intent
+        const orderId = getOrderId();
+        const userId = getUserId(); // Get from auth/session
+        
+        const intentResponse = await fetch('/api/stripe/create-payment-intent', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            order_id: orderId,
+            user_id: userId
+          })
+        });
+        
+        const intentData = await intentResponse.json();
+        paymentIntentId = intentData.payment_intent_id;
+        
+        // Initialize Stripe Elements
+        elements = stripe.elements();
+        
+        const style = {
+          base: {
+            color: '#32325d',
+            fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+            fontSmoothing: 'antialiased',
+            fontSize: '16px',
+            '::placeholder': {
+              color: '#aab7c4'
+            }
+          },
+          invalid: {
+            color: '#fa755a',
+            iconColor: '#fa755a'
+          }
+        };
+        
+        // Create card elements
+        cardNumber = elements.create('cardNumber', { style: style });
+        cardExpiry = elements.create('cardExpiry', { style: style });
+        cardCvc = elements.create('cardCvc', { style: style });
+        
+        // Mount elements
+        cardNumber.mount('#card-number-element');
+        cardExpiry.mount('#card-expiry-element');
+        cardCvc.mount('#card-cvc-element');
+        
+        // Handle real-time validation errors
+        cardNumber.addEventListener('change', function(event) {
+          const displayError = document.getElementById('card-number-error');
+          if (event.error) {
+            displayError.textContent = event.error.message;
           } else {
-            alert("Please fill in all payment details");
+            displayError.textContent = '';
           }
-          return;
+        });
+        
+        cardExpiry.addEventListener('change', function(event) {
+          const displayError = document.getElementById('card-expiry-error');
+          if (event.error) {
+            displayError.textContent = event.error.message;
+          } else {
+            displayError.textContent = '';
+          }
+        });
+        
+        cardCvc.addEventListener('change', function(event) {
+          const displayError = document.getElementById('card-cvc-error');
+          if (event.error) {
+            displayError.textContent = event.error.message;
+          } else {
+            displayError.textContent = '';
+          }
+        });
+        
+      } catch (error) {
+        console.error("Failed to initialize Stripe:", error);
+        showError("Payment system is currently unavailable. Please try again later.");
+      }
+    }
+    
+    function setupEventListeners() {
+      // Payment method selection
+      document.querySelectorAll('.payment-method').forEach(method => {
+        method.addEventListener('click', function() {
+          // Remove selected class from all
+          document.querySelectorAll('.payment-method').forEach(m => {
+            m.classList.remove('selected');
+          });
+          
+          // Add selected class to clicked
+          this.classList.add('selected');
+          
+          // Show corresponding form
+          const methodType = this.dataset.method;
+          document.querySelectorAll('.payment-form').forEach(form => {
+            form.classList.remove('active');
+            form.style.display = 'none';
+          });
+          
+          const activeForm = document.getElementById(`${methodType}-form`);
+          if (activeForm) {
+            activeForm.classList.add('active');
+            activeForm.style.display = 'block';
+          }
+        });
+      });
+      
+      // Pay now button
+      const payNowBtn = document.getElementById('pay-now');
+      if (payNowBtn) {
+        payNowBtn.addEventListener('click', processPayment);
+      }
+      
+      // Back to cart button
+      const backToCartBtn = document.getElementById('back-to-cart');
+      if (backToCartBtn) {
+        backToCartBtn.addEventListener('click', function() {
+          window.location.hash = "cart";
+        });
+      }
+      
+      // Modal buttons
+      document.getElementById('continue-shopping')?.addEventListener('click', function() {
+        document.getElementById('success-modal').style.display = 'none';
+        window.location.hash = "products";
+      });
+      
+      document.getElementById('view-order-details')?.addEventListener('click', function() {
+        const orderId = getOrderId();
+        if (orderId) {
+          window.location.hash = `orders/${orderId}`;
         }
-
-        // Simulate payment processing
-        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-        this.disabled = true;
-
-        setTimeout(() => {
-          // Show success modal
-          const modal = document.getElementById("success-modal");
-          if (modal) {
-            modal.style.display = "flex";
-          }
-
-          // Reset button
-          this.innerHTML = '<i class="fas fa-lock"></i> Complete Payment';
-          this.disabled = false;
-        }, 2000);
+      });
+      
+      document.getElementById('try-again')?.addEventListener('click', function() {
+        document.getElementById('error-modal').style.display = 'none';
+      });
+      
+      document.getElementById('close-error')?.addEventListener('click', function() {
+        document.getElementById('error-modal').style.display = 'none';
       });
     }
-
-    // Modal buttons
-    const continueShoppingBtn = document.getElementById("continue-shopping");
-    if (continueShoppingBtn) {
-      continueShoppingBtn.addEventListener("click", function () {
-        const modal = document.getElementById("success-modal");
-        if (modal) {
-          modal.style.display = "none";
+    
+    async function processPayment() {
+      const payBtn = document.getElementById('pay-now');
+      const paymentStatus = document.getElementById('payment-status');
+      
+      // Show processing state
+      payBtn.disabled = true;
+      payBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+      paymentStatus.style.display = 'block';
+      
+      try {
+        // Get cardholder name
+        const cardholderName = document.getElementById('cardholder-name').value;
+        if (!cardholderName) {
+          throw new Error('Please enter cardholder name');
         }
-        window.location.hash = "home";
-      });
-    }
-
-    const viewOrderBtn = document.getElementById("view-order-details");
-    if (viewOrderBtn) {
-      viewOrderBtn.addEventListener("click", function () {
-        if (typeof showToast === "function") {
-          showToast("Order details will be available in your profile", "info");
+        
+        // Get save card preference
+        const saveCard = document.getElementById('save-card').checked;
+        
+        // Create payment method
+        const { paymentMethod, error } = await stripe.createPaymentMethod({
+          type: 'card',
+          card: cardNumber,
+          billing_details: {
+            name: cardholderName,
+          },
+        });
+        
+        if (error) {
+          throw new Error(error.message);
+        }
+        
+        // Confirm payment with backend
+        const response = await fetch('/api/stripe/confirm-payment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            payment_intent_id: paymentIntentId,
+            payment_method_id: paymentMethod.id,
+            save_card: saveCard
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'succeeded') {
+          // Payment successful
+          showSuccessModal(result);
         } else {
-          alert("Order details will be available in your profile");
+          // Payment requires additional action
+          const { error: confirmError } = await stripe.confirmCardPayment(
+            result.client_secret
+          );
+          
+          if (confirmError) {
+            throw new Error(confirmError.message);
+          } else {
+            // Success
+            showSuccessModal(result);
+          }
         }
-      });
+        
+      } catch (error) {
+        console.error("Payment error:", error);
+        showError(error.message || "Payment failed. Please try again.");
+        
+        // Reset button
+        payBtn.disabled = false;
+        payBtn.innerHTML = '<i class="fas fa-lock"></i> Pay $' + (orderData?.total || '0.00');
+        paymentStatus.style.display = 'none';
+      }
+    }
+    
+    function updateOrderSummary(order) {
+      // Update order items
+      const orderItemsEl = document.getElementById('order-items');
+      orderItemsEl.innerHTML = order.items?.map(item => `
+        <div class="order-item">
+          <span class="order-item-name">${item.product_name} × ${item.quantity}</span>
+          <span class="order-item-price">$${item.item_total?.toFixed(2) || '0.00'}</span>
+        </div>
+      `).join('') || '';
+      
+      // Update totals
+      document.getElementById('subtotal').textContent = `$${order.summary?.subtotal?.toFixed(2) || '0.00'}`;
+      document.getElementById('delivery-fee').textContent = `$${order.summary?.delivery_total?.toFixed(2) || '0.00'}`;
+      document.getElementById('assembly-fee').textContent = `$${order.summary?.assembly_total?.toFixed(2) || '0.00'}`;
+      document.getElementById('order-total').textContent = `$${order.total_amount?.toFixed(2) || '0.00'}`;
+      document.getElementById('total-amount').textContent = order.total_amount?.toFixed(2) || '0.00';
+      
+      // Update delivery address
+      const addressEl = document.getElementById('delivery-address');
+      const user = order.user || {};
+      addressEl.innerHTML = `
+        <strong>${user.full_name || 'Customer'}</strong><br />
+        ${order.shipping_address || 'Address not specified'}<br />
+        ${user.city || ''} ${user.postal_code || ''}<br />
+        <i class="fas fa-phone"></i> ${user.phone_number || 'No phone'}
+      `;
+    }
+    
+    function showSuccessModal(paymentResult) {
+      const modal = document.getElementById('success-modal');
+      const now = new Date();
+      
+      // Update modal with payment details
+      document.getElementById('order-number').textContent = `#ORD-${getOrderId()}`;
+      document.getElementById('payment-total').textContent = `$${paymentResult.amount_paid?.toFixed(2) || '0.00'}`;
+      document.getElementById('payment-method').textContent = 'Credit Card';
+      document.getElementById('payment-date').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+      
+      // Show modal
+      modal.style.display = 'flex';
+      
+      // Clear cart from localStorage
+      localStorage.removeItem('cart');
+    }
+    
+    function showError(message) {
+      const modal = document.getElementById('error-modal');
+      document.getElementById('error-message').textContent = message;
+      modal.style.display = 'flex';
+    }
+    
+    function getOrderId() {
+      // Get from URL, sessionStorage, or localStorage
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('order_id') || sessionStorage.getItem('current_order_id');
+    }
+    
+    function getUserId() {
+      // Get from auth token, session, or localStorage
+      return localStorage.getItem('user_id') || sessionStorage.getItem('user_id');
     }
   });
 </script>
