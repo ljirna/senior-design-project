@@ -35,50 +35,6 @@ class UserService extends BaseService
         return $this->dao->getUserStatistics($user_id);
     }
 
-    public function register($data)
-    {
-        // Validate input
-        $validation = $this->validateUserData($data, true);
-        if (!$validation['valid']) {
-            throw new Exception(implode(", ", $validation['errors']));
-        }
-
-        // Check if email already exists
-        if ($this->dao->emailExists($data['email'])) {
-            throw new Exception("Email already registered");
-        }
-
-        // Hash password
-        $data['password_hash'] = password_hash($data['password'], PASSWORD_DEFAULT);
-        unset($data['password']);
-
-        // Set default role if not provided
-        if (!isset($data['role'])) {
-            $data['role'] = 'customer';
-        }
-
-        // Remove confirm_password if exists
-        unset($data['confirm_password']);
-
-        return $this->dao->insert($data);
-    }
-
-    public function login($email, $password)
-    {
-        $user = $this->dao->getUserByEmail($email);
-
-        if (!$user) {
-            throw new Exception("Invalid email or password");
-        }
-
-        if (!password_verify($password, $user['password_hash'])) {
-            throw new Exception("Invalid email or password");
-        }
-
-        // Remove password hash from returned data
-        unset($user['password_hash']);
-        return $user;
-    }
 
     public function update($user_id, $data)
     {

@@ -7,21 +7,23 @@ class BaseService
     {
         $this->dao = $dao;
     }
+    // Wrapper to DAO's snake_case methods
     public function getAll()
     {
-        return $this->dao->getAll();
+        return $this->dao->get_all();
     }
     public function getById($id)
     {
-        return $this->dao->getById($id);
+        return $this->dao->get_by_id($id);
     }
     public function create($data)
     {
-        return $this->dao->insert($data);
+        return $this->dao->add($data);
     }
     public function update($id, $data)
     {
-        return $this->dao->update($id, $data);
+        // BaseDao::update expects (entity, id, id_column = 'id')
+        return $this->dao->update($data, $id);
     }
     public function delete($id)
     {

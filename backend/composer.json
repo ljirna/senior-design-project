@@ -1,6 +1,7 @@
 {
    "require": {
       "mikecao/flight": "^3.17",
-      "stripe/stripe-php": "^19.1"
+      "stripe/stripe-php": "^19.1",
+      "firebase/php-jwt": "^7.0"
    }
 }

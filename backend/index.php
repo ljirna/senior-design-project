@@ -2,6 +2,7 @@
 require 'vendor/autoload.php';
 
 // Register ALL services
+require_once __DIR__ . '/data/roles.php';
 require_once __DIR__ . '/rest/services/ProductService.php';
 require_once __DIR__ . '/rest/services/CategoryService.php';
 require_once __DIR__ . '/rest/services/UserService.php';
@@ -9,9 +10,43 @@ require_once __DIR__ . '/rest/services/CartService.php';
 require_once __DIR__ . '/rest/services/OrderService.php';
 require_once __DIR__ . '/rest/services/FavoriteService.php';
 require_once __DIR__ . '/rest/services/PaymentService.php';
-require_once __DIR__ . '/rest/services/PaymentService.php';
 require_once __DIR__ . '/rest/services/StripeService.php';
+require_once __DIR__ . '/rest/services/AuthService.php';
+require_once __DIR__ . '/middleware/AuthMiddleware.php';
 
+
+
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// This wildcard route intercepts all requests and applies authentication checks before proceeding.
+Flight::route('/*', function () {
+    if (
+        strpos(Flight::request()->url, '/auth/login') === 0 ||
+        strpos(Flight::request()->url, '/auth/register') === 0
+    ) {
+        return TRUE;
+    } else {
+        try {
+            $token = Flight::request()->getHeader("Authentication");
+            if (!$token)
+                Flight::halt(401, "Missing authentication header");
+            $decoded_token = JWT::decode($token, new Key(
+                Config::JWT_SECRET(),
+                'HS256'
+            ));
+            Flight::set('user', $decoded_token->user);
+            Flight::set('jwt_token', $token);
+            return TRUE;
+        } catch (\Exception $e) {
+            Flight::halt(401, $e->getMessage());
+        }
+    }
+});
 
 Flight::register('productService', 'ProductService');
 Flight::register('categoryService', 'CategoryService');
@@ -22,6 +57,8 @@ Flight::register('favoriteService', 'FavoriteService');
 Flight::register('paymentService', 'PaymentService');
 Flight::register('paymentService', 'PaymentService');
 Flight::register('stripeService', 'StripeService');
+Flight::register('auth_service', 'AuthService');
+
 
 
 // Define base route
@@ -38,6 +75,5 @@ require_once __DIR__ . '/rest/routes/OrderRoutes.php';
 require_once __DIR__ . '/rest/routes/FavoriteRoutes.php';
 require_once __DIR__ . '/rest/routes/PaymentRoutes.php';
 require_once __DIR__ . '/rest/routes/PaymentRoutes.php';
-
-
+require_once __DIR__ . '/rest/routes/AuthRoutes.php';
 Flight::start();
