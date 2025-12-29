@@ -15,6 +15,10 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+    <link
+      href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css"
+      rel="stylesheet"
+    />
     <!-- Admin CSS (loaded only for admin pages) -->
     <link rel="stylesheet" href="css/admin.css?v=1.0" id="admin-css" disabled />
 
@@ -187,6 +191,18 @@
     </footer>
 
     <!-- ================= SPA ROUTER ================= -->
+    <!-- Libraries: jQuery + Validate + Toastr -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
+    <!-- Load constants -->
+    <script src="utils/constants.js?v=1.0"></script>
+    <!-- Rest client -->
+    <script src="utils/rest-client.js?v=1.0"></script>
+    <!-- Utils -->
+    <script src="utils/utils.js?v=1.0"></script>
+    <!-- Services -->
+    <script src="services/user-service.js?v=1.0"></script>
     <!-- Load router with error handling -->
     <script>
       // Fallback if router fails
@@ -221,25 +237,5 @@
       // Start loading router
       window.addEventListener("DOMContentLoaded", loadRouter);
     </script>
-
-    <!-- Optional: Google Analytics or other scripts -->
-    <noscript>
-      <div
-        style="
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          background: #e74c3c;
-          color: white;
-          padding: 1rem;
-          text-align: center;
-          z-index: 10000;
-        "
-      >
-        <strong>JavaScript Required:</strong> This website requires JavaScript
-        to function properly.
-      </div>
-    </noscript>
   </body>
 </html>

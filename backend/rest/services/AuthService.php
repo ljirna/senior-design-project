@@ -26,28 +26,48 @@ class AuthService extends BaseService
             return ['success' => false, 'error' => 'Email and password are required.'];
         }
 
-        $email_exists = $this->auth_dao->get_user_by_email($entity['email']);
-        if ($email_exists) {
+        // Check if email already exists
+        if ($this->auth_dao->get_user_by_email($entity['email'])) {
             return ['success' => false, 'error' => 'Email already registered.'];
         }
 
-        // Map 'password' to 'password_hash' column
-        $entity['password_hash'] = password_hash($entity['password'], PASSWORD_BCRYPT);
-        unset($entity['password']); // Remove the plain password key
+        // Build ONLY fields that exist in DB
+        $new_user = [
+            'email' => $entity['email'],
+            'password_hash' => password_hash($entity['password'], PASSWORD_BCRYPT),
+            'role' => 'customer'
+        ];
 
-        // Set default role if not provided
-        if (!isset($entity['role'])) {
-            $entity['role'] = 'customer'; // or whatever default role you want
+        // Optional fields (only if sent)
+        if (!empty($entity['fullName'])) {
+            $new_user['full_name'] = $entity['fullName'];
         }
 
-        // create is method from parent (BaseService) where this entity will be written into users table
-        $result = parent::create($entity);
+        if (!empty($entity['phone_number'])) {
+            $new_user['phone_number'] = $entity['phone_number'];
+        }
 
-        // Don't return password_hash in response
+        if (!empty($entity['address'])) {
+            $new_user['address'] = $entity['address'];
+        }
+
+        if (!empty($entity['city'])) {
+            $new_user['city'] = $entity['city'];
+        }
+
+        if (!empty($entity['postal_code'])) {
+            $new_user['postal_code'] = $entity['postal_code'];
+        }
+
+        // Insert into DB
+        $result = parent::create($new_user);
+
+        // Never return password hash
         unset($result['password_hash']);
 
         return ['success' => true, 'data' => $result];
     }
+
 
     public function login($entity)
     {

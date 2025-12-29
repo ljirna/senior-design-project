@@ -56,6 +56,10 @@ function initApp() {
   // Initialize dropdowns
   initDropdowns();
 
+  // Update header/menu items based on auth
+  if (window.UserService && UserService.generateMenuItems)
+    UserService.generateMenuItems();
+
   // Start router
   router();
 
@@ -821,39 +825,8 @@ function initLoginPage() {
 
   const loginForm = document.getElementById("loginForm");
   if (loginForm) {
-    loginForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-
-      const email = document.getElementById("email")?.value;
-      const password = document.getElementById("password")?.value;
-
-      if (email && password) {
-        // Mock login - in real app, call your API
-        // For testing admin, use email: admin@zim.com, password: admin123
-        let userRole = "customer";
-        if (email === "admin@zim.com" && password === "admin123") {
-          userRole = "admin";
-        }
-
-        const user = {
-          id: Date.now(),
-          name: userRole === "admin" ? "Admin User" : "John Doe",
-          email: email,
-          role: userRole,
-        };
-
-        appState.user = user;
-        localStorage.setItem("zimUser", JSON.stringify(user));
-
-        showToast("Successfully logged in!", "success");
-
-        // Redirect to previous page or home
-        const prevHash = sessionStorage.getItem("prevHash") || "home";
-        window.location.hash = prevHash;
-      } else {
-        showToast("Please fill in all fields", "error");
-      }
-    });
+    // Use UserService.init to attach validation/submit handler (jQuery validate)
+    if (window.UserService && UserService.init) UserService.init();
   }
 
   // Register button
@@ -880,76 +853,8 @@ function initLoginPage() {
 function initRegisterPage() {
   console.log("Initializing register page");
 
-  const registerForm = document.getElementById("registerForm");
-  if (registerForm) {
-    registerForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-
-      const fullName = document.getElementById("fullName")?.value;
-      const email = document.getElementById("registerEmail")?.value;
-      const password = document.getElementById("registerPassword")?.value;
-      const confirmPassword = document.getElementById("confirmPassword")?.value;
-
-      // Validation
-      if (!fullName || !email || !password || !confirmPassword) {
-        showToast("Please fill in all required fields", "error");
-        return;
-      }
-
-      if (password !== confirmPassword) {
-        showToast("Passwords do not match!", "error");
-        return;
-      }
-
-      if (password.length < 8) {
-        showToast("Password must be at least 8 characters!", "error");
-        return;
-      }
-
-      const termsCheckbox = document.getElementById("terms");
-      if (termsCheckbox && !termsCheckbox.checked) {
-        showToast("You must accept the terms & conditions!", "error");
-        return;
-      }
-
-      // Show loading state
-      const submitBtn = registerForm.querySelector('button[type="submit"]');
-      const originalText = submitBtn.innerHTML;
-      submitBtn.innerHTML =
-        '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
-      submitBtn.disabled = true;
-
-      // Simulate API call
-      setTimeout(() => {
-        // Create user object
-        const user = {
-          id: Date.now(),
-          name: fullName,
-          email: email,
-          role: "customer",
-          phone: document.getElementById("phone")?.value || null,
-        };
-
-        // Save to state and localStorage
-        appState.user = user;
-        localStorage.setItem("zimUser", JSON.stringify(user));
-
-        // Reset button
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-
-        showToast(
-          "Account created successfully! Welcome to ZIM Commerce!",
-          "success"
-        );
-
-        // Redirect to profile page
-        setTimeout(() => {
-          window.location.hash = "profile";
-        }, 1500);
-      }, 1500);
-    });
-  }
+  // Delegate registration validation & submit to UserService
+  if (window.UserService && UserService.init) UserService.init();
 
   // Back to login button
   const goToLoginBtn = document.getElementById("goToLoginBtn");

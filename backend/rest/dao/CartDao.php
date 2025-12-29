@@ -36,7 +36,6 @@ class CartDao extends BaseDao
             $stmt->execute();
 
             $cart_id = $this->connection->lastInsertId();
-            $cart = $this->getById($cart_id);
         }
 
         return $cart;

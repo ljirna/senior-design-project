@@ -19,6 +19,7 @@
         <input
           type="text"
           id="fullName"
+          name="fullName"
           class="form-control"
           required
           placeholder="John Doe"
@@ -30,6 +31,7 @@
         <input
           type="email"
           id="registerEmail"
+          name="email"
           class="form-control"
           required
           placeholder="your@email.com"
@@ -41,6 +43,7 @@
         <input
           type="password"
           id="registerPassword"
+          name="password"
           class="form-control"
           required
           placeholder="Create a password"
@@ -62,6 +65,7 @@
         <input
           type="password"
           id="confirmPassword"
+          name="confirmPassword"
           class="form-control"
           required
           placeholder="Confirm your password"
@@ -73,6 +77,7 @@
         <input
           type="tel"
           id="phone"
+          name="phone"
           class="form-control"
           placeholder="(123) 456-7890"
         />
@@ -143,73 +148,4 @@
       });
     }
 
-    // Registration form submission
-    const registerForm = document.getElementById("registerForm");
-    if (registerForm) {
-      registerForm.addEventListener("submit", function (e) {
-        e.preventDefault();
-
-        const fullName = document.getElementById("fullName").value;
-        const email = document.getElementById("registerEmail").value;
-        const password = document.getElementById("registerPassword").value;
-        const confirmPassword =
-          document.getElementById("confirmPassword").value;
-
-        // Basic validation
-        if (password !== confirmPassword) {
-          if (typeof showToast === "function") {
-            showToast("Passwords do not match!", "error");
-          } else {
-            alert("Passwords do not match!");
-          }
-          return;
-        }
-
-        if (password.length < 8) {
-          if (typeof showToast === "function") {
-            showToast("Password must be at least 8 characters!", "error");
-          } else {
-            alert("Password must be at least 8 characters!");
-          }
-          return;
-        }
-
-        // Simulate registration
-        const submitBtn = registerForm.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML =
-          '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
-        submitBtn.disabled = true;
-
-        setTimeout(() => {
-          // Mock user registration
-          const user = {
-            id: Date.now(),
-            name: fullName,
-            email: email,
-            role: "customer",
-            phone: document.getElementById("phone").value || null,
-          };
-
-          // Save user to localStorage (simulating registration)
-          appState.user = user;
-          localStorage.setItem("zimUser", JSON.stringify(user));
-
-          if (typeof showToast === "function") {
-            showToast(
-              "Account created successfully! Welcome to ZIM Commerce!",
-              "success"
-            );
-          }
-
-          // Redirect to profile or home
-          window.location.hash = "profile";
-
-          // Reset button
-          submitBtn.innerHTML = originalText;
-          submitBtn.disabled = false;
-        }, 1500);
-      });
-    }
-  });
-</script>
+    // Register form handled by UserService.init() (attached via router init)
