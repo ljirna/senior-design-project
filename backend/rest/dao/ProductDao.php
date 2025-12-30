@@ -30,7 +30,7 @@ class ProductDao extends BaseDao
                    (SELECT image_url FROM product_images WHERE product_id = p.product_id LIMIT 1) as image_url
             FROM products p 
             JOIN categories c ON p.category_id = c.category_id 
-            ORDER BY p.created_at DESC 
+            ORDER BY RAND() 
             LIMIT :limit OFFSET :offset
         ");
         $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);

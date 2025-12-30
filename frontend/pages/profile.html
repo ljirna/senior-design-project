@@ -7,10 +7,12 @@
           src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
           alt="Profile Picture"
           class="profile-img-compact"
+          id="profileImage"
         />
         <button class="change-photo-btn-compact" title="Change profile picture">
           <i class="fas fa-camera"></i>
         </button>
+        <input type="file" id="profileImageInput" accept="image/*" style="display: none;" />
       </div>
       <div class="profile-info-compact">
         <h1 class="profile-name">John Doe</h1>
@@ -73,75 +75,56 @@
         </div>
       </section>
     </div>
+  </div>
 
-    <!-- Liked Items Section (Below everything) -->
-    <section class="profile-card liked-items-section">
-      <div class="profile-card-header">
-        <i class="fas fa-heart card-icon"></i>
-        <h2>My Liked Items <span class="item-count">(3)</span></h2>
+  <!-- Edit Profile Modal -->
+  <div id="editProfileModal" class="modal">
+    <div class="modal-content edit-profile-modal">
+      <div class="modal-header">
+        <h2>Edit Profile Information</h2>
+        <button class="close-modal" data-modal="editProfileModal">&times;</button>
       </div>
-      <div class="products-grid liked-items-grid">
-        <!-- Liked Item 1 -->
-        <div class="product-card liked-item-card">
-          <button class="favorite-btn liked" aria-label="Remove from favorites">
-            <i class="fas fa-heart"></i>
-          </button>
-          <img
-            src="https://images.unsplash.com/photo-1540574163026-643ea20ade25?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-            alt="Modern Sofa"
-            class="product-image"
-          />
-          <div class="product-content">
-            <h3 class="product-title">Modern Leather Sofa</h3>
-            <p class="product-category">Living Room • Sofas</p>
-            <div class="product-price">$1,299.99</div>
-            <div class="product-actions">
-              <a href="#single-product/1" class="btn-see-more">View Details</a>
-            </div>
-          </div>
+      <form id="editProfileForm" class="edit-profile-form">
+        <div class="form-group">
+          <label for="editFullName">Full Name</label>
+          <input type="text" id="editFullName" placeholder="Enter your full name" required />
         </div>
 
-        <!-- Liked Item 2 -->
-        <div class="product-card liked-item-card">
-          <button class="favorite-btn liked" aria-label="Remove from favorites">
-            <i class="fas fa-heart"></i>
-          </button>
-          <img
-            src="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-            alt="Coffee Table"
-            class="product-image"
-          />
-          <div class="product-content">
-            <h3 class="product-title">Glass Coffee Table</h3>
-            <p class="product-category">Living Room • Tables</p>
-            <div class="product-price">$299.99</div>
-            <div class="product-actions">
-              <a href="#single-product/2" class="btn-see-more">View Details</a>
-            </div>
-          </div>
+        <div class="form-group">
+          <label for="editEmail">Email Address</label>
+          <input type="email" id="editEmail" placeholder="Enter your email" required />
         </div>
 
-        <!-- Liked Item 3 -->
-        <div class="product-card liked-item-card">
-          <button class="favorite-btn liked" aria-label="Remove from favorites">
-            <i class="fas fa-heart"></i>
-          </button>
-          <img
-            src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-            alt="Dining Table"
-            class="product-image"
-          />
-          <div class="product-content">
-            <h3 class="product-title">Wooden Dining Table</h3>
-            <p class="product-category">Dining Room • Tables</p>
-            <div class="product-price">$799.99</div>
-            <div class="product-actions">
-              <a href="#single-product/3" class="btn-see-more">View Details</a>
-            </div>
-          </div>
+        <div class="form-group">
+          <label for="editPhone">Phone Number</label>
+          <input type="tel" id="editPhone" placeholder="Enter your phone number" />
         </div>
-      </div>
-    </section>
+
+        <div class="form-group">
+          <label for="editAddress">Street Address</label>
+          <input type="text" id="editAddress" placeholder="Enter your street address" />
+        </div>
+
+        <div class="form-group">
+          <label for="editCity">City</label>
+          <input type="text" id="editCity" placeholder="Enter your city" />
+        </div>
+
+        <div class="form-group">
+          <label for="editPostal">Postal Code</label>
+          <input type="text" id="editPostal" placeholder="Enter your postal code" />
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" data-modal="editProfileModal">
+            Cancel
+          </button>
+          <button type="submit" class="btn-save">
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </main>
 
@@ -150,50 +133,33 @@
     console.log("Profile page loaded");
 
     // Profile page scripts are handled by router.js initProfilePage()
-    // The router will call initProfilePage() which will handle:
-    // 1. Checking if user is logged in
-    // 2. Updating profile info from appState.user
-    // 3. Setting up event listeners for buttons
-
-    // Initialize favorite buttons
-    document.querySelectorAll(".favorite-btn.liked").forEach((btn) => {
-      btn.addEventListener("click", function (e) {
-        e.preventDefault();
-        this.classList.toggle("liked");
-        const icon = this.querySelector("i");
-        icon.classList.toggle("fas");
-        icon.classList.toggle("far");
-
-        // Update count
-        const itemCount = document.querySelector(".item-count");
-        if (itemCount) {
-          const current = parseInt(itemCount.textContent.match(/\d+/)[0] || 0);
-          const newCount = this.classList.contains("liked")
-            ? current + 1
-            : current - 1;
-          itemCount.textContent = `(${newCount})`;
-
-          if (typeof showToast === "function") {
-            if (this.classList.contains("liked")) {
-              showToast("Added to favorites!", "success");
-            } else {
-              showToast("Removed from favorites!", "info");
-            }
-          }
-        }
-      });
-    });
-
-    // Change photo button
+    const profileImageInput = document.getElementById("profileImageInput");
     const changePhotoBtn = document.querySelector(".change-photo-btn-compact");
-    if (changePhotoBtn) {
+
+    if (changePhotoBtn && profileImageInput) {
       changePhotoBtn.addEventListener("click", () => {
-        if (typeof showToast === "function") {
-          showToast("Profile photo change coming soon!", "info");
-        } else {
-          alert("Profile photo change feature coming soon!");
+        profileImageInput.click();
+      });
+
+      profileImageInput.addEventListener("change", function (e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (event) {
+            const profileImage = document.getElementById("profileImage");
+            if (profileImage) {
+              profileImage.src = event.target.result;
+              // Store in localStorage temporarily
+              localStorage.setItem("profileImageData", event.target.result);
+              if (typeof showToast === "function") {
+                showToast("Profile picture updated!", "success");
+              }
+            }
+          };
+          reader.readAsDataURL(file);
         }
       });
     }
   });
+</script>
 </script>

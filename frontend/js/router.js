@@ -3,12 +3,30 @@
 // Updated with registration and admin pages
 // ============================================
 
+// Helper function to deduplicate favorites
+function deduplicateFavorites(favorites) {
+  const seen = new Set();
+  return favorites.filter((item) => {
+    if (seen.has(item.id)) {
+      return false;
+    }
+    seen.add(item.id);
+    return true;
+  });
+}
+
 // Global state
 const appState = {
   user: JSON.parse(localStorage.getItem("zimUser")) || null,
   cart: JSON.parse(localStorage.getItem("zimCart")) || [],
+  favorites: deduplicateFavorites(
+    JSON.parse(localStorage.getItem("zimFavorites")) || []
+  ),
   isLoading: false,
 };
+
+// Ensure no duplicates in localStorage on page load
+localStorage.setItem("zimFavorites", JSON.stringify(appState.favorites));
 
 // Expose appState globally
 window.appState = appState;
@@ -606,6 +624,9 @@ function initPageScripts(page, params) {
     case "products":
       initProductsPage(params);
       break;
+    case "favorite":
+      initFavoritesPage();
+      break;
     case "cart":
       initCartPage();
       break;
@@ -678,9 +699,9 @@ function initHomePage() {
             <p class="product-category">${
               product.category_name || "Furniture"
             }</p>
-            <div class="product-price">$${parseFloat(product.price).toFixed(
+            <div class="product-price">${parseFloat(product.price).toFixed(
               2
-            )}</div>
+            )} KM</div>
             <div class="product-actions">
               <a href="#single-product/${
                 product.product_id
@@ -709,19 +730,319 @@ function initHomePage() {
 
 // Product page initialization
 function initProductPage(params) {
-  console.log("Initializing product page");
+  console.log("Initializing product page with params:", params);
 
-  // Image gallery
-  const thumbnails = document.querySelectorAll(".thumbnail-item");
+  // Get product ID from params
+  const productId = params.id;
+
+  if (!productId) {
+    showToast("Product not found", "error");
+    window.location.hash = "products";
+    return;
+  }
+
+  // Show loading state
+  const productContent = document.getElementById("productContent");
+  if (productContent) {
+    productContent.innerHTML =
+      '<div style="text-align:center; padding:4rem;">Loading product...</div>';
+  }
+
+  // Fetch product data
+  ProductService.getById(
+    productId,
+    function (product) {
+      console.log("Product loaded:", product);
+      displayProductDetails(product);
+      loadRelatedProducts(product.category_id, productId);
+      initProductInteractions(product);
+    },
+    function (error) {
+      console.error("Error loading product:", error);
+      showToast("Failed to load product details", "error");
+      if (productContent) {
+        productContent.innerHTML =
+          '<div style="text-align:center; padding:4rem;">Failed to load product. <a href="#products">Back to products</a></div>';
+      }
+    }
+  );
+}
+
+function displayProductDetails(product) {
+  const productContent = document.getElementById("productContent");
+  if (!productContent) return;
+
+  // Build images array (use images array if available, otherwise use single image_url)
+  const images =
+    product.images && product.images.length > 0
+      ? product.images.map((img) => img.image_url)
+      : product.image_url
+      ? [product.image_url]
+      : [];
+
+  const mainImage =
+    images[0] ||
+    "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800";
+
+  productContent.innerHTML = `
+    <!-- Product Gallery Section -->
+    <section class="product-gallery-section" aria-label="Product images">
+      <div class="product-main-image">
+        ${
+          images.length > 1
+            ? `
+          <button class="carousel-btn carousel-prev" id="carouselPrev" aria-label="Previous image">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+        `
+            : ""
+        }
+        <img
+          id="mainProductImage"
+          src="${mainImage}"
+          alt="${product.name}"
+          data-product-id="${product.product_id}"
+          data-current-index="0"
+        />
+        ${
+          images.length > 1
+            ? `
+          <button class="carousel-btn carousel-next" id="carouselNext" aria-label="Next image">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+          <div class="carousel-indicators">
+            ${images
+              .map(
+                (_, index) => `
+              <span class="indicator ${
+                index === 0 ? "active" : ""
+              }" data-index="${index}"></span>
+            `
+              )
+              .join("")}
+          </div>
+        `
+            : ""
+        }
+      </div>
+
+      ${
+        images.length > 1
+          ? `
+        <div class="thumbnail-gallery">
+          ${images
+            .map(
+              (img, index) => `
+            <div class="thumbnail-item ${
+              index === 0 ? "active" : ""
+            }" data-image-index="${index}">
+              <img src="${img}" alt="${product.name} - Image ${index + 1}" />
+            </div>
+          `
+            )
+            .join("")}
+        </div>
+      `
+          : ""
+      }
+    </section>
+
+    <!-- Product Info Section -->
+    <section class="product-info-section" aria-label="Product information">
+      <!-- Product Header -->
+      <div class="product-header">
+        <span class="product-category">${
+          product.category_name || "Furniture"
+        }</span>
+        <h1 class="product-title" id="productTitle">${product.name}</h1>
+        <p class="product-subtitle">${product.description || ""}</p>
+
+        <!-- Rating & Stock -->
+        <div class="product-meta-row">
+        </div>
+      </div>
+
+      <!-- Price Section -->
+      <div class="product-price-section">
+        <div class="price-display">
+          <span class="current-price" id="productPrice">${parseFloat(
+            product.price
+          ).toFixed(2)} KM</span>
+        </div>
+        <p class="price-note">Free shipping & 30-day return policy</p>
+      </div>
+
+      <!-- Additional Fees -->
+      ${
+        product.delivery_fee_override || product.assembly_fee_override
+          ? `
+        <ul class="product-details-list">
+          ${
+            product.delivery_fee_override
+              ? `
+            <li>
+              <i class="fas fa-truck"></i>
+              <span>Delivery fee: ${parseFloat(
+                product.delivery_fee_override
+              ).toFixed(2)} KM</span>
+            </li>
+          `
+              : ""
+          }
+          ${
+            product.assembly_fee_override
+              ? `
+            <li>
+              <i class="fas fa-tools"></i>
+              <span>Assembly fee: ${parseFloat(
+                product.assembly_fee_override
+              ).toFixed(2)} KM</span>
+            </li>
+          `
+              : ""
+          }
+        </ul>
+      `
+          : ""
+      }
+
+      <!-- Quantity and Action Buttons -->
+      <div class="quantity-actions-section">
+        <div class="quantity-selector">
+          <button type="button" class="qty-btn" id="decreaseQty" aria-label="Decrease quantity">
+            <i class="fas fa-minus"></i>
+          </button>
+          <input type="number" class="qty-input" id="productQuantity" value="1" min="1" max="10" aria-label="Quantity" />
+          <button type="button" class="qty-btn" id="increaseQty" aria-label="Increase quantity">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+
+        <div class="action-buttons">
+          <button type="button" class="add-to-cart-btn" id="addToCartBtn">
+            <i class="fas fa-shopping-cart"></i>
+            Add to Cart
+          </button>
+          <button type="button" class="wishlist-btn" id="wishlistBtn" aria-label="Add to wishlist">
+            <i class="far fa-heart"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function loadRelatedProducts(categoryId, currentProductId) {
+  const relatedGrid = document.querySelector(
+    ".related-products .products-grid"
+  );
+  if (!relatedGrid) return;
+
+  relatedGrid.innerHTML =
+    '<div style="text-align:center; padding:2rem;">Loading related products...</div>';
+
+  ProductService.getByCategory(
+    categoryId,
+    4,
+    0,
+    function (products) {
+      // Filter out current product and limit to 4
+      const relatedProducts = products
+        .filter((p) => p.product_id != currentProductId)
+        .slice(0, 4);
+      displayProducts(relatedProducts, relatedGrid);
+    },
+    function (error) {
+      console.error("Error loading related products:", error);
+      relatedGrid.innerHTML = "";
+    }
+  );
+}
+
+function initProductInteractions(product) {
   const mainImage = document.getElementById("mainProductImage");
+  const thumbnails = document.querySelectorAll(".thumbnail-item");
+  const images =
+    product.images && product.images.length > 0
+      ? product.images.map((img) => img.image_url)
+      : product.image_url
+      ? [product.image_url]
+      : [];
 
+  // Carousel navigation
+  if (images.length > 1) {
+    const carouselPrev = document.getElementById("carouselPrev");
+    const carouselNext = document.getElementById("carouselNext");
+    const indicators = document.querySelectorAll(".indicator");
+
+    function updateImage(index) {
+      if (index < 0) index = images.length - 1;
+      if (index >= images.length) index = 0;
+
+      mainImage.src = images[index];
+      mainImage.dataset.currentIndex = index;
+
+      // Update thumbnails
+      thumbnails.forEach((t, i) => {
+        t.classList.toggle("active", i === index);
+      });
+
+      // Update indicators
+      indicators.forEach((ind, i) => {
+        ind.classList.toggle("active", i === index);
+      });
+    }
+
+    if (carouselPrev) {
+      carouselPrev.addEventListener("click", () => {
+        const currentIndex = parseInt(mainImage.dataset.currentIndex || 0);
+        updateImage(currentIndex - 1);
+      });
+    }
+
+    if (carouselNext) {
+      carouselNext.addEventListener("click", () => {
+        const currentIndex = parseInt(mainImage.dataset.currentIndex || 0);
+        updateImage(currentIndex + 1);
+      });
+    }
+
+    // Indicator clicks
+    indicators.forEach((indicator) => {
+      indicator.addEventListener("click", function () {
+        const index = parseInt(this.dataset.index);
+        updateImage(index);
+      });
+    });
+
+    // Keyboard navigation
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowLeft") {
+        const currentIndex = parseInt(mainImage.dataset.currentIndex || 0);
+        updateImage(currentIndex - 1);
+      } else if (e.key === "ArrowRight") {
+        const currentIndex = parseInt(mainImage.dataset.currentIndex || 0);
+        updateImage(currentIndex + 1);
+      }
+    });
+  }
+
+  // Thumbnail clicks
   if (thumbnails.length && mainImage) {
     thumbnails.forEach((thumb) => {
       thumb.addEventListener("click", function () {
+        const index = parseInt(this.dataset.imageIndex);
+        mainImage.src = images[index];
+        mainImage.dataset.currentIndex = index;
+
         thumbnails.forEach((t) => t.classList.remove("active"));
         this.classList.add("active");
-        const imgSrc = this.querySelector("img").src;
-        mainImage.src = imgSrc;
+
+        // Update indicators
+        const indicators = document.querySelectorAll(".indicator");
+        indicators.forEach((ind, i) => {
+          ind.classList.toggle("active", i === index);
+        });
       });
     });
   }
@@ -778,6 +1099,105 @@ function initProductPage(params) {
       }
     });
   }
+}
+
+// Open edit profile modal
+function openEditProfileModal(user) {
+  const modal = document.getElementById("editProfileModal");
+  if (!modal) return;
+
+  // Populate form with current user data
+  document.getElementById("editFullName").value =
+    user.full_name || user.name || "";
+  document.getElementById("editEmail").value = user.email || "";
+  document.getElementById("editPhone").value =
+    user.phone_number || user.phone || "";
+  document.getElementById("editAddress").value = user.address || "";
+  document.getElementById("editCity").value = user.city || "";
+  document.getElementById("editPostal").value = user.postal_code || "";
+
+  modal.style.display = "flex";
+
+  // Handle form submission
+  const form = document.getElementById("editProfileForm");
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+
+    const updatedUser = {
+      full_name: document.getElementById("editFullName").value,
+      email: document.getElementById("editEmail").value,
+      phone_number: document.getElementById("editPhone").value,
+      address: document.getElementById("editAddress").value,
+      city: document.getElementById("editCity").value,
+      postal_code: document.getElementById("editPostal").value,
+    };
+
+    try {
+      // Get auth token
+      const token = localStorage.getItem("user_token");
+      if (!token) {
+        showToast("Authentication required", "error");
+        return;
+      }
+
+      // Send update request to backend
+      const response = await fetch(`/diplomski/backend/users/${user.user_id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedUser),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to update profile");
+      }
+
+      // Update appState with the response data
+      const updatedUserData = {
+        ...user,
+        ...result.data,
+      };
+      appState.user = updatedUserData;
+      localStorage.setItem("zimUser", JSON.stringify(updatedUserData));
+
+      // Close modal
+      modal.style.display = "none";
+      showToast("Profile updated successfully!", "success");
+
+      // Refresh profile display
+      initProfilePage();
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      showToast(error.message || "Failed to update profile", "error");
+    }
+  };
+
+  // Handle close button
+  const closeBtn = modal.querySelector(".close-modal");
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      modal.style.display = "none";
+    };
+  }
+
+  // Handle cancel button
+  const cancelBtn = modal.querySelector(".btn-cancel");
+  if (cancelBtn) {
+    cancelBtn.onclick = () => {
+      modal.style.display = "none";
+    };
+  }
+
+  // Close modal when clicking outside
+  window.onclick = (event) => {
+    if (event.target === modal) {
+      modal.style.display = "none";
+    }
+  };
 }
 
 // Profile page initialization
@@ -864,6 +1284,8 @@ function initProfilePage() {
       const action = this.querySelector(".action-text").textContent;
       if (action.includes("Log Out")) {
         logout();
+      } else if (action.includes("Edit Profile")) {
+        openEditProfileModal(user);
       } else {
         showToast(`${action} feature coming soon!`, "info");
       }
@@ -903,13 +1325,26 @@ function initProductsPage(params) {
   productsGrid.innerHTML =
     '<div style="text-align:center; padding:2rem;">Loading products...</div>';
 
+  // Map category slugs to category IDs
+  const categoryMap = {
+    chair: 1,
+    bed: 2,
+    kitchen: 3,
+    living: 4,
+    bedroom: 5,
+    dining: 6,
+    office: 7,
+    outdoor: 8,
+  };
+
   // Determine what to load based on params
   const categoryParam = params.category;
 
-  if (categoryParam) {
-    // Load products by category
-    // For now, load all and filter client-side (you can map category names to IDs later)
-    ProductService.getAll(
+  if (categoryParam && categoryMap[categoryParam]) {
+    // Load products by category ID
+    const categoryId = categoryMap[categoryParam];
+    ProductService.getByCategory(
+      categoryId,
       50,
       0,
       function (products) {
@@ -964,9 +1399,9 @@ function displayProducts(products, container) {
           <p class="product-category">${
             product.category_name || "Furniture"
           }</p>
-          <div class="product-price">$${parseFloat(product.price).toFixed(
+          <div class="product-price">${parseFloat(product.price).toFixed(
             2
-          )}</div>
+          )} KM</div>
           <div class="product-actions">
             <a href="#single-product/${
               product.product_id
@@ -1001,15 +1436,48 @@ function initFavoriteButtons() {
   document.querySelectorAll(".favorite-btn").forEach((btn) => {
     if (!btn.dataset.initialized) {
       btn.dataset.initialized = "true";
+
+      // Get product ID from the card's link
+      const productCard = btn.closest(".product-card");
+      const productId = productCard
+        ?.querySelector(".btn-see-more")
+        ?.href?.match(/single-product\/(\d+)/)?.[1];
+
+      // Check if this product is already in favorites
+      const isFavorited = appState.favorites.some((fav) => fav.id == productId);
+      const icon = btn.querySelector("i");
+
+      if (isFavorited) {
+        btn.classList.add("active");
+        icon.className = "fas fa-heart";
+      } else {
+        btn.classList.remove("active");
+        icon.className = "far fa-heart";
+      }
+
       btn.addEventListener("click", function (e) {
         e.preventDefault();
         this.classList.toggle("active");
         const icon = this.querySelector("i");
+        const productCard = this.closest(".product-card");
+        const productName =
+          productCard?.querySelector(".product-title")?.textContent ||
+          "Product";
+        const productImage =
+          productCard?.querySelector(".product-image")?.src || "";
+        const productPrice =
+          productCard?.querySelector(".product-price")?.textContent || "0";
+        const productId = productCard
+          ?.querySelector(".btn-see-more")
+          ?.href?.match(/single-product\/(\d+)/)?.[1];
+
         if (icon.classList.contains("far")) {
           icon.className = "fas fa-heart";
+          addToFavorites(productId, productName, productPrice, productImage);
           showToast("Added to favorites!", "success");
         } else {
           icon.className = "far fa-heart";
+          removeFromFavorites(productId);
           showToast("Removed from favorites!", "info");
         }
       });
@@ -1189,9 +1657,28 @@ function initAdminOrderDetail(params) {
 // Global event listeners
 function initGlobalEvents() {
   // Favorite buttons
-  document.querySelectorAll(".favorite-btn:not(.liked)").forEach((btn) => {
+  document.querySelectorAll(".favorite-btn").forEach((btn) => {
     if (!btn.hasAttribute("data-listener")) {
       btn.setAttribute("data-listener", "true");
+
+      // Get product ID from the card's link
+      const productCard = btn.closest(".product-card");
+      const productId = productCard
+        ?.querySelector(".btn-see-more")
+        ?.href?.match(/single-product\/(\d+)/)?.[1];
+
+      // Check if this product is already in favorites
+      const isFavorited = appState.favorites.some((fav) => fav.id == productId);
+      const icon = btn.querySelector("i");
+
+      if (isFavorited) {
+        btn.classList.add("active");
+        icon.className = "fas fa-heart";
+      } else {
+        btn.classList.remove("active");
+        icon.className = "far fa-heart";
+      }
+
       btn.addEventListener("click", function () {
         this.classList.toggle("active");
         const icon = this.querySelector("i");
@@ -1411,6 +1898,135 @@ function parseHash() {
   }
 
   return { page, params };
+}
+
+// Favorites page initialization
+function initFavoritesPage() {
+  console.log("Initializing favorites page");
+
+  if (!appState.user) {
+    window.location.hash = "login";
+    return;
+  }
+
+  // Load favorites items
+  loadFavoritesItems();
+}
+
+// Load favorites items
+function loadFavoritesItems() {
+  const favoritesContainer = document.getElementById("favoriteItems");
+  if (!favoritesContainer) return;
+
+  if (appState.favorites.length === 0) {
+    favoritesContainer.innerHTML = `
+      <div style="text-align:center; padding:3rem; color:#5d4037;">
+        <i class="fas fa-heart" style="font-size:3rem; color:#e8dfc8; margin-bottom:1rem;"></i>
+        <h3 style="color:#800020; margin-bottom:0.5rem;">No favorites yet</h3>
+        <p style="margin-bottom:1.5rem;">Add some products to your favorites list!</p>
+        <a href="#products" style="display:inline-block; padding:0.8rem 1.5rem; background:#800020; color:white; text-decoration:none; border-radius:4px;">
+          Browse Products
+        </a>
+      </div>
+    `;
+    return;
+  }
+
+  // Display favorites as a grid
+  favoritesContainer.innerHTML = `
+    <div class="products-grid">
+      ${appState.favorites
+        .map(
+          (item) => `
+        <div class="product-card">
+          <img src="${item.image}" alt="${item.name}" class="product-image" />
+          <div class="product-content">
+            <h3 class="product-title">${item.name}</h3>
+            <div class="product-price">${item.price}</div>
+            <div class="product-actions">
+              <button onclick="removeFromFavorites('${item.id}')" style="width:100%; padding:0.6rem; background-color:#800020; color:white; border:none; border-radius:4px; cursor:pointer;">
+                <i class="fas fa-trash"></i> Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      `
+        )
+        .join("")}
+    </div>
+  `;
+
+  // Reinitialize favorite buttons
+  initFavoriteButtons();
+}
+
+// Add to favorites
+function addToFavorites(productId, productName, productPrice, productImage) {
+  if (!productId) return;
+
+  // Check if product already exists in favorites
+  const existingIndex = appState.favorites.findIndex(
+    (item) => item.id === productId
+  );
+
+  // Only add if it doesn't already exist (prevent duplicates)
+  if (existingIndex === -1) {
+    appState.favorites.push({
+      id: productId,
+      name: productName,
+      price: productPrice,
+      image: productImage,
+      addedAt: new Date().toISOString(),
+    });
+
+    // Deduplicate before saving (extra safety)
+    appState.favorites = deduplicateFavorites(appState.favorites);
+
+    // Update storage
+    localStorage.setItem("zimFavorites", JSON.stringify(appState.favorites));
+
+    // Update all favorite buttons for this product on the current page
+    updateFavoriteButtonsForProduct(productId, true);
+  }
+}
+
+// Update favorite buttons for a specific product
+function updateFavoriteButtonsForProduct(productId, isFavorited) {
+  document.querySelectorAll(".favorite-btn").forEach((btn) => {
+    const productCard = btn.closest(".product-card");
+    const link = productCard?.querySelector(".btn-see-more");
+    const btnProductId = link?.href?.match(/single-product\/(\d+)/)?.[1];
+
+    if (btnProductId == productId) {
+      const icon = btn.querySelector("i");
+      if (isFavorited) {
+        icon.className = "fas fa-heart";
+        btn.classList.add("active");
+      } else {
+        icon.className = "far fa-heart";
+        btn.classList.remove("active");
+      }
+    }
+  });
+}
+
+// Remove from favorites
+function removeFromFavorites(productId) {
+  // Remove from favorites array
+  appState.favorites = appState.favorites.filter(
+    (item) => item.id !== productId
+  );
+
+  // Update storage
+  localStorage.setItem("zimFavorites", JSON.stringify(appState.favorites));
+
+  // Reload favorites page if currently viewing it
+  if (window.location.hash.includes("favorite")) {
+    loadFavoritesItems();
+  }
+
+  // Update favorite button state for this product
+  updateFavoriteButtonsForProduct(productId, false);
 }
 
 // Main router function
