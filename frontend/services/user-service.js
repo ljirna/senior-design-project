@@ -1,9 +1,17 @@
 var UserService = {
   init: function () {
+    // Sync appState with localStorage if needed
+    if (!window.appState.user && localStorage.getItem("zimUser")) {
+      window.appState.user = JSON.parse(localStorage.getItem("zimUser"));
+    }
+
     var token = localStorage.getItem("user_token");
     if (token && token !== undefined) {
-      // Already logged in — redirect to home (SPA)
-      window.location.hash = "home";
+      // Already logged in — only redirect from login/register pages
+      const currentHash = window.location.hash.substring(1);
+      if (currentHash === "login" || currentHash === "register") {
+        window.location.hash = "home";
+      }
       return;
     }
 
@@ -50,10 +58,12 @@ var UserService = {
         if (result && result.data && result.data.token) {
           localStorage.setItem("user_token", result.data.token);
 
-          // Store user without token
+          // Store complete user object without token
           var user = Object.assign({}, result.data);
           delete user.token;
           localStorage.setItem("zimUser", JSON.stringify(user));
+
+          // Update appState if available
           if (window.appState) appState.user = user;
 
           // Redirect to previous page or home
@@ -84,10 +94,22 @@ var UserService = {
   },
 
   register: function (entity) {
+    // Map frontend field names to backend expectations
+    var payload = {
+      email: entity.email,
+      password: entity.password,
+      fullName: entity.fullName,
+    };
+
+    // Map phone to phone_number if provided
+    if (entity.phone) {
+      payload.phone_number = entity.phone;
+    }
+
     $.ajax({
       url: Constants.PROJECT_BASE_URL + "auth/register",
       type: "POST",
-      data: JSON.stringify(entity),
+      data: JSON.stringify(payload),
       contentType: "application/json",
       dataType: "json",
       success: function (result) {
@@ -134,7 +156,6 @@ var UserService = {
       if (headerActions) {
         headerActions.innerHTML = `
           <a href="#cart" class="action-icon" id="nav-cart"><i class="fas fa-shopping-cart"></i></a>
-          <a href="#profile" class="action-icon"><i class="fas fa-user"></i></a>
           <button class="btn" style="margin-left:8px; background:#800020; color:white;" onclick="UserService.logout()">Logout</button>
         `;
       }

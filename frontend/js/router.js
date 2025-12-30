@@ -10,6 +10,9 @@ const appState = {
   isLoading: false,
 };
 
+// Expose appState globally
+window.appState = appState;
+
 // Function to hide/show navbar on admin pages
 function toggleNavbarOnAdminPages(page) {
   const header = document.querySelector(".main-header");
@@ -591,6 +594,9 @@ function initPageScripts(page, params) {
 
   // Page-specific initializations
   switch (page) {
+    case "home":
+      initHomePage();
+      break;
     case "single-product":
       initProductPage(params);
       break;
@@ -634,6 +640,71 @@ function initPageScripts(page, params) {
       initAdminOrderDetail(params);
       break;
   }
+}
+
+// Home page initialization
+function initHomePage() {
+  console.log("Initializing home page");
+
+  const productsGrid = document.querySelector(".products-grid");
+  if (!productsGrid) return;
+
+  // Show loading state
+  productsGrid.innerHTML =
+    '<div style="text-align:center; padding:2rem;">Loading products...</div>';
+
+  // Fetch featured products
+  ProductService.getFeatured(
+    3,
+    function (products) {
+      if (products && products.length > 0) {
+        productsGrid.innerHTML = products
+          .map(
+            (product) => `
+        <div class="product-card">
+          <button class="favorite-btn" aria-label="Add to favorites">
+            <i class="far fa-heart"></i>
+          </button>
+          <img
+            src="${
+              product.image_url ||
+              "https://images.unsplash.com/photo-1540574163026-643ea20ade25?w=600"
+            }"
+            alt="${product.name}"
+            class="product-image"
+          />
+          <div class="product-content">
+            <h3 class="product-title">${product.name}</h3>
+            <p class="product-category">${
+              product.category_name || "Furniture"
+            }</p>
+            <div class="product-price">$${parseFloat(product.price).toFixed(
+              2
+            )}</div>
+            <div class="product-actions">
+              <a href="#single-product/${
+                product.product_id
+              }" class="btn-see-more">View Details</a>
+            </div>
+          </div>
+        </div>
+      `
+          )
+          .join("");
+
+        // Initialize favorite buttons
+        initFavoriteButtons();
+      } else {
+        productsGrid.innerHTML =
+          '<div style="text-align:center; padding:2rem;">No products available</div>';
+      }
+    },
+    function (error) {
+      productsGrid.innerHTML =
+        '<div style="text-align:center; padding:2rem; color:red;">Failed to load products</div>';
+      console.error("Failed to load products:", error);
+    }
+  );
 }
 
 // Product page initialization
@@ -713,22 +784,70 @@ function initProductPage(params) {
 function initProfilePage() {
   console.log("Initializing profile page");
 
+  // Sync appState.user from localStorage if not set
+  if (!appState.user && localStorage.getItem("zimUser")) {
+    appState.user = JSON.parse(localStorage.getItem("zimUser"));
+  }
+
   // Check if user is logged in
   if (!appState.user) {
+    showToast("Please log in to view your profile", "error");
     window.location.hash = "login";
     return;
   }
 
-  // Update profile info if user exists
+  // Get user from appState (which is synced with localStorage.zimUser)
+  const user = appState.user;
+
+  // Update profile header
   const profileName = document.querySelector(".profile-name");
   const profileEmail = document.querySelector(".profile-email-compact");
 
-  if (profileName && appState.user.name) {
-    profileName.textContent = appState.user.name;
+  if (profileName) {
+    profileName.textContent = user.full_name || user.name || "User";
   }
 
-  if (profileEmail && appState.user.email) {
-    profileEmail.textContent = appState.user.email;
+  if (profileEmail) {
+    profileEmail.textContent = user.email || "";
+  }
+
+  // Update personal information fields with IDs
+  const profilePhone = document.getElementById("profile-phone");
+  const profileAddress = document.getElementById("profile-address");
+  const profileCity = document.getElementById("profile-city");
+  const profilePostal = document.getElementById("profile-postal");
+  const profileRole = document.getElementById("profile-role");
+  const profileCreated = document.getElementById("profile-created");
+
+  if (profilePhone) {
+    profilePhone.textContent =
+      user.phone_number || user.phone || "Not provided";
+  }
+
+  if (profileAddress) {
+    profileAddress.textContent = user.address || "Not provided";
+  }
+
+  if (profileCity) {
+    profileCity.textContent = user.city || "Not provided";
+  }
+
+  if (profilePostal) {
+    profilePostal.textContent = user.postal_code || "Not provided";
+  }
+
+  if (profileRole) {
+    const roleText = user.role === "admin" ? "Administrator" : "Customer";
+    profileRole.textContent = roleText;
+  }
+
+  if (profileCreated && user.created_at) {
+    // Format the date nicely
+    const date = new Date(user.created_at);
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    profileCreated.textContent = date.toLocaleDateString("en-US", options);
+  } else if (profileCreated) {
+    profileCreated.textContent = "Recently";
   }
 
   // Profile photo change
@@ -775,7 +894,40 @@ function initProfilePage() {
 
 // Products page initialization
 function initProductsPage(params) {
-  console.log("Initializing products page");
+  console.log("Initializing products page with params:", params);
+
+  const productsGrid = document.querySelector(".products-grid");
+  if (!productsGrid) return;
+
+  // Show loading state
+  productsGrid.innerHTML =
+    '<div style="text-align:center; padding:2rem;">Loading products...</div>';
+
+  // Determine what to load based on params
+  const categoryParam = params.category;
+
+  if (categoryParam) {
+    // Load products by category
+    // For now, load all and filter client-side (you can map category names to IDs later)
+    ProductService.getAll(
+      50,
+      0,
+      function (products) {
+        displayProducts(products, productsGrid);
+      },
+      handleProductsError
+    );
+  } else {
+    // Load all products
+    ProductService.getAll(
+      50,
+      0,
+      function (products) {
+        displayProducts(products, productsGrid);
+      },
+      handleProductsError
+    );
+  }
 
   // Category filter links
   document
@@ -787,19 +939,78 @@ function initProductsPage(params) {
         window.location.hash = href.substring(1);
       });
     });
+}
 
-  // Favorite buttons
+// Helper function to display products
+function displayProducts(products, container) {
+  if (products && products.length > 0) {
+    container.innerHTML = products
+      .map(
+        (product) => `
+      <div class="product-card">
+        <button class="favorite-btn" aria-label="Add to favorites">
+          <i class="far fa-heart"></i>
+        </button>
+        <img
+          src="${
+            product.image_url ||
+            "https://images.unsplash.com/photo-1540574163026-643ea20ade25?w=600"
+          }"
+          alt="${product.name}"
+          class="product-image"
+        />
+        <div class="product-content">
+          <h3 class="product-title">${product.name}</h3>
+          <p class="product-category">${
+            product.category_name || "Furniture"
+          }</p>
+          <div class="product-price">$${parseFloat(product.price).toFixed(
+            2
+          )}</div>
+          <div class="product-actions">
+            <a href="#single-product/${
+              product.product_id
+            }" class="btn-see-more">View Details</a>
+          </div>
+        </div>
+      </div>
+    `
+      )
+      .join("");
+
+    // Initialize favorite buttons
+    initFavoriteButtons();
+  } else {
+    container.innerHTML =
+      '<div style="text-align:center; padding:2rem;">No products available</div>';
+  }
+}
+
+// Helper function to handle products error
+function handleProductsError(error) {
+  const productsGrid = document.querySelector(".products-grid");
+  if (productsGrid) {
+    productsGrid.innerHTML =
+      '<div style="text-align:center; padding:2rem; color:red;">Failed to load products</div>';
+  }
+  console.error("Failed to load products:", error);
+}
+
+// Initialize favorite buttons
+function initFavoriteButtons() {
   document.querySelectorAll(".favorite-btn").forEach((btn) => {
-    if (!btn.closest(".liked-item-card")) {
-      btn.addEventListener("click", function () {
+    if (!btn.dataset.initialized) {
+      btn.dataset.initialized = "true";
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
         this.classList.toggle("active");
         const icon = this.querySelector("i");
         if (icon.classList.contains("far")) {
           icon.className = "fas fa-heart";
-          showToast("Added to favorites!");
+          showToast("Added to favorites!", "success");
         } else {
           icon.className = "far fa-heart";
-          showToast("Removed from favorites!");
+          showToast("Removed from favorites!", "info");
         }
       });
     }

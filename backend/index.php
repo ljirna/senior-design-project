@@ -25,9 +25,14 @@ error_reporting(E_ALL);
 
 // This wildcard route intercepts all requests and applies authentication checks before proceeding.
 Flight::route('/*', function () {
+    $url = Flight::request()->url;
+
+    // Public routes that don't require authentication
     if (
-        strpos(Flight::request()->url, '/auth/login') === 0 ||
-        strpos(Flight::request()->url, '/auth/register') === 0
+        strpos($url, '/auth/login') === 0 ||
+        strpos($url, '/auth/register') === 0 ||
+        strpos($url, '/products') === 0 ||
+        strpos($url, '/categories') === 0
     ) {
         return TRUE;
     } else {

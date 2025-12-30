@@ -3,6 +3,7 @@ require_once __DIR__ . '/../services/ProductService.php';
 
 Flight::group('/products', function () {
     // --- PUBLIC ROUTES (no auth needed) ---
+    // NOTE: Specific routes MUST come before wildcard routes (/@product_id)
 
     // Get all products with pagination - PUBLIC
     Flight::route('GET /', function () {
@@ -11,14 +12,42 @@ Flight::group('/products', function () {
         Flight::json(Flight::productService()->getAllProducts($limit, $offset));
     });
 
-    // Get single product - PUBLIC
-    Flight::route('GET /@product_id', function ($product_id) {
-        $product = Flight::productService()->getProductById($product_id);
-        if ($product) {
-            Flight::json($product);
-        } else {
-            Flight::json(['error' => 'Product not found'], 404);
-        }
+    // Get featured products - PUBLIC
+    Flight::route('GET /featured', function () {
+        $limit = Flight::request()->query['limit'] ?? 8;
+        Flight::json(Flight::productService()->getFeaturedProducts($limit));
+    });
+
+    // Get new arrivals - PUBLIC
+    Flight::route('GET /new-arrivals', function () {
+        $limit = Flight::request()->query['limit'] ?? 8;
+        Flight::json(Flight::productService()->getNewArrivals($limit));
+    });
+
+    // Search products - PUBLIC
+    Flight::route('GET /search', function () {
+        $search_term = Flight::request()->query['q'] ?? '';
+        $limit = Flight::request()->query['limit'] ?? 20;
+        $offset = Flight::request()->query['offset'] ?? 0;
+
+        Flight::json(Flight::productService()->searchProducts($search_term, $limit, $offset));
+    });
+
+    // Get products by price range - PUBLIC
+    Flight::route('GET /price-range', function () {
+        $min_price = Flight::request()->query['min'] ?? 0;
+        $max_price = Flight::request()->query['max'] ?? 10000;
+        $category_id = Flight::request()->query['category'] ?? null;
+
+        Flight::json(Flight::productService()->getProductsByPriceRange($min_price, $max_price, $category_id));
+    });
+
+    // Get products by category - PUBLIC
+    Flight::route('GET /category/@category_id', function ($category_id) {
+        $limit = Flight::request()->query['limit'] ?? 20;
+        $offset = Flight::request()->query['offset'] ?? 0;
+
+        Flight::json(Flight::productService()->getProductsByCategory($category_id, $limit, $offset));
     });
 
     // Get product with fees calculation - PUBLIC
@@ -43,26 +72,6 @@ Flight::group('/products', function () {
         }
     });
 
-    // Get featured products - PUBLIC
-    Flight::route('GET /featured', function () {
-        $limit = Flight::request()->query['limit'] ?? 8;
-        Flight::json(Flight::productService()->getFeaturedProducts($limit));
-    });
-
-    // Get new arrivals - PUBLIC
-    Flight::route('GET /new-arrivals', function () {
-        $limit = Flight::request()->query['limit'] ?? 8;
-        Flight::json(Flight::productService()->getNewArrivals($limit));
-    });
-
-    // Get products by category - PUBLIC
-    Flight::route('GET /category/@category_id', function ($category_id) {
-        $limit = Flight::request()->query['limit'] ?? 20;
-        $offset = Flight::request()->query['offset'] ?? 0;
-
-        Flight::json(Flight::productService()->getProductsByCategory($category_id, $limit, $offset));
-    });
-
     // Get related products - PUBLIC
     Flight::route('GET /@product_id/related', function ($product_id) {
         $limit = Flight::request()->query['limit'] ?? 4;
@@ -83,22 +92,14 @@ Flight::group('/products', function () {
         Flight::json($related);
     });
 
-    // Search products - PUBLIC
-    Flight::route('GET /search', function () {
-        $search_term = Flight::request()->query['q'] ?? '';
-        $limit = Flight::request()->query['limit'] ?? 20;
-        $offset = Flight::request()->query['offset'] ?? 0;
-
-        Flight::json(Flight::productService()->searchProducts($search_term, $limit, $offset));
-    });
-
-    // Get products by price range - PUBLIC
-    Flight::route('GET /price-range', function () {
-        $min_price = Flight::request()->query['min'] ?? 0;
-        $max_price = Flight::request()->query['max'] ?? 10000;
-        $category_id = Flight::request()->query['category'] ?? null;
-
-        Flight::json(Flight::productService()->getProductsByPriceRange($min_price, $max_price, $category_id));
+    // Get single product - PUBLIC (MUST be last among GET routes)
+    Flight::route('GET /@product_id', function ($product_id) {
+        $product = Flight::productService()->getProductById($product_id);
+        if ($product) {
+            Flight::json($product);
+        } else {
+            Flight::json(['error' => 'Product not found'], 404);
+        }
     });
 
     // Validate product stock - BOTH admin and customer

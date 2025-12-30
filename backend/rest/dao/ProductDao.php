@@ -9,7 +9,8 @@ class ProductDao extends BaseDao
     }
 
     // Basic CRUD
-    public function getProductById($product_id) {
+    public function getProductById($product_id)
+    {
         $stmt = $this->connection->prepare("
             SELECT p.*, c.name as category_name 
             FROM products p 
@@ -22,9 +23,11 @@ class ProductDao extends BaseDao
     }
 
     // 1. Product Listing & Filtering
-    public function getAllProducts($limit = 20, $offset = 0) {
+    public function getAllProducts($limit = 20, $offset = 0)
+    {
         $stmt = $this->connection->prepare("
-            SELECT p.*, c.name as category_name 
+            SELECT p.*, c.name as category_name,
+                   (SELECT image_url FROM product_images WHERE product_id = p.product_id LIMIT 1) as image_url
             FROM products p 
             JOIN categories c ON p.category_id = c.category_id 
             ORDER BY p.created_at DESC 
@@ -36,9 +39,11 @@ class ProductDao extends BaseDao
         return $stmt->fetchAll();
     }
 
-    public function getProductsByCategory($category_id, $limit = 20, $offset = 0) {
+    public function getProductsByCategory($category_id, $limit = 20, $offset = 0)
+    {
         $stmt = $this->connection->prepare("
-            SELECT p.*, c.name as category_name 
+            SELECT p.*, c.name as category_name,
+                   (SELECT image_url FROM product_images WHERE product_id = p.product_id LIMIT 1) as image_url
             FROM products p 
             JOIN categories c ON p.category_id = c.category_id 
             WHERE p.category_id = :category_id 
@@ -53,9 +58,11 @@ class ProductDao extends BaseDao
     }
 
     // 2. Search Functionality
-    public function searchProducts($search_term, $limit = 20, $offset = 0) {
+    public function searchProducts($search_term, $limit = 20, $offset = 0)
+    {
         $stmt = $this->connection->prepare("
-            SELECT p.*, c.name as category_name 
+            SELECT p.*, c.name as category_name,
+                   (SELECT image_url FROM product_images WHERE product_id = p.product_id LIMIT 1) as image_url
             FROM products p 
             JOIN categories c ON p.category_id = c.category_id 
             WHERE p.name LIKE :search 
@@ -80,20 +87,22 @@ class ProductDao extends BaseDao
     }
 
     // 3. Price Filtering
-    public function getProductsByPriceRange($min_price, $max_price, $category_id = null) {
+    public function getProductsByPriceRange($min_price, $max_price, $category_id = null)
+    {
         $sql = "
-            SELECT p.*, c.name as category_name 
+            SELECT p.*, c.name as category_name,
+                   (SELECT image_url FROM product_images WHERE product_id = p.product_id LIMIT 1) as image_url
             FROM products p 
             JOIN categories c ON p.category_id = c.category_id 
             WHERE p.price BETWEEN :min_price AND :max_price
         ";
-        
+
         if ($category_id) {
             $sql .= " AND p.category_id = :category_id";
         }
-        
+
         $sql .= " ORDER BY p.price ASC";
-        
+
         $stmt = $this->connection->prepare($sql);
         $stmt->bindParam(':min_price', $min_price);
         $stmt->bindParam(':max_price', $max_price);
@@ -105,9 +114,11 @@ class ProductDao extends BaseDao
     }
 
     // 4. Featured & Popular Products
-    public function getFeaturedProducts($limit = 8) {
+    public function getFeaturedProducts($limit = 8)
+    {
         $stmt = $this->connection->prepare("
-            SELECT p.*, c.name as category_name 
+            SELECT p.*, c.name as category_name,
+                   (SELECT image_url FROM product_images WHERE product_id = p.product_id LIMIT 1) as image_url
             FROM products p 
             JOIN categories c ON p.category_id = c.category_id 
             ORDER BY RAND() 
@@ -118,9 +129,11 @@ class ProductDao extends BaseDao
         return $stmt->fetchAll();
     }
 
-    public function getNewArrivals($limit = 8) {
+    public function getNewArrivals($limit = 8)
+    {
         $stmt = $this->connection->prepare("
-            SELECT p.*, c.name as category_name 
+            SELECT p.*, c.name as category_name,
+                   (SELECT image_url FROM product_images WHERE product_id = p.product_id LIMIT 1) as image_url
             FROM products p 
             JOIN categories c ON p.category_id = c.category_id 
             ORDER BY p.created_at DESC 
@@ -132,9 +145,11 @@ class ProductDao extends BaseDao
     }
 
     // 5. Related Products
-    public function getRelatedProducts($product_id, $category_id, $limit = 4) {
+    public function getRelatedProducts($product_id, $category_id, $limit = 4)
+    {
         $stmt = $this->connection->prepare("
-            SELECT p.*, c.name as category_name 
+            SELECT p.*, c.name as category_name,
+                   (SELECT image_url FROM product_images WHERE product_id = p.product_id LIMIT 1) as image_url
             FROM products p 
             JOIN categories c ON p.category_id = c.category_id 
             WHERE p.product_id != :product_id 
@@ -150,20 +165,23 @@ class ProductDao extends BaseDao
     }
 
     // 6. Pagination Counts
-    public function countAllProducts() {
+    public function countAllProducts()
+    {
         $stmt = $this->connection->prepare("SELECT COUNT(*) as total FROM products");
         $stmt->execute();
         return $stmt->fetch()['total'];
     }
 
-    public function countProductsByCategory($category_id) {
+    public function countProductsByCategory($category_id)
+    {
         $stmt = $this->connection->prepare("SELECT COUNT(*) as total FROM products WHERE category_id = :category_id");
         $stmt->bindParam(':category_id', $category_id);
         $stmt->execute();
         return $stmt->fetch()['total'];
     }
 
-    public function countSearchResults($search_term) {
+    public function countSearchResults($search_term)
+    {
         $stmt = $this->connection->prepare("
             SELECT COUNT(*) as total 
             FROM products p 
@@ -179,7 +197,8 @@ class ProductDao extends BaseDao
     }
 
     // 7. Product Images (if separate table)
-    public function getProductImages($product_id) {
+    public function getProductImages($product_id)
+    {
         $stmt = $this->connection->prepare("
             SELECT * FROM product_images 
             WHERE product_id = :product_id 
@@ -191,7 +210,8 @@ class ProductDao extends BaseDao
     }
 
     // 8. Product with Fees (from our previous discussion)
-    public function getProductWithFees($product_id) {
+    public function getProductWithFees($product_id)
+    {
         $stmt = $this->connection->prepare("
             SELECT 
                 p.*,
@@ -211,7 +231,8 @@ class ProductDao extends BaseDao
     }
 
     // 9. Update Stock/Inventory
-    public function updateStock($product_id, $quantity) {
+    public function updateStock($product_id, $quantity)
+    {
         $stmt = $this->connection->prepare("
             UPDATE products 
             SET stock_quantity = stock_quantity - :quantity 
