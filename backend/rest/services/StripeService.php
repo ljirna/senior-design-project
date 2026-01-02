@@ -3,6 +3,7 @@ require_once __DIR__ . '/BaseService.php';
 require_once __DIR__ . '/../dao/PaymentDao.php';
 require_once __DIR__ . '/../dao/OrderDao.php';
 require_once __DIR__ . '/../../vendor/autoload.php';
+require_once __DIR__ . '/StreamHttpClient.php';
 
 class StripeService
 {
@@ -18,6 +19,12 @@ class StripeService
         // Load Stripe config
         $config = require __DIR__ . '/../../stripe.php';
         \Stripe\Stripe::setApiKey($config['secret_key']);
+
+        // Use stream-based HTTP client as fallback when cURL is not available
+        if (!function_exists('curl_version')) {
+            \Stripe\ApiRequestor::setHttpClient(new \StripeCustom\StreamHttpClient());
+        }
+
         $requested = strtolower($config['currency'] ?? 'usd');
         if (in_array($requested, $this->supportedCurrencies, true)) {
             $this->currency = $requested;
@@ -89,9 +96,14 @@ class StripeService
             }
 
             // Save Stripe payment intent ID to order
-            $this->orderDao->update($order_id, [
-                'stripe_payment_intent_id' => $paymentIntent->id
-            ]);
+            try {
+                $this->orderDao->update([
+                    'stripe_payment_intent_id' => $paymentIntent->id
+                ], $order_id, 'order_id');
+            } catch (Exception $updateError) {
+                // Log but don't fail if update fails
+                error_log("Failed to update order with payment intent ID: " . $updateError->getMessage());
+            }
 
             return [
                 'client_secret' => $paymentIntent->client_secret,
@@ -101,7 +113,26 @@ class StripeService
             ];
         } catch (\Stripe\Exception\ApiErrorException $e) {
             throw new Exception("Stripe error: " . $e->getMessage());
+        } catch (Exception $e) {
+            throw new Exception("Error creating payment intent: " . $e->getMessage());
         }
+    }
+
+    /**
+     * Map Stripe payment status to database-compatible status (single char)
+     */
+    private function mapStripeStatus($stripeStatus)
+    {
+        $statusMap = [
+            'succeeded' => 'p',
+            'processing' => 'r',
+            'requires_action' => 'w',
+            'requires_payment_method' => 'w',
+            'requires_confirmation' => 'w',
+            'canceled' => 'f'
+        ];
+
+        return $statusMap[$stripeStatus] ?? 'w';
     }
 
     /**
@@ -110,48 +141,46 @@ class StripeService
     public function confirmPayment($payment_intent_id, $payment_method_id)
     {
         try {
-            // Attach payment method to payment intent
+            // Retrieve the payment intent first
             $paymentIntent = \Stripe\PaymentIntent::retrieve($payment_intent_id);
-            $paymentIntent = \Stripe\PaymentIntent::update($payment_intent_id, [
-                'payment_method' => $payment_method_id,
-            ]);
 
-            // Confirm the payment
-            //$paymentIntent = \Stripe\PaymentIntent::confirm($payment_intent_id);
+            // Check if payment intent is already succeeded or doesn't need confirmation
+            if ($paymentIntent->status === 'succeeded') {
+                // Record intent on order, leave order status for admin to finalize
+                $this->orderDao->update([
+                    'stripe_payment_intent_id' => $payment_intent_id
+                ], $paymentIntent->metadata->order_id, 'order_id');
 
-            // Get payment method details
+                return [
+                    'status' => $paymentIntent->status,
+                    'amount_paid' => $paymentIntent->amount / 100,
+                    'message' => 'Payment received; your order will be processed soon.'
+                ];
+            }
+
+            // Confirm the payment intent with the provided payment method if not already confirmed
+            if (in_array($paymentIntent->status, ['requires_payment_method', 'requires_action'])) {
+                $paymentIntent = $paymentIntent->confirm(
+                    [
+                        'payment_method' => $payment_method_id,
+                    ]
+                );
+            }
+
+            // Get payment method details (optional fetch, not stored)
             $paymentMethod = \Stripe\PaymentMethod::retrieve($payment_method_id);
 
-            // Prepare payment data for database
-            $payment_data = [
-                'order_id' => $paymentIntent->metadata->order_id,
-                'payment_method' => 'credit_card',
-                'amount' => $paymentIntent->amount / 100,
-                'payment_status' => $paymentIntent->status,
-                'payment_date' => date('Y-m-d H:i:s'),
-                'stripe_payment_intent_id' => $payment_intent_id,
-                'stripe_customer_id' => $paymentIntent->customer ?? null,
-                'card_last4' => $paymentMethod->card->last4 ?? null,
-                'card_brand' => $paymentMethod->card->brand ?? null,
-                'receipt_url' => $paymentIntent->charges->data[0]->receipt_url ?? null
-            ];
-
-            // Create payment record
-            $payment_id = $this->paymentDao->createPaymentWithStripe($payment_data);
-
-            // Update order status if payment succeeded
-            if ($paymentIntent->status == 'succeeded') {
-                $this->orderDao->updateOrderStatus($paymentIntent->metadata->order_id, 'approved');
-                $this->orderDao->update($paymentIntent->metadata->order_id, [
-                    'stripe_payment_status' => 'completed'
-                ]);
+            if ($paymentIntent->status === 'succeeded') {
+                // Record intent on order, leave order status for admin to finalize
+                $this->orderDao->update([
+                    'stripe_payment_intent_id' => $payment_intent_id
+                ], $paymentIntent->metadata->order_id, 'order_id');
             }
 
             return [
-                'payment_id' => $payment_id,
                 'status' => $paymentIntent->status,
                 'amount_paid' => $paymentIntent->amount / 100,
-                'receipt_url' => $paymentIntent->charges->data[0]->receipt_url ?? null
+                'message' => 'Payment received; your order will be processed soon.'
             ];
         } catch (\Stripe\Exception\ApiErrorException $e) {
             throw new Exception("Payment failed: " . $e->getMessage());

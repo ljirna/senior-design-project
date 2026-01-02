@@ -630,6 +630,9 @@ function initPageScripts(page, params) {
     case "cart":
       initCartPage();
       break;
+    case "payment":
+      initPaymentPage();
+      break;
     case "login":
       initLoginPage();
       break;
@@ -1924,6 +1927,439 @@ function removeFromCart(productId) {
   loadCartItems();
   updateCartBadge();
   showToast("Item removed from cart", "success");
+}
+
+// Lazy-load Stripe.js
+let stripeLibPromise = null;
+function loadStripeLibrary() {
+  if (window.Stripe) return Promise.resolve();
+  if (!stripeLibPromise) {
+    stripeLibPromise = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = "https://js.stripe.com/v3/";
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error("Failed to load Stripe.js"));
+      document.head.appendChild(script);
+    });
+  }
+  return stripeLibPromise;
+}
+
+// Payment page initialization
+async function initPaymentPage() {
+  console.log("Initializing payment page");
+
+  if (!appState.user) {
+    window.location.hash = "login";
+    return;
+  }
+
+  if (!appState.cart || appState.cart.length === 0) {
+    window.location.hash = "cart";
+    return;
+  }
+
+  const subtotalEl = document.getElementById("subtotal");
+  const deliveryFeeEl = document.getElementById("delivery-fee");
+  const assemblyFeeEl = document.getElementById("assembly-fee");
+  const orderTotalEl = document.getElementById("order-total");
+  const totalAmountEl = document.getElementById("total-amount");
+  const deliveryOptionEls = document.querySelectorAll(
+    "input[name='delivery-option']"
+  );
+  const assemblyOptionEls = document.querySelectorAll(
+    "input[name='assembly-option']"
+  );
+  const statusBlock = document.getElementById("payment-status");
+  const payNowBtn = document.getElementById("pay-now");
+
+  let stripe;
+  let elements;
+  let cardNumber;
+  let cardExpiry;
+  let cardCvc;
+  let clientSecret;
+  let paymentIntentId;
+  let orderId;
+  let serverTotals = null;
+  // Default to no-fee choices; user must opt into paid options
+  let deliveryType = "store_pickup";
+  let assemblyOption = "package";
+
+  const initialTotals = renderLocalSummary();
+  updatePayButton(initialTotals.total);
+
+  function applyTotalsFromServer(totals) {
+    if (!totals) return;
+    serverTotals = totals;
+    // Render with current selection to zero-out free options client-side too
+    const rendered = renderLocalSummary();
+    if (rendered?.total > 0) updatePayButton(rendered.total);
+  }
+
+  async function refreshOrderAndIntent() {
+    const orderData = await ensureOrderExists();
+    orderId = orderData.order_id;
+    applyTotalsFromServer(orderData.totals || null);
+
+    const intent = await createPaymentIntent(orderId);
+    clientSecret = intent.client_secret;
+    paymentIntentId = intent.payment_intent_id;
+
+    if (typeof intent.amount === "number") {
+      applyTotalsFromServer({
+        subtotal: serverTotals?.subtotal,
+        delivery_total: serverTotals?.delivery_total,
+        assembly_total: serverTotals?.assembly_total,
+        total_amount: intent.amount,
+      });
+    }
+  }
+
+  try {
+    await loadStripeLibrary();
+    const config = await getStripeConfig();
+    stripe = Stripe(config.publishableKey);
+    elements = stripe.elements();
+
+    await refreshOrderAndIntent();
+
+    const style = {
+      base: {
+        color: "#32325d",
+        fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+        fontSmoothing: "antialiased",
+        fontSize: "16px",
+        "::placeholder": { color: "#aab7c4" },
+      },
+      invalid: { color: "#fa755a", iconColor: "#fa755a" },
+    };
+
+    cardNumber = elements.create("cardNumber", { style });
+    cardExpiry = elements.create("cardExpiry", { style });
+    cardCvc = elements.create("cardCvc", { style });
+
+    cardNumber.mount("#card-number-element");
+    cardExpiry.mount("#card-expiry-element");
+    cardCvc.mount("#card-cvc-element");
+
+    [
+      { el: cardNumber, target: "card-number-error" },
+      { el: cardExpiry, target: "card-expiry-error" },
+      { el: cardCvc, target: "card-cvc-error" },
+    ].forEach(({ el, target }) => {
+      el.on("change", (event) => {
+        const displayError = document.getElementById(target);
+        if (!displayError) return;
+        displayError.textContent = event.error ? event.error.message : "";
+      });
+    });
+
+    if (payNowBtn) {
+      payNowBtn.onclick = () => processPayment();
+    }
+
+    // Listen for delivery/pickup changes
+    deliveryOptionEls.forEach((el) => {
+      el.addEventListener("change", async () => {
+        deliveryType = el.value;
+        await refreshOrderAndIntent();
+      });
+    });
+
+    // Listen for assembly option changes
+    assemblyOptionEls.forEach((el) => {
+      el.addEventListener("change", async () => {
+        assemblyOption = el.value;
+        await refreshOrderAndIntent();
+      });
+    });
+
+    const backToCartBtn = document.getElementById("back-to-cart");
+    if (backToCartBtn) {
+      backToCartBtn.onclick = () => (window.location.hash = "cart");
+    }
+  } catch (err) {
+    console.error("Payment init failed", err);
+    showPayError(err.message || "Payment initialization failed");
+  }
+
+  function renderLocalSummary() {
+    let subtotal = 0;
+    appState.cart.forEach((item) => {
+      const price =
+        parseFloat(String(item.price).replace(/[^0-9.\-]+/g, "")) || 0;
+      subtotal += price * (item.quantity || 1);
+    });
+
+    if (serverTotals) {
+      const baseSubtotal = serverTotals.subtotal ?? subtotal;
+      const baseDelivery = serverTotals.delivery_total ?? 0;
+      const baseAssembly = serverTotals.assembly_total ?? 0;
+
+      const delivery = deliveryType === "home" ? baseDelivery : 0;
+      const assembly = assemblyOption === "worker_assembly" ? baseAssembly : 0;
+      const total = baseSubtotal + delivery + assembly;
+
+      if (subtotalEl) subtotalEl.textContent = `$${baseSubtotal.toFixed(2)}`;
+      if (deliveryFeeEl) deliveryFeeEl.textContent = `$${delivery.toFixed(2)}`;
+      if (assemblyFeeEl) assemblyFeeEl.textContent = `$${assembly.toFixed(2)}`;
+      if (orderTotalEl) orderTotalEl.textContent = `$${total.toFixed(2)}`;
+      if (totalAmountEl) totalAmountEl.textContent = total.toFixed(2);
+      return {
+        subtotal: baseSubtotal,
+        delivery,
+        assembly,
+        total,
+      };
+    }
+
+    const delivery = deliveryType === "home" ? 0 : 0;
+    const assembly = assemblyOption === "worker_assembly" ? 0 : 0;
+    const total = subtotal + delivery + assembly;
+
+    if (subtotalEl) subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
+    if (deliveryFeeEl) deliveryFeeEl.textContent = `$${delivery.toFixed(2)}`;
+    if (assemblyFeeEl) assemblyFeeEl.textContent = `$${assembly.toFixed(2)}`;
+    if (orderTotalEl) orderTotalEl.textContent = `$${total.toFixed(2)}`;
+    if (totalAmountEl) totalAmountEl.textContent = total.toFixed(2);
+    return { subtotal, delivery, assembly, total };
+  }
+
+  function updatePayButton(total) {
+    if (payNowBtn) {
+      payNowBtn.innerHTML = `<i class="fas fa-lock"></i> Pay $${total.toFixed(
+        2
+      )}`;
+    }
+  }
+
+  function ensureOrderExists() {
+    return new Promise((resolve, reject) => {
+      const user = appState.user;
+      const addressParts = [user.address, user.city, user.postal_code].filter(
+        Boolean
+      );
+      if (addressParts.length === 0) {
+        return reject(
+          new Error("Please add your address in profile before checkout.")
+        );
+      }
+
+      const payload = {
+        shipping_address: addressParts.join(", "),
+        delivery_type: deliveryType,
+        assembly_option: assemblyOption,
+        items: appState.cart.map((item) => ({
+          product_id: parseInt(item.id, 10) || item.id,
+          quantity: item.quantity || 1,
+        })),
+      };
+
+      RestClient.post(
+        "orders/from-cart",
+        payload,
+        (res) => {
+          if (res?.success && res?.order_id) {
+            resolve({
+              order_id: res.order_id,
+              totals: res.totals || null,
+            });
+          } else {
+            reject(
+              new Error(res?.error || res?.message || "Could not create order")
+            );
+          }
+        },
+        (err) => {
+          reject(
+            new Error(
+              err?.responseJSON?.error ||
+                err?.responseText ||
+                "Could not create order"
+            )
+          );
+        }
+      );
+    });
+  }
+
+  function getStripeConfig() {
+    return new Promise((resolve, reject) => {
+      RestClient.get(
+        "stripe/config",
+        (res) => resolve(res),
+        (err) =>
+          reject(
+            new Error(
+              err?.responseJSON?.error ||
+                err?.responseText ||
+                "Failed to load Stripe config"
+            )
+          )
+      );
+    });
+  }
+
+  function createPaymentIntent(orderId) {
+    return new Promise((resolve, reject) => {
+      RestClient.post(
+        "stripe/create-payment-intent",
+        { order_id: orderId },
+        (res) => {
+          if (res?.success && res?.data?.client_secret) {
+            resolve(res.data);
+          } else {
+            reject(
+              new Error(
+                res?.error || res?.message || "Failed to create payment intent"
+              )
+            );
+          }
+        },
+        (err) => {
+          reject(
+            new Error(
+              err?.responseJSON?.error ||
+                err?.responseText ||
+                "Failed to create payment intent"
+            )
+          );
+        }
+      );
+    });
+  }
+
+  async function processPayment() {
+    if (!stripe || !clientSecret) return;
+    if (payNowBtn) {
+      payNowBtn.disabled = true;
+      payNowBtn.textContent = "Processing...";
+    }
+    if (statusBlock) statusBlock.style.display = "block";
+
+    try {
+      const cardholderName =
+        document.getElementById("cardholder-name")?.value ||
+        appState.user.full_name ||
+        "Customer";
+      const result = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: cardNumber,
+          billing_details: {
+            name: cardholderName,
+            email: appState.user.email,
+          },
+        },
+      });
+
+      if (result.error) {
+        throw new Error(result.error.message || "Payment failed");
+      }
+
+      const paymentIntent = result.paymentIntent;
+      paymentIntentId = paymentIntent.id;
+
+      await new Promise((resolve, reject) => {
+        RestClient.post(
+          "stripe/confirm-payment",
+          {
+            payment_intent_id: paymentIntent.id,
+            payment_method_id: paymentIntent.payment_method,
+          },
+          (res) => {
+            if (res?.success) return resolve();
+            reject(new Error(res?.error || "Could not finalize payment"));
+          },
+          (err) => {
+            reject(
+              new Error(
+                err?.responseJSON?.error ||
+                  err?.responseText ||
+                  "Could not finalize payment"
+              )
+            );
+          }
+        );
+      });
+
+      appState.cart = [];
+      localStorage.removeItem("zimCart");
+      updateCartBadge();
+      showPaySuccess(paymentIntent.status, orderId);
+    } catch (err) {
+      console.error("Payment error", err);
+      showPayError(err.message || "Payment failed");
+    } finally {
+      if (statusBlock) statusBlock.style.display = "none";
+      if (payNowBtn) {
+        payNowBtn.disabled = false;
+        updatePayButton(renderLocalSummary().total);
+      }
+    }
+  }
+
+  function showPaySuccess(status, orderIdValue) {
+    const successModal = document.getElementById("success-modal");
+    if (successModal) successModal.style.display = "flex";
+    showToast(
+      "Payment received. We'll process your order soon.",
+      "success",
+      4000
+    );
+
+    const orderNumEl = document.getElementById("order-number");
+    const payTotalEl = document.getElementById("payment-total");
+    const payDateEl = document.getElementById("payment-date");
+    const payMethodEl = document.getElementById("payment-method");
+
+    if (orderNumEl && orderIdValue) orderNumEl.textContent = `#${orderIdValue}`;
+    if (payTotalEl && orderTotalEl)
+      payTotalEl.textContent = orderTotalEl.textContent;
+    if (payDateEl) payDateEl.textContent = new Date().toLocaleString();
+    if (payMethodEl) payMethodEl.textContent = `Card (${status})`;
+
+    const continueBtn = document.getElementById("continue-shopping");
+    if (continueBtn) {
+      continueBtn.onclick = () => {
+        successModal.style.display = "none";
+        window.location.hash = "home";
+      };
+    }
+
+    const viewOrderBtn = document.getElementById("view-order-details");
+    if (viewOrderBtn) {
+      viewOrderBtn.onclick = () => {
+        successModal.style.display = "none";
+        window.location.hash = "orders";
+      };
+    }
+  }
+
+  function showPayError(message) {
+    const errorModal = document.getElementById("error-modal");
+    const errorMessageEl = document.getElementById("error-message");
+    if (errorMessageEl)
+      errorMessageEl.textContent = message || "Payment failed";
+    if (errorModal) errorModal.style.display = "flex";
+    showToast(message || "Payment failed", "error", 4000);
+
+    const tryAgainBtn = document.getElementById("try-again");
+    if (tryAgainBtn) {
+      tryAgainBtn.onclick = () => {
+        errorModal.style.display = "none";
+      };
+    }
+
+    const closeErrorBtn = document.getElementById("close-error");
+    if (closeErrorBtn) {
+      closeErrorBtn.onclick = () => {
+        errorModal.style.display = "none";
+      };
+    }
+
+    if (window.toastr) toastr.error(message);
+  }
 }
 
 // Logout function

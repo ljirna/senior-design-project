@@ -2,6 +2,18 @@
 require_once __DIR__ . '/../services/OrderService.php';
 
 Flight::group('/orders', function () {
+    // Helper to get current user id safely
+    $getCurrentUserId = function () {
+        $u = Flight::get('user');
+        if (is_array($u)) {
+            return $u['id'] ?? $u['user_id'] ?? null;
+        }
+        if (is_object($u)) {
+            return $u->id ?? $u->user_id ?? null;
+        }
+        return null;
+    };
+
     // Get user's orders - BOTH admin and customer (their own)
     Flight::route('GET /', function () {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
@@ -41,11 +53,19 @@ Flight::group('/orders', function () {
     });
 
     // Create order from cart - BOTH admin and customer
-    Flight::route('POST /from-cart', function () {
+    Flight::route('POST /from-cart', function () use ($getCurrentUserId) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
-        $user = Flight::get('user');
+        $user_id = $getCurrentUserId();
+        if (!$user_id) {
+            Flight::json(['error' => 'User not found'], 401);
+            return;
+        }
+
         $data = Flight::request()->data->getData();
+        if (is_object($data)) {
+            $data = (array)$data;
+        }
 
         $validation = Flight::orderService()->validateOrderData($data);
         if (!$validation['valid']) {
@@ -54,11 +74,14 @@ Flight::group('/orders', function () {
         }
 
         try {
-            $order_id = Flight::orderService()->createOrderFromCart($user['id'], $data);
+            $order = Flight::orderService()->createOrderFromCart($user_id, $data);
             Flight::json([
                 'success' => true,
                 'message' => 'Order created successfully',
-                'order_id' => $order_id
+                'order_id' => $order['order_id'],
+                'totals' => $order['totals'] ?? null,
+                'delivery_type' => $order['delivery_type'] ?? null,
+                'assembly_option' => $order['assembly_option'] ?? null
             ], 201);
         } catch (Exception $e) {
             Flight::json(['error' => $e->getMessage()], 400);

@@ -2,7 +2,19 @@
 require_once __DIR__ . '/../services/PaymentService.php';
 require_once __DIR__ . '/../services/StripeService.php';
 
-Flight::group('/payments', function () {
+// Helper to resolve current user id from Flight::get('user')
+$getCurrentUserId = function () {
+    $u = Flight::get('user');
+    if (is_array($u)) {
+        return $u['id'] ?? $u['user_id'] ?? null;
+    }
+    if (is_object($u)) {
+        return $u->id ?? $u->user_id ?? null;
+    }
+    return null;
+};
+
+Flight::group('/payments', function () use ($getCurrentUserId) {
     // Get payment by ID - ADMIN or user who owns the order
     Flight::route('GET /@payment_id', function ($payment_id) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
@@ -233,7 +245,7 @@ Flight::group('/payments', function () {
 
 // ========== STRIPE ROUTES ==========
 
-Flight::group('/stripe', function () {
+Flight::group('/stripe', function () use ($getCurrentUserId) {
     // Get Stripe configuration - BOTH admin and customer
     Flight::route('GET /config', function () {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
@@ -247,10 +259,13 @@ Flight::group('/stripe', function () {
     });
 
     // Create Stripe Payment Intent - BOTH admin and customer
-    Flight::route('POST /create-payment-intent', function () {
+    Flight::route('POST /create-payment-intent', function () use ($getCurrentUserId) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
-
-        $user = Flight::get('user');
+        $user_id = $getCurrentUserId ? $getCurrentUserId() : null;
+        if (!$user_id) {
+            Flight::json(['error' => 'User not found'], 401);
+            return;
+        }
         $data = Flight::request()->data->getData();
 
         if (!isset($data['order_id'])) {
@@ -259,7 +274,7 @@ Flight::group('/stripe', function () {
         }
 
         try {
-            $result = Flight::stripeService()->createPaymentIntent($data['order_id'], $user['id']);
+            $result = Flight::stripeService()->createPaymentIntent($data['order_id'], $user_id);
             Flight::json([
                 'success' => true,
                 'data' => $result
@@ -273,7 +288,14 @@ Flight::group('/stripe', function () {
     Flight::route('POST /confirm-payment', function () {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
-        $data = Flight::request()->data->getData();
+        // Parse JSON body first for reliability
+        $raw = Flight::request()->getBody();
+        $json = json_decode($raw, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($json)) {
+            $data = $json;
+        } else {
+            $data = Flight::request()->data->getData();
+        }
 
         if (!isset($data['payment_intent_id']) || !isset($data['payment_method_id'])) {
             Flight::json(['error' => 'Payment Intent ID and Payment Method ID are required'], 400);

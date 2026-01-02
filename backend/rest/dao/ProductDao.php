@@ -3,9 +3,22 @@ require_once __DIR__ . '/BaseDao.php';
 
 class ProductDao extends BaseDao
 {
+    private $hasStockQuantityColumn = null;
+
     public function __construct()
     {
         parent::__construct("products");
+    }
+
+    private function hasStockColumn()
+    {
+        if ($this->hasStockQuantityColumn === null) {
+            $stmt = $this->connection->prepare("SHOW COLUMNS FROM products LIKE 'stock_quantity'");
+            $stmt->execute();
+            $this->hasStockQuantityColumn = (bool)$stmt->fetch();
+        }
+
+        return $this->hasStockQuantityColumn;
     }
 
     // Basic CRUD
@@ -233,6 +246,11 @@ class ProductDao extends BaseDao
     // 9. Update Stock/Inventory
     public function updateStock($product_id, $quantity)
     {
+        if (!$this->hasStockColumn()) {
+            // If the column does not exist, treat as no-op to avoid SQL errors
+            return true;
+        }
+
         $stmt = $this->connection->prepare("
             UPDATE products 
             SET stock_quantity = stock_quantity - :quantity 

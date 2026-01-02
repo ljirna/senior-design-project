@@ -57,19 +57,99 @@ class OrderService extends BaseService
 
     public function createOrderFromCart($user_id, $order_data)
     {
-        // Validate cart
+        // Load server cart
         $cart = $this->cartDao->getCartByUserId($user_id);
-        if (!$cart) {
-            throw new Exception("Cart is empty");
+        $cart_items = $cart ? $this->cartDao->getCartItems($cart['cart_id']) : [];
+        $usingPayloadItems = false;
+
+        // If server cart is empty, allow creating from payload items (local cart)
+        if ((!$cart || empty($cart_items)) && !empty($order_data['items']) && is_array($order_data['items'])) {
+            $usingPayloadItems = true;
+            $cart_items = [];
+
+            foreach ($order_data['items'] as $item) {
+                if (!isset($item['product_id']) || !isset($item['quantity'])) {
+                    throw new Exception("Each item must include product_id and quantity");
+                }
+
+                $qty = (int)$item['quantity'];
+                if ($qty < 1) {
+                    throw new Exception("Invalid quantity for product: " . $item['product_id']);
+                }
+
+                $product = $this->productDao->getProductWithFees($item['product_id']);
+                if (!$product) {
+                    throw new Exception("Product not found: " . $item['product_id']);
+                }
+
+                if (isset($product['stock_quantity']) && $product['stock_quantity'] < $qty) {
+                    throw new Exception("Insufficient stock for product: " . $product['name']);
+                }
+
+                $deliveryFee = $product['delivery_fee'] ?? ($product['delivery_fee_override'] ?? 0);
+                $assemblyFee = $product['assembly_fee'] ?? ($product['assembly_fee_override'] ?? 0);
+
+                $cart_items[] = [
+                    'product_id' => $product['product_id'],
+                    'quantity' => $qty,
+                    'price' => $product['price'],
+                    'delivery_fee' => $deliveryFee,
+                    'assembly_fee' => $assemblyFee,
+                    'name' => $product['name']
+                ];
+            }
         }
 
-        $cart_items = $this->cartDao->getCartItems($cart['cart_id']);
         if (empty($cart_items)) {
             throw new Exception("Cart is empty");
         }
 
         // Calculate totals
-        $totals = $this->cartDao->getCartTotal($cart['cart_id']);
+        if ($usingPayloadItems) {
+            $subtotal = 0;
+            $deliveryTotal = 0;
+            $assemblyTotal = 0;
+
+            foreach ($cart_items as $item) {
+                $subtotal += $item['price'] * $item['quantity'];
+                $deliveryTotal += ($item['delivery_fee'] ?? 0) * $item['quantity'];
+                $assemblyTotal += ($item['assembly_fee'] ?? 0) * $item['quantity'];
+            }
+
+            $totals = [
+                'subtotal' => $subtotal,
+                'delivery_total' => $deliveryTotal,
+                'assembly_total' => $assemblyTotal
+            ];
+        } else {
+            $totals = $this->cartDao->getCartTotal($cart['cart_id']);
+        }
+
+        // Normalize options (accept legacy aliases but store canonical values)
+        $deliveryMap = [
+            'home' => 'home',
+            'store_pickup' => 'store_pickup',
+            'pickup' => 'store_pickup', // legacy alias
+        ];
+        $rawDelivery = $order_data['delivery_type'] ?? 'store_pickup';
+        $deliveryType = $deliveryMap[$rawDelivery] ?? 'store_pickup';
+
+        $assemblyMap = [
+            'worker_assembly' => 'worker_assembly',
+            'package' => 'package',
+            'none' => 'package', // legacy alias for no assembly
+        ];
+        $rawAssembly = $order_data['assembly_option'] ?? 'package';
+        $assemblyOption = $assemblyMap[$rawAssembly] ?? 'package';
+
+        // Apply option-based fee adjustments
+        if ($deliveryType === 'store_pickup') {
+            $totals['delivery_total'] = 0;
+        }
+
+        if ($assemblyOption !== 'worker_assembly') {
+            $totals['assembly_total'] = 0;
+        }
 
         // Prepare order data
         $order = [
@@ -77,14 +157,14 @@ class OrderService extends BaseService
             'total_amount' => $totals['subtotal'] + $totals['delivery_total'] + $totals['assembly_total'],
             'order_date' => date('Y-m-d H:i:s'),
             'status' => 'pending',
-            'delivery_type' => $order_data['delivery_type'] ?? 'standard',
-            'assembly_option' => $order_data['assembly_option'] ?? 'none',
+            'delivery_type' => $deliveryType,
+            'assembly_option' => $assemblyOption,
             'delivery_fee' => $totals['delivery_total'],
             'assembly_fee' => $totals['assembly_total'],
             'shipping_address' => $order_data['shipping_address']
         ];
 
-        // Prepare order items
+        // Prepare order items and update stock
         $order_items = [];
         foreach ($cart_items as $item) {
             $order_items[] = [
@@ -93,17 +173,26 @@ class OrderService extends BaseService
                 'price' => $item['price']
             ];
 
-            // Update product stock
-            $this->productDao->updateStock($item['product_id'], $item['quantity']);
+            $stockUpdated = $this->productDao->updateStock($item['product_id'], $item['quantity']);
+            if (!$stockUpdated) {
+                throw new Exception("Insufficient stock for product: " . ($item['name'] ?? $item['product_id']));
+            }
         }
 
         // Create order
         $order_id = $this->dao->createOrderWithItems($order, $order_items);
 
-        // Clear cart after successful order
-        $this->cartDao->clearCart($cart['cart_id']);
+        // Clear cart after successful order when using server cart
+        if ($cart && !$usingPayloadItems) {
+            $this->cartDao->clearCart($cart['cart_id']);
+        }
 
-        return $order_id;
+        return [
+            'order_id' => $order_id,
+            'totals' => $totals,
+            'delivery_type' => $deliveryType,
+            'assembly_option' => $assemblyOption
+        ];
     }
 
     public function updateOrderStatus($order_id, $status)
@@ -152,12 +241,33 @@ class OrderService extends BaseService
             $errors[] = "Shipping address is required";
         }
 
-        if (isset($data['delivery_type']) && !in_array($data['delivery_type'], ['home', 'store_pickup'])) {
-            $errors[] = "Invalid delivery type. Must be 'home' or 'store_pickup'";
+        if (isset($data['items'])) {
+            if (!is_array($data['items']) || empty($data['items'])) {
+                $errors[] = "Items must be a non-empty array";
+            } else {
+                foreach ($data['items'] as $idx => $item) {
+                    if (!isset($item['product_id'])) {
+                        $errors[] = "Item " . ($idx + 1) . " is missing product_id";
+                    }
+                    if (!isset($item['quantity']) || (int)$item['quantity'] < 1) {
+                        $errors[] = "Item " . ($idx + 1) . " has an invalid quantity";
+                    }
+                }
+            }
         }
 
-        if (isset($data['assembly_option']) && !in_array($data['assembly_option'], ['package', 'worker_assembly'])) {
-            $errors[] = "Invalid assembly option. Must be 'package' or 'worker_assembly'";
+        if (isset($data['delivery_type'])) {
+            $deliveryType = $data['delivery_type'] === 'pickup' ? 'store_pickup' : $data['delivery_type'];
+            if (!in_array($deliveryType, ['home', 'store_pickup'])) {
+                $errors[] = "Invalid delivery type. Must be 'home' or 'store_pickup'";
+            }
+        }
+
+        if (isset($data['assembly_option'])) {
+            $assemblyOption = $data['assembly_option'] === 'none' ? 'package' : $data['assembly_option'];
+            if (!in_array($assemblyOption, ['package', 'worker_assembly'])) {
+                $errors[] = "Invalid assembly option. Must be 'package' or 'worker_assembly'";
+            }
         }
 
         if (isset($data['status']) && !in_array($data['status'], ['pending', 'cancelled', 'approved'])) {

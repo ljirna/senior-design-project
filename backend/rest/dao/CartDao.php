@@ -34,8 +34,8 @@ class CartDao extends BaseDao
             ");
             $stmt->bindParam(':user_id', $user_id);
             $stmt->execute();
-
-            $cart_id = $this->connection->lastInsertId();
+            // Refresh cart so callers always get the persisted row
+            $cart = $this->getCartByUserId($user_id);
         }
 
         return $cart;
