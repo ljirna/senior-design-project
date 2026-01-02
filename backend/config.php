@@ -40,12 +40,8 @@ class Config
         }
 
         // Fallback for local/dev: use a hardcoded value only if long enough,
-        // otherwise generate a secure random secret for this process.
-        $fallback = 'my_jwt_strong_secret';
-        if (strlen($fallback) < 32) {
-            // Generate a secure, 64-hex (32-byte) string for development
-            $fallback = bin2hex(random_bytes(32));
-        }
+        // otherwise use a stable, sufficiently long secret.
+        $fallback = 'my_jwt_strong_secret_development_only_32_chars_min';
         return $fallback;
     }
 }

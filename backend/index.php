@@ -44,7 +44,11 @@ Flight::route('/*', function () {
                 Config::JWT_SECRET(),
                 'HS256'
             ));
-            Flight::set('user', $decoded_token->user);
+            $userPayload = $decoded_token->user;
+            if (is_object($userPayload)) {
+                $userPayload = (array)$userPayload;
+            }
+            Flight::set('user', $userPayload);
             Flight::set('jwt_token', $token);
             return TRUE;
         } catch (\Exception $e) {
@@ -60,7 +64,7 @@ Flight::register('cartService', 'CartService');
 Flight::register('orderService', 'OrderService');
 Flight::register('favoriteService', 'FavoriteService');
 Flight::register('paymentService', 'PaymentService');
-Flight::register('paymentService', 'PaymentService');
+Flight::register('auth_middleware', 'AuthMiddleware');
 Flight::register('stripeService', 'StripeService');
 Flight::register('auth_service', 'AuthService');
 

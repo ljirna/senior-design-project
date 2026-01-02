@@ -1101,6 +1101,57 @@ function initProductInteractions(product) {
   }
 }
 
+// Fetch currently authenticated user profile from backend
+async function fetchCurrentUserProfile() {
+  const token = localStorage.getItem("user_token");
+  if (!token) {
+    throw new Error("Authentication required");
+  }
+
+  return new Promise((resolve, reject) => {
+    RestClient.get(
+      "users/profile/me",
+      (response) => resolve(response),
+      (jqXHR) => {
+        const message =
+          jqXHR?.responseJSON?.error ||
+          jqXHR?.responseJSON?.message ||
+          "Unable to load profile";
+        reject(new Error(message));
+      }
+    );
+  });
+}
+
+// Update user profile details on backend
+async function updateUserProfile(userId, payload) {
+  return new Promise((resolve, reject) => {
+    RestClient.put(
+      `users/${userId}`,
+      payload,
+      (response) => {
+        if (response?.success) {
+          resolve(response.data || payload);
+        } else {
+          reject(
+            new Error(
+              response?.error || response?.message || "Failed to update profile"
+            )
+          );
+        }
+      },
+      (jqXHR) => {
+        const message =
+          jqXHR?.responseJSON?.error ||
+          jqXHR?.responseJSON?.message ||
+          jqXHR?.responseText ||
+          "Failed to update profile";
+        reject(new Error(message));
+      }
+    );
+  });
+}
+
 // Open edit profile modal
 function openEditProfileModal(user) {
   const modal = document.getElementById("editProfileModal");
@@ -1132,47 +1183,46 @@ function openEditProfileModal(user) {
       postal_code: document.getElementById("editPostal").value,
     };
 
+    const submitButton = form.querySelector(".btn-save");
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = "Saving...";
+    }
+
     try {
-      // Get auth token
-      const token = localStorage.getItem("user_token");
-      if (!token) {
-        showToast("Authentication required", "error");
-        return;
-      }
+      const updatedUserResponse = await updateUserProfile(
+        user.user_id,
+        updatedUser
+      );
 
-      // Send update request to backend
-      const response = await fetch(`/diplomski/backend/users/${user.user_id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(updatedUser),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to update profile");
-      }
-
-      // Update appState with the response data
-      const updatedUserData = {
+      // Merge existing user data with updated fields
+      let updatedUserData = {
         ...user,
-        ...result.data,
+        ...updatedUserResponse,
       };
+
+      // Refresh from backend to ensure we persist what is stored in DB
+      try {
+        const fresh = await fetchCurrentUserProfile();
+        updatedUserData = { ...updatedUserData, ...fresh };
+      } catch (refreshErr) {
+        console.warn("Could not refresh profile after update", refreshErr);
+      }
+
       appState.user = updatedUserData;
       localStorage.setItem("zimUser", JSON.stringify(updatedUserData));
 
-      // Close modal
       modal.style.display = "none";
       showToast("Profile updated successfully!", "success");
-
-      // Refresh profile display
       initProfilePage();
     } catch (error) {
       console.error("Error updating profile:", error);
       showToast(error.message || "Failed to update profile", "error");
+    } finally {
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = "Save Changes";
+      }
     }
   };
 
@@ -1201,7 +1251,7 @@ function openEditProfileModal(user) {
 }
 
 // Profile page initialization
-function initProfilePage() {
+async function initProfilePage() {
   console.log("Initializing profile page");
 
   // Sync appState.user from localStorage if not set
@@ -1209,15 +1259,38 @@ function initProfilePage() {
     appState.user = JSON.parse(localStorage.getItem("zimUser"));
   }
 
+  const token = localStorage.getItem("user_token");
+
   // Check if user is logged in
-  if (!appState.user) {
+  if (!appState.user && !token) {
     showToast("Please log in to view your profile", "error");
     window.location.hash = "login";
     return;
   }
 
+  // Try to refresh profile from backend to keep data current
+  if (token) {
+    try {
+      showLoading("Loading profile...");
+      const profile = await fetchCurrentUserProfile();
+      appState.user = { ...appState.user, ...profile };
+      localStorage.setItem("zimUser", JSON.stringify(appState.user));
+    } catch (error) {
+      console.error("Failed to refresh profile:", error);
+      showToast(error.message || "Unable to load profile", "error");
+    } finally {
+      hideLoading();
+    }
+  }
+
   // Get user from appState (which is synced with localStorage.zimUser)
   const user = appState.user;
+
+  if (!user) {
+    showToast("Please log in to view your profile", "error");
+    window.location.hash = "login";
+    return;
+  }
 
   // Update profile header
   const profileName = document.querySelector(".profile-name");
@@ -1280,12 +1353,16 @@ function initProfilePage() {
 
   // Account actions
   document.querySelectorAll(".account-action-item").forEach((btn) => {
+    if (btn.dataset.bound === "true") return;
+    btn.dataset.bound = "true";
     btn.addEventListener("click", function () {
       const action = this.querySelector(".action-text").textContent;
       if (action.includes("Log Out")) {
         logout();
       } else if (action.includes("Edit Profile")) {
-        openEditProfileModal(user);
+        // Always open with the freshest user data
+        const latestUser = appState.user || user;
+        openEditProfileModal(latestUser);
       } else {
         showToast(`${action} feature coming soon!`, "info");
       }

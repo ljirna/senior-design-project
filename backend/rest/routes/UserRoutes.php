@@ -1,13 +1,56 @@
 <?php
 require_once __DIR__ . '/../services/UserService.php';
 
+// Helper to normalize request body into an associative array
+function parse_request_body()
+{
+    // Try raw JSON body first
+    $raw = Flight::request()->getBody();
+    if (!$raw) {
+        $raw = file_get_contents('php://input');
+    }
+
+    if ($raw) {
+        $json = json_decode($raw, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($json)) {
+            return $json;
+        }
+    }
+
+    // Fallback to Flight parsed data
+    $data = Flight::request()->data->getData();
+    if (is_object($data)) {
+        $data = (array)$data;
+    }
+
+    if (is_string($data)) {
+        // Attempt to parse querystring style payloads
+        $tmp = [];
+        parse_str($data, $tmp);
+        if (!empty($tmp)) {
+            return $tmp;
+        }
+        // As a last resort, return empty array to avoid foreach on string
+        return [];
+    }
+
+    return is_array($data) ? $data : [];
+}
+
 Flight::group('/users', function () {
     // Get current user profile - BOTH admin and customer
     Flight::route('GET /profile/me', function () {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
         $user = Flight::get('user');
-        $user_data = Flight::userService()->getUserById($user['id']);
+        $user_id = is_array($user) ? ($user['id'] ?? $user['user_id'] ?? null) : ($user->id ?? $user->user_id ?? null);
+
+        if (!$user_id) {
+            Flight::json(['error' => 'Invalid user payload'], 500);
+            return;
+        }
+
+        $user_data = Flight::userService()->getUserById($user_id);
 
         if (!$user_data) {
             Flight::json(['error' => 'User not found'], 404);
@@ -25,9 +68,11 @@ Flight::group('/users', function () {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
         $current_user = Flight::get('user');
+        $current_user_role = is_array($current_user) ? ($current_user['role'] ?? null) : ($current_user->role ?? null);
+        $current_user_id = is_array($current_user) ? ($current_user['id'] ?? $current_user['user_id'] ?? null) : ($current_user->id ?? $current_user->user_id ?? null);
 
         // Check if user has access
-        if ($current_user['role'] !== Roles::ADMIN && $current_user['id'] != $user_id) {
+        if ($current_user_role !== Roles::ADMIN && $current_user_id != $user_id) {
             Flight::json(['error' => 'Access denied'], 403);
             return;
         }
@@ -49,9 +94,11 @@ Flight::group('/users', function () {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
         $current_user = Flight::get('user');
+        $current_user_role = is_array($current_user) ? ($current_user['role'] ?? null) : ($current_user->role ?? null);
+        $current_user_id = is_array($current_user) ? ($current_user['id'] ?? $current_user['user_id'] ?? null) : ($current_user->id ?? $current_user->user_id ?? null);
 
         // Check if user has access
-        if ($current_user['role'] !== Roles::ADMIN && $current_user['id'] != $user_id) {
+        if ($current_user_role !== Roles::ADMIN && $current_user_id != $user_id) {
             Flight::json(['error' => 'Access denied'], 403);
             return;
         }
@@ -65,10 +112,12 @@ Flight::group('/users', function () {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
         $current_user = Flight::get('user');
-        $data = Flight::request()->data->getData();
+        $current_user_role = is_array($current_user) ? ($current_user['role'] ?? null) : ($current_user->role ?? null);
+        $current_user_id = is_array($current_user) ? ($current_user['id'] ?? $current_user['user_id'] ?? null) : ($current_user->id ?? $current_user->user_id ?? null);
+        $data = parse_request_body();
 
         // Check if user has access
-        if ($current_user['role'] !== Roles::ADMIN && $current_user['id'] != $user_id) {
+        if ($current_user_role !== Roles::ADMIN && $current_user_id != $user_id) {
             Flight::json(['error' => 'Access denied'], 403);
             return;
         }
@@ -96,10 +145,12 @@ Flight::group('/users', function () {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
         $current_user = Flight::get('user');
-        $data = Flight::request()->data->getData();
+        $current_user_role = is_array($current_user) ? ($current_user['role'] ?? null) : ($current_user->role ?? null);
+        $current_user_id = is_array($current_user) ? ($current_user['id'] ?? $current_user['user_id'] ?? null) : ($current_user->id ?? $current_user->user_id ?? null);
+        $data = parse_request_body();
 
         // Check if user has access
-        if ($current_user['role'] !== Roles::ADMIN && $current_user['id'] != $user_id) {
+        if ($current_user_role !== Roles::ADMIN && $current_user_id != $user_id) {
             Flight::json(['error' => 'Access denied'], 403);
             return;
         }

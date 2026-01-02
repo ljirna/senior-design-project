@@ -53,7 +53,8 @@ class UserService extends BaseService
         unset($data['role']);
         unset($data['password_hash']);
 
-        return $this->dao->update($user_id, $data);
+        // BaseDao::update signature: update(entity_array, id, id_column = 'id')
+        return $this->dao->update($data, $user_id, 'user_id');
     }
 
     public function changePassword($user_id, $current_password, $new_password)
@@ -105,8 +106,11 @@ class UserService extends BaseService
             $errors[] = "Invalid email format";
         }
 
-        if (isset($data['phone_number']) && !preg_match('/^[0-9+\-\s()]{10,}$/', $data['phone_number'])) {
-            $errors[] = "Invalid phone number format";
+        if (isset($data['phone_number']) && $data['phone_number'] !== "") {
+            // Allow common phone chars with a shorter minimum to reduce false negatives
+            if (!preg_match('/^[0-9+\-\s()]{6,20}$/', $data['phone_number'])) {
+                $errors[] = "Invalid phone number format";
+            }
         }
 
         if (empty($errors)) {
