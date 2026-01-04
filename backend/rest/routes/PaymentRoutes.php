@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../services/PaymentService.php';
 require_once __DIR__ . '/../services/StripeService.php';
+require_once __DIR__ . '/../dao/OrderDao.php';
 
 // Helper to resolve current user id from Flight::get('user')
 $getCurrentUserId = function () {
@@ -258,7 +259,7 @@ Flight::group('/stripe', function () use ($getCurrentUserId) {
         }
     });
 
-    // Create Stripe Payment Intent - BOTH admin and customer
+    // Create Stripe Payment Intent from cart draft (no order persisted yet)
     Flight::route('POST /create-payment-intent', function () use ($getCurrentUserId) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
         $user_id = $getCurrentUserId ? $getCurrentUserId() : null;
@@ -266,18 +267,95 @@ Flight::group('/stripe', function () use ($getCurrentUserId) {
             Flight::json(['error' => 'User not found'], 401);
             return;
         }
-        $data = Flight::request()->data->getData();
 
-        if (!isset($data['order_id'])) {
-            Flight::json(['error' => 'Order ID is required'], 400);
+        $raw = Flight::request()->getBody();
+        $json = json_decode($raw, true);
+        $data = (json_last_error() === JSON_ERROR_NONE && is_array($json))
+            ? $json
+            : Flight::request()->data->getData();
+
+        try {
+            $draft = Flight::orderService()->draftOrderFromCart($user_id, $data);
+            $result = Flight::stripeService()->createPaymentIntentFromDraft($draft, $user_id);
+
+            Flight::json([
+                'success' => true,
+                'data' => array_merge($result, [
+                    'totals' => $draft['totals'],
+                    'delivery_type' => $draft['delivery_type'],
+                    'assembly_option' => $draft['assembly_option'],
+                ])
+            ]);
+        } catch (Exception $e) {
+            Flight::json(['error' => $e->getMessage()], 400);
+        }
+    });
+
+    // Finalize order after successful Stripe payment
+    Flight::route('POST /finalize-order', function () use ($getCurrentUserId) {
+        Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
+        $user_id = $getCurrentUserId ? $getCurrentUserId() : null;
+        if (!$user_id) {
+            Flight::json(['error' => 'User not found'], 401);
+            return;
+        }
+
+        $raw = Flight::request()->getBody();
+        $json = json_decode($raw, true);
+        $data = (json_last_error() === JSON_ERROR_NONE && is_array($json))
+            ? $json
+            : Flight::request()->data->getData();
+
+        if (empty($data['payment_intent_id'])) {
+            Flight::json(['error' => 'Payment Intent ID is required'], 400);
             return;
         }
 
         try {
-            $result = Flight::stripeService()->createPaymentIntent($data['order_id'], $user_id);
+            $paymentIntent = Flight::stripeService()->retrievePaymentIntent($data['payment_intent_id']);
+
+            if (!$paymentIntent || $paymentIntent->status !== 'succeeded') {
+                Flight::json(['error' => 'Payment not completed'], 400);
+                return;
+            }
+
+            $metadataUserId = $paymentIntent->metadata->user_id ?? null;
+            if ($metadataUserId && (string)$metadataUserId !== (string)$user_id && Flight::get('user')['role'] !== Roles::ADMIN) {
+                Flight::json(['error' => 'Access denied'], 403);
+                return;
+            }
+
+            $orderData = [
+                'shipping_address' => $paymentIntent->metadata->shipping_address ?? null,
+                'delivery_type' => $paymentIntent->metadata->delivery_type ?? 'store_pickup',
+                'assembly_option' => $paymentIntent->metadata->assembly_option ?? 'package',
+            ];
+
+            if (!empty($paymentIntent->metadata->items)) {
+                $items = json_decode($paymentIntent->metadata->items, true);
+                if (is_array($items)) {
+                    $orderData['items'] = $items;
+                }
+            }
+
+            $created = Flight::orderService()->createOrderFromCart($user_id, $orderData);
+
+            // Attach payment intent ID to the new order
+            try {
+                $dao = new OrderDao();
+                $dao->update([
+                    'stripe_payment_intent_id' => $paymentIntent->id
+                ], $created['order_id'], 'order_id');
+            } catch (Exception $e) {
+                error_log('Failed to link payment intent to order: ' . $e->getMessage());
+            }
+
             Flight::json([
                 'success' => true,
-                'data' => $result
+                'order_id' => $created['order_id'],
+                'totals' => $created['totals'],
+                'delivery_type' => $created['delivery_type'],
+                'assembly_option' => $created['assembly_option']
             ]);
         } catch (Exception $e) {
             Flight::json(['error' => $e->getMessage()], 400);

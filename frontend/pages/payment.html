@@ -49,6 +49,63 @@
             </label>
           </div>
 
+          <!-- Delivery / Assembly address selection -->
+          <div
+            class="option-group"
+            id="alt-address-block"
+            style="display: none"
+          >
+            <h3>Delivery / Assembly Address</h3>
+            <label class="option-row">
+              <input
+                type="radio"
+                name="address-option"
+                value="profile"
+                checked
+              />
+              Use my profile address
+              <span class="hint" id="profile-address-preview"></span>
+            </label>
+            <label class="option-row">
+              <input type="radio" name="address-option" value="custom" />
+              Use a different address
+            </label>
+
+            <div
+              class="alt-address-fields"
+              id="alt-address-fields"
+              style="display: none"
+            >
+              <div class="form-group">
+                <label for="alt-street">Street and number</label>
+                <input
+                  type="text"
+                  id="alt-street"
+                  class="form-control"
+                  placeholder="Street name and house number"
+                />
+              </div>
+              <div class="form-group">
+                <label for="alt-city">City</label>
+                <input
+                  type="text"
+                  id="alt-city"
+                  class="form-control"
+                  placeholder="City"
+                />
+              </div>
+              <div class="form-group">
+                <label for="alt-postal">Postal code</label>
+                <input
+                  type="text"
+                  id="alt-postal"
+                  class="form-control"
+                  placeholder="Postal code"
+                />
+              </div>
+            </div>
+          </div>
+
           <div class="payment-methods">
             <div
               class="payment-method selected"
@@ -98,13 +155,6 @@
                 <div id="card-cvc-element" class="stripe-element"></div>
                 <div id="card-cvc-error" class="error-message"></div>
               </div>
-            </div>
-
-            <div class="form-group checkbox-group">
-              <label>
-                <input type="checkbox" id="save-card" />
-                Save card for future purchases
-              </label>
             </div>
           </div>
 

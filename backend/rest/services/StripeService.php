@@ -119,6 +119,82 @@ class StripeService
     }
 
     /**
+     * Create a Stripe Payment Intent from a cart draft (no order persisted yet)
+     */
+    public function createPaymentIntentFromDraft($draft, $user_id)
+    {
+        $totalAmount = ($draft['totals']['subtotal'] ?? 0) + ($draft['totals']['delivery_total'] ?? 0) + ($draft['totals']['assembly_total'] ?? 0);
+        if ($totalAmount <= 0) {
+            throw new Exception("Invalid amount for payment intent");
+        }
+
+        $itemsForMetadata = [];
+        if (!empty($draft['items']) && is_array($draft['items'])) {
+            foreach ($draft['items'] as $item) {
+                if (isset($item['product_id'], $item['quantity'])) {
+                    $itemsForMetadata[] = [
+                        'product_id' => $item['product_id'],
+                        'quantity' => $item['quantity'],
+                    ];
+                }
+            }
+        }
+
+        $metadata = [
+            'user_id' => (string)$user_id,
+            'delivery_type' => $draft['delivery_type'] ?? 'store_pickup',
+            'assembly_option' => $draft['assembly_option'] ?? 'package',
+            'shipping_address' => $draft['shipping_address'] ?? '',
+            'items' => json_encode($itemsForMetadata),
+        ];
+
+        try {
+            $paymentIntent = null;
+            $attemptCurrency = $this->currency;
+            $attempts = 0;
+
+            while ($attempts < 2) {
+                try {
+                    $paymentIntent = \Stripe\PaymentIntent::create([
+                        'amount' => (int)round($totalAmount * 100),
+                        'currency' => $attemptCurrency,
+                        'metadata' => $metadata,
+                        'description' => 'Furniture purchase',
+                    ]);
+
+                    if ($attemptCurrency !== $this->currency) {
+                        $this->currency = $attemptCurrency;
+                    }
+                    break;
+                } catch (\Stripe\Exception\ApiErrorException $e) {
+                    $msg = $e->getMessage();
+                    if ($attemptCurrency !== $this->currencyFallback && (stripos($msg, 'currency') !== false || stripos($msg, 'not supported') !== false)) {
+                        $attemptCurrency = $this->currencyFallback;
+                        $attempts++;
+                        continue;
+                    }
+                    throw $e;
+                }
+            }
+
+            if (!$paymentIntent) {
+                throw new Exception("Failed to create payment intent");
+            }
+
+            return [
+                'client_secret' => $paymentIntent->client_secret,
+                'payment_intent_id' => $paymentIntent->id,
+                'amount' => $paymentIntent->amount / 100,
+                'currency' => $paymentIntent->currency,
+            ];
+        } catch (\Stripe\Exception\ApiErrorException $e) {
+            throw new Exception("Stripe error: " . $e->getMessage());
+        } catch (Exception $e) {
+            throw new Exception("Error creating payment intent: " . $e->getMessage());
+        }
+    }
+
+    /**
      * Map Stripe payment status to database-compatible status (single char)
      */
     private function mapStripeStatus($stripeStatus)
@@ -203,6 +279,18 @@ class StripeService
             ];
         } catch (\Stripe\Exception\ApiErrorException $e) {
             throw new Exception("Failed to check payment status: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Retrieve a payment intent by ID
+     */
+    public function retrievePaymentIntent($payment_intent_id)
+    {
+        try {
+            return \Stripe\PaymentIntent::retrieve($payment_intent_id);
+        } catch (\Stripe\Exception\ApiErrorException $e) {
+            throw new Exception("Failed to retrieve payment intent: " . $e->getMessage());
         }
     }
 

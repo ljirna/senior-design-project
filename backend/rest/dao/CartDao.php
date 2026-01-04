@@ -54,6 +54,7 @@ class CartDao extends BaseDao
                 p.assembly_fee_override,
                 c.delivery_fee as category_delivery_fee,
                 c.assembly_fee as category_assembly_fee,
+                (SELECT image_url FROM product_images WHERE product_id = p.product_id LIMIT 1) as image_url,
                 (p.price * ci.quantity) as subtotal,
                 (COALESCE(p.delivery_fee_override, c.delivery_fee) * ci.quantity) as delivery_fee_total,
                 (COALESCE(p.assembly_fee_override, c.assembly_fee) * ci.quantity) as assembly_fee_total

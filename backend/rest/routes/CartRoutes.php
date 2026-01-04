@@ -1,26 +1,50 @@
 <?php
-Flight::group('/cart', function () {
+// Helper to resolve current user id from Flight::get('user')
+$getCurrentUserId = function () {
+    $u = Flight::get('user');
+    if (is_array($u)) {
+        return $u['id'] ?? $u['user_id'] ?? null;
+    }
+    if (is_object($u)) {
+        return $u->id ?? $u->user_id ?? null;
+    }
+    return null;
+};
+
+Flight::group('/cart', function () use ($getCurrentUserId) {
     // GET user's cart with items - BOTH admin and customer (their own cart)
-    Flight::route('GET /', function () {
+    Flight::route('GET /', function () use ($getCurrentUserId) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
-        $user = Flight::get('user'); // Get user from JWT token
-        Flight::json(Flight::cartService()->getCartWithItems($user['id']));
+        $userId = $getCurrentUserId ? $getCurrentUserId() : null;
+        if (!$userId) {
+            Flight::json(['error' => 'User not found'], 401);
+            return;
+        }
+        Flight::json(Flight::cartService()->getCartWithItems($userId));
     });
 
     // Get cart total - BOTH admin and customer
-    Flight::route('GET /total', function () {
+    Flight::route('GET /total', function () use ($getCurrentUserId) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
-        $user = Flight::get('user');
-        Flight::json(Flight::cartService()->getCartTotal($user['id']));
+        $userId = $getCurrentUserId ? $getCurrentUserId() : null;
+        if (!$userId) {
+            Flight::json(['error' => 'User not found'], 401);
+            return;
+        }
+        Flight::json(Flight::cartService()->getCartTotal($userId));
     });
 
     // Add item to cart - BOTH admin and customer
-    Flight::route('POST /add', function () {
+    Flight::route('POST /add', function () use ($getCurrentUserId) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
-        $user = Flight::get('user');
+        $userId = $getCurrentUserId ? $getCurrentUserId() : null;
+        if (!$userId) {
+            Flight::json(['error' => 'User not found'], 401);
+            return;
+        }
         $data = Flight::request()->data->getData();
 
         if (!isset($data['product_id'])) {
@@ -30,7 +54,7 @@ Flight::group('/cart', function () {
 
         try {
             $result = Flight::cartService()->addToCart(
-                $user['id'],
+                $userId,
                 $data['product_id'],
                 $data['quantity'] ?? 1
             );
@@ -45,10 +69,14 @@ Flight::group('/cart', function () {
     });
 
     // Update cart item quantity - BOTH admin and customer
-    Flight::route('PUT /items/@cart_item_id', function ($cart_item_id) {
+    Flight::route('PUT /items/@cart_item_id', function ($cart_item_id) use ($getCurrentUserId) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
-        $user = Flight::get('user');
+        $userId = $getCurrentUserId ? $getCurrentUserId() : null;
+        if (!$userId) {
+            Flight::json(['error' => 'User not found'], 401);
+            return;
+        }
         $data = Flight::request()->data->getData();
 
         if (!isset($data['quantity'])) {
@@ -58,7 +86,7 @@ Flight::group('/cart', function () {
 
         try {
             $result = Flight::cartService()->updateCartItem(
-                $user['id'],
+                $userId,
                 $cart_item_id,
                 $data['quantity']
             );
@@ -73,13 +101,17 @@ Flight::group('/cart', function () {
     });
 
     // Remove item from cart - BOTH admin and customer
-    Flight::route('DELETE /items/@cart_item_id', function ($cart_item_id) {
+    Flight::route('DELETE /items/@cart_item_id', function ($cart_item_id) use ($getCurrentUserId) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
-        $user = Flight::get('user');
+        $userId = $getCurrentUserId ? $getCurrentUserId() : null;
+        if (!$userId) {
+            Flight::json(['error' => 'User not found'], 401);
+            return;
+        }
 
         try {
-            $result = Flight::cartService()->removeFromCart($user['id'], $cart_item_id);
+            $result = Flight::cartService()->removeFromCart($userId, $cart_item_id);
             Flight::json([
                 'success' => true,
                 'message' => 'Item removed from cart'
@@ -90,13 +122,17 @@ Flight::group('/cart', function () {
     });
 
     // Clear cart - BOTH admin and customer
-    Flight::route('DELETE /clear', function () {
+    Flight::route('DELETE /clear', function () use ($getCurrentUserId) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
-        $user = Flight::get('user');
+        $userId = $getCurrentUserId ? $getCurrentUserId() : null;
+        if (!$userId) {
+            Flight::json(['error' => 'User not found'], 401);
+            return;
+        }
 
         try {
-            $result = Flight::cartService()->clearCart($user['id']);
+            $result = Flight::cartService()->clearCart($userId);
             Flight::json([
                 'success' => true,
                 'message' => 'Cart cleared'
@@ -107,13 +143,17 @@ Flight::group('/cart', function () {
     });
 
     // Validate cart for checkout - BOTH admin and customer
-    Flight::route('GET /validate', function () {
+    Flight::route('GET /validate', function () use ($getCurrentUserId) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
-        $user = Flight::get('user');
+        $userId = $getCurrentUserId ? $getCurrentUserId() : null;
+        if (!$userId) {
+            Flight::json(['error' => 'User not found'], 401);
+            return;
+        }
 
         try {
-            $result = Flight::cartService()->validateCartForCheckout($user['id']);
+            $result = Flight::cartService()->validateCartForCheckout($userId);
             Flight::json([
                 'success' => true,
                 'data' => $result

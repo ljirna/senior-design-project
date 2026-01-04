@@ -9,7 +9,8 @@ class FavoriteDao extends BaseDao
     }
 
     // Get user's favorites
-    public function getUserFavorites($user_id, $limit = 20, $offset = 0) {
+    public function getUserFavorites($user_id, $limit = 20, $offset = 0)
+    {
         $stmt = $this->connection->prepare("
             SELECT f.*,
                    p.name as product_name,
@@ -19,7 +20,8 @@ class FavoriteDao extends BaseDao
                    p.assembly_fee_override,
                    c.name as category_name,
                    c.delivery_fee as category_delivery_fee,
-                   c.assembly_fee as category_assembly_fee
+                   c.assembly_fee as category_assembly_fee,
+                   (SELECT image_url FROM product_images WHERE product_id = p.product_id LIMIT 1) as image_url
             FROM favorites f
             JOIN products p ON f.product_id = p.product_id
             JOIN categories c ON p.category_id = c.category_id
@@ -35,7 +37,8 @@ class FavoriteDao extends BaseDao
     }
 
     // Check if product is favorited by user
-    public function isProductFavorited($user_id, $product_id) {
+    public function isProductFavorited($user_id, $product_id)
+    {
         $stmt = $this->connection->prepare("
             SELECT * FROM favorites 
             WHERE user_id = :user_id AND product_id = :product_id
@@ -47,7 +50,8 @@ class FavoriteDao extends BaseDao
     }
 
     // Add product to favorites
-    public function addToFavorites($user_id, $product_id) {
+    public function addToFavorites($user_id, $product_id)
+    {
         // Check if already favorited
         if ($this->isProductFavorited($user_id, $product_id)) {
             throw new Exception("Product already in favorites");
@@ -63,7 +67,8 @@ class FavoriteDao extends BaseDao
     }
 
     // Remove from favorites
-    public function removeFromFavorites($user_id, $product_id) {
+    public function removeFromFavorites($user_id, $product_id)
+    {
         $stmt = $this->connection->prepare("
             DELETE FROM favorites 
             WHERE user_id = :user_id AND product_id = :product_id
@@ -74,7 +79,8 @@ class FavoriteDao extends BaseDao
     }
 
     // Get favorite count for product
-    public function getFavoriteCount($product_id) {
+    public function getFavoriteCount($product_id)
+    {
         $stmt = $this->connection->prepare("
             SELECT COUNT(*) as count 
             FROM favorites 
@@ -86,7 +92,8 @@ class FavoriteDao extends BaseDao
     }
 
     // Get user's favorite count
-    public function getUserFavoriteCount($user_id) {
+    public function getUserFavoriteCount($user_id)
+    {
         $stmt = $this->connection->prepare("
             SELECT COUNT(*) as count 
             FROM favorites 
@@ -98,7 +105,8 @@ class FavoriteDao extends BaseDao
     }
 
     // Get popular favorites (most favorited products)
-    public function getPopularFavorites($limit = 10) {
+    public function getPopularFavorites($limit = 10)
+    {
         $stmt = $this->connection->prepare("
             SELECT p.*,
                    COUNT(f.favorite_id) as favorite_count,

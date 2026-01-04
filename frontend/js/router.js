@@ -74,6 +74,13 @@ function initApp() {
   // Initialize cart badge
   updateCartBadge();
 
+  // Sync server cart when logged in
+  if (window.CartService && CartService.isAuthenticated()) {
+    CartService.syncFromServer().catch(function (err) {
+      console.error("Failed to sync cart", err);
+    });
+  }
+
   // Initialize dropdowns
   initDropdowns();
 
@@ -1787,10 +1794,23 @@ function initGlobalEvents() {
 }
 
 // Shopping cart functionality
-function addToCart(productId, productName, price, quantity = 1) {
+async function addToCart(productId, productName, price, quantity = 1) {
   if (!appState.user) {
     showAuthModal("cart");
     return;
+  }
+
+  const image = document.getElementById("mainProductImage")?.src || "";
+
+  if (window.CartService && CartService.isAuthenticated()) {
+    try {
+      await CartService.add(productId, quantity);
+      showToast(`${productName} added to cart!`, "success");
+      return;
+    } catch (err) {
+      console.error("Backend cart add failed, falling back to local", err);
+      showToast(err.message || "Could not add to cart", "error");
+    }
   }
 
   let cart = appState.cart;
@@ -1804,16 +1824,13 @@ function addToCart(productId, productName, price, quantity = 1) {
       name: productName,
       price: price,
       quantity: quantity,
-      image: document.getElementById("mainProductImage")?.src || "",
+      image: image,
       addedAt: new Date().toISOString(),
     });
   }
 
-  // Update state
   appState.cart = cart;
   localStorage.setItem("zimCart", JSON.stringify(cart));
-
-  // Update UI
   updateCartBadge();
   showToast(`${productName} added to cart!`, "success");
 }
@@ -1910,18 +1927,53 @@ function updateCartQuantity(productId, change) {
   const itemIndex = appState.cart.findIndex((item) => item.id === productId);
   if (itemIndex > -1) {
     const newQuantity = appState.cart[itemIndex].quantity + change;
-    if (newQuantity >= 1) {
-      appState.cart[itemIndex].quantity = newQuantity;
-      localStorage.setItem("zimCart", JSON.stringify(appState.cart));
-      loadCartItems();
-      updateCartBadge();
-      showToast("Cart updated!", "success");
+    if (newQuantity < 1) return;
+
+    if (window.CartService && CartService.isAuthenticated()) {
+      const cartItemId = appState.cart[itemIndex].cart_item_id;
+      CartService.updateQuantity(cartItemId, newQuantity)
+        .then(function () {
+          showToast("Cart updated!", "success");
+          loadCartItems();
+        })
+        .catch(function (err) {
+          console.error("Failed to update server cart", err);
+          showToast(err.message || "Could not update cart", "error");
+        })
+        .finally(updateCartBadge);
+      return;
     }
+
+    appState.cart[itemIndex].quantity = newQuantity;
+    localStorage.setItem("zimCart", JSON.stringify(appState.cart));
+    loadCartItems();
+    updateCartBadge();
+    showToast("Cart updated!", "success");
   }
 }
 
 // Remove from cart
 function removeFromCart(productId) {
+  const target = appState.cart.find((item) => item.id === productId);
+
+  if (
+    window.CartService &&
+    CartService.isAuthenticated() &&
+    target?.cart_item_id
+  ) {
+    CartService.remove(target.cart_item_id)
+      .then(function () {
+        showToast("Item removed from cart", "success");
+        loadCartItems();
+      })
+      .catch(function (err) {
+        console.error("Failed to remove from server cart", err);
+        showToast(err.message || "Could not remove item", "error");
+      })
+      .finally(updateCartBadge);
+    return;
+  }
+
   appState.cart = appState.cart.filter((item) => item.id !== productId);
   localStorage.setItem("zimCart", JSON.stringify(appState.cart));
   loadCartItems();
@@ -1970,8 +2022,20 @@ async function initPaymentPage() {
   const assemblyOptionEls = document.querySelectorAll(
     "input[name='assembly-option']"
   );
+  const addressOptionEls = document.querySelectorAll(
+    "input[name='address-option']"
+  );
   const statusBlock = document.getElementById("payment-status");
   const payNowBtn = document.getElementById("pay-now");
+  const altAddressBlock = document.getElementById("alt-address-block");
+  const altAddressFields = document.getElementById("alt-address-fields");
+  const altStreetInput = document.getElementById("alt-street");
+  const altCityInput = document.getElementById("alt-city");
+  const altPostalInput = document.getElementById("alt-postal");
+  const profileAddressPreview = document.getElementById(
+    "profile-address-preview"
+  );
+  const deliveryAddressEl = document.getElementById("delivery-address");
 
   let stripe;
   let elements;
@@ -1985,6 +2049,7 @@ async function initPaymentPage() {
   // Default to no-fee choices; user must opt into paid options
   let deliveryType = "store_pickup";
   let assemblyOption = "package";
+  let lastIntentError = null;
 
   const initialTotals = renderLocalSummary();
   updatePayButton(initialTotals.total);
@@ -1995,24 +2060,27 @@ async function initPaymentPage() {
     // Render with current selection to zero-out free options client-side too
     const rendered = renderLocalSummary();
     if (rendered?.total > 0) updatePayButton(rendered.total);
+    updateAddressUI();
   }
 
-  async function refreshOrderAndIntent() {
-    const orderData = await ensureOrderExists();
-    orderId = orderData.order_id;
-    applyTotalsFromServer(orderData.totals || null);
+  async function refreshPaymentIntent() {
+    try {
+      const payload = buildPaymentPayload();
+      const intent = await createPaymentIntent(payload);
+      clientSecret = intent.client_secret;
+      paymentIntentId = intent.payment_intent_id;
+      lastIntentError = null;
 
-    const intent = await createPaymentIntent(orderId);
-    clientSecret = intent.client_secret;
-    paymentIntentId = intent.payment_intent_id;
-
-    if (typeof intent.amount === "number") {
-      applyTotalsFromServer({
-        subtotal: serverTotals?.subtotal,
-        delivery_total: serverTotals?.delivery_total,
-        assembly_total: serverTotals?.assembly_total,
-        total_amount: intent.amount,
-      });
+      applyTotalsFromServer(intent.totals || null);
+    } catch (err) {
+      lastIntentError = err;
+      console.error("Payment intent refresh failed", err);
+      if (typeof showToast === "function") {
+        showToast(err.message || "Payment details incomplete.", "error");
+      } else {
+        showPayError(err.message || "Payment details incomplete.");
+      }
+      throw err;
     }
   }
 
@@ -2022,7 +2090,8 @@ async function initPaymentPage() {
     stripe = Stripe(config.publishableKey);
     elements = stripe.elements();
 
-    await refreshOrderAndIntent();
+    updateAddressUI();
+    await refreshPaymentIntent();
 
     const style = {
       base: {
@@ -2063,7 +2132,8 @@ async function initPaymentPage() {
     deliveryOptionEls.forEach((el) => {
       el.addEventListener("change", async () => {
         deliveryType = el.value;
-        await refreshOrderAndIntent();
+        updateAddressUI();
+        await refreshPaymentIntent();
       });
     });
 
@@ -2071,9 +2141,32 @@ async function initPaymentPage() {
     assemblyOptionEls.forEach((el) => {
       el.addEventListener("change", async () => {
         assemblyOption = el.value;
-        await refreshOrderAndIntent();
+        updateAddressUI();
+        await refreshPaymentIntent();
       });
     });
+
+    // Listen for address option changes
+    addressOptionEls.forEach((el) => {
+      el.addEventListener("change", async () => {
+        updateAddressUI();
+        if (isAddressRequired()) {
+          await refreshPaymentIntent();
+        }
+      });
+    });
+
+    // When custom address fields blur, refresh intent if required so metadata stays in sync
+    [altStreetInput, altCityInput, altPostalInput]
+      .filter(Boolean)
+      .forEach((input) => {
+        input.addEventListener("blur", async () => {
+          updateAddressUI();
+          if (isAddressRequired()) {
+            await refreshPaymentIntent();
+          }
+        });
+      });
 
     const backToCartBtn = document.getElementById("back-to-cart");
     if (backToCartBtn) {
@@ -2093,9 +2186,10 @@ async function initPaymentPage() {
     });
 
     if (serverTotals) {
-      const baseSubtotal = serverTotals.subtotal ?? subtotal;
-      const baseDelivery = serverTotals.delivery_total ?? 0;
-      const baseAssembly = serverTotals.assembly_total ?? 0;
+      const baseSubtotal =
+        parseFloat(serverTotals.subtotal ?? subtotal) || subtotal;
+      const baseDelivery = parseFloat(serverTotals.delivery_total ?? 0) || 0;
+      const baseAssembly = parseFloat(serverTotals.assembly_total ?? 0) || 0;
 
       const delivery = deliveryType === "home" ? baseDelivery : 0;
       const assembly = assemblyOption === "worker_assembly" ? baseAssembly : 0;
@@ -2134,54 +2228,106 @@ async function initPaymentPage() {
     }
   }
 
-  function ensureOrderExists() {
-    return new Promise((resolve, reject) => {
-      const user = appState.user;
-      const addressParts = [user.address, user.city, user.postal_code].filter(
-        Boolean
-      );
-      if (addressParts.length === 0) {
-        return reject(
-          new Error("Please add your address in profile before checkout.")
-        );
-      }
+  function isAddressRequired() {
+    return deliveryType === "home" || assemblyOption === "worker_assembly";
+  }
 
-      const payload = {
-        shipping_address: addressParts.join(", "),
-        delivery_type: deliveryType,
-        assembly_option: assemblyOption,
-        items: appState.cart.map((item) => ({
-          product_id: parseInt(item.id, 10) || item.id,
-          quantity: item.quantity || 1,
-        })),
-      };
+  function getProfileAddressParts() {
+    const user = appState.user || {};
+    return [user.address, user.city, user.postal_code].filter(Boolean);
+  }
 
-      RestClient.post(
-        "orders/from-cart",
-        payload,
-        (res) => {
-          if (res?.success && res?.order_id) {
-            resolve({
-              order_id: res.order_id,
-              totals: res.totals || null,
-            });
-          } else {
-            reject(
-              new Error(res?.error || res?.message || "Could not create order")
-            );
-          }
-        },
-        (err) => {
-          reject(
-            new Error(
-              err?.responseJSON?.error ||
-                err?.responseText ||
-                "Could not create order"
-            )
-          );
-        }
+  function getSelectedAddressParts() {
+    const requireAddress = isAddressRequired();
+    const addressChoice = document.querySelector(
+      "input[name='address-option']:checked"
+    )?.value;
+
+    if (requireAddress && addressChoice === "custom") {
+      return [
+        altStreetInput?.value?.trim(),
+        altCityInput?.value?.trim(),
+        altPostalInput?.value?.trim(),
+      ].filter(Boolean);
+    }
+
+    return getProfileAddressParts();
+  }
+
+  function currentAddressLabel() {
+    if (!isAddressRequired()) {
+      return "Store pickup - no delivery address needed.";
+    }
+
+    const parts = getSelectedAddressParts();
+    if (!parts.length) return "Add a delivery address to continue.";
+    return parts.join(", ");
+  }
+
+  function updateAddressUI() {
+    const profileParts = getProfileAddressParts();
+    if (profileAddressPreview) {
+      profileAddressPreview.textContent = profileParts.length
+        ? `(${profileParts.join(", ")})`
+        : "(No profile address set)";
+    }
+
+    const required = isAddressRequired();
+    if (altAddressBlock) {
+      altAddressBlock.style.display = required ? "block" : "none";
+    }
+
+    const addressChoice = document.querySelector(
+      "input[name='address-option']:checked"
+    )?.value;
+    const showCustom = required && addressChoice === "custom";
+    if (altAddressFields) {
+      altAddressFields.style.display = showCustom ? "block" : "none";
+    }
+
+    if (deliveryAddressEl) {
+      deliveryAddressEl.textContent = currentAddressLabel();
+    }
+  }
+
+  function buildPaymentPayload() {
+    const requireAddress = isAddressRequired();
+    const addressChoice = document.querySelector(
+      "input[name='address-option']:checked"
+    )?.value;
+
+    const profileParts = getProfileAddressParts();
+    const customParts = [
+      altStreetInput?.value?.trim(),
+      altCityInput?.value?.trim(),
+      altPostalInput?.value?.trim(),
+    ].filter(Boolean);
+
+    const usingCustom = requireAddress && addressChoice === "custom";
+    let selectedParts = usingCustom ? customParts : profileParts;
+
+    if (requireAddress && selectedParts.length < 2) {
+      throw new Error(
+        "Please enter street and city for delivery / assembly address."
       );
-    });
+    }
+
+    if (!requireAddress && selectedParts.length === 0) {
+      // Allow pickup without a saved address but still send a non-empty value to backend
+      selectedParts = ["Store pickup (no delivery)"];
+    }
+
+    const shippingAddress = selectedParts.join(", ");
+
+    return {
+      shipping_address: shippingAddress,
+      delivery_type: deliveryType,
+      assembly_option: assemblyOption,
+      items: appState.cart.map((item) => ({
+        product_id: parseInt(item.id, 10) || item.id,
+        quantity: item.quantity || 1,
+      })),
+    };
   }
 
   function getStripeConfig() {
@@ -2201,11 +2347,11 @@ async function initPaymentPage() {
     });
   }
 
-  function createPaymentIntent(orderId) {
+  function createPaymentIntent(payload) {
     return new Promise((resolve, reject) => {
       RestClient.post(
         "stripe/create-payment-intent",
-        { order_id: orderId },
+        payload,
         (res) => {
           if (res?.success && res?.data?.client_secret) {
             resolve(res.data);
@@ -2230,8 +2376,43 @@ async function initPaymentPage() {
     });
   }
 
+  function finalizeOrder(paymentIntentId) {
+    return new Promise((resolve, reject) => {
+      RestClient.post(
+        "stripe/finalize-order",
+        { payment_intent_id: paymentIntentId },
+        (res) => {
+          if (res?.success && res?.order_id) {
+            resolve(res);
+          } else {
+            reject(
+              new Error(
+                res?.error || res?.message || "Could not finalize order"
+              )
+            );
+          }
+        },
+        (err) => {
+          reject(
+            new Error(
+              err?.responseJSON?.error ||
+                err?.responseText ||
+                "Could not finalize order"
+            )
+          );
+        }
+      );
+    });
+  }
+
   async function processPayment() {
     if (!stripe || !clientSecret) return;
+    if (lastIntentError) {
+      showPayError(
+        lastIntentError.message || "Fix the address or totals before paying."
+      );
+      return;
+    }
     if (payNowBtn) {
       payNowBtn.disabled = true;
       payNowBtn.textContent = "Processing...";
@@ -2260,28 +2441,8 @@ async function initPaymentPage() {
       const paymentIntent = result.paymentIntent;
       paymentIntentId = paymentIntent.id;
 
-      await new Promise((resolve, reject) => {
-        RestClient.post(
-          "stripe/confirm-payment",
-          {
-            payment_intent_id: paymentIntent.id,
-            payment_method_id: paymentIntent.payment_method,
-          },
-          (res) => {
-            if (res?.success) return resolve();
-            reject(new Error(res?.error || "Could not finalize payment"));
-          },
-          (err) => {
-            reject(
-              new Error(
-                err?.responseJSON?.error ||
-                  err?.responseText ||
-                  "Could not finalize payment"
-              )
-            );
-          }
-        );
-      });
+      const finalize = await finalizeOrder(paymentIntent.id);
+      orderId = finalize.order_id;
 
       appState.cart = [];
       localStorage.removeItem("zimCart");
@@ -2422,8 +2583,46 @@ function initFavoritesPage() {
     return;
   }
 
-  // Load favorites items
-  loadFavoritesItems();
+  // Load favorites from backend for current user
+  loadFavoritesFromBackend();
+}
+
+// Load favorites from backend
+function loadFavoritesFromBackend() {
+  if (!appState.user) return;
+
+  RestClient.get(
+    "favorites",
+    (response) => {
+      if (Array.isArray(response)) {
+        // Map backend favorites to frontend format
+        appState.favorites = response.map((fav) => ({
+          id: fav.product_id,
+          name: fav.product_name,
+          price: `$${parseFloat(fav.price).toFixed(2)}`,
+          image:
+            fav.image_url ||
+            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%23e8dfc8' width='200' height='200'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23800020' font-family='Arial' font-size='16'%3ENo Image%3C/text%3E%3C/svg%3E",
+          addedAt: fav.created_at,
+        }));
+
+        // Update localStorage
+        localStorage.setItem(
+          "zimFavorites",
+          JSON.stringify(appState.favorites)
+        );
+
+        // Render favorites
+        loadFavoritesItems();
+      }
+    },
+    (err) => {
+      console.error("Failed to load favorites:", err);
+      showToast("Failed to load favorites", "error");
+      // Fallback to localStorage if backend fails
+      loadFavoritesItems();
+    }
+  );
 }
 
 // Load favorites items
@@ -2452,12 +2651,19 @@ function loadFavoritesItems() {
         .map(
           (item) => `
         <div class="product-card">
-          <img src="${item.image}" alt="${item.name}" class="product-image" />
+          <a href="#single-product/${item.id}" class="product-link">
+            <img src="${item.image}" alt="${item.name}" class="product-image" />
+          </a>
           <div class="product-content">
-            <h3 class="product-title">${item.name}</h3>
+            <h3 class="product-title">
+              <a href="#single-product/${item.id}" class="product-link">${item.name}</a>
+            </h3>
             <div class="product-price">${item.price}</div>
-            <div class="product-actions">
-              <button onclick="removeFromFavorites('${item.id}')" style="width:100%; padding:0.6rem; background-color:#800020; color:white; border:none; border-radius:4px; cursor:pointer;">
+            <div class="product-actions" style="display: flex; gap: 0.5rem; margin-top: 0.8rem;">
+              <a href="#single-product/${item.id}" style="flex: 1; padding: 0.6rem; background-color: #5d4037; color: white; border: none; border-radius: 4px; cursor: pointer; text-align: center; text-decoration: none; font-size: 0.9rem; transition: background-color 0.2s;">
+                <i class="fas fa-eye"></i> View
+              </a>
+              <button onclick="removeFromFavorites('${item.id}')" style="flex: 1; padding: 0.6rem; background-color: #800020; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem; transition: background-color 0.2s;">
                 <i class="fas fa-trash"></i> Remove
               </button>
             </div>
@@ -2477,6 +2683,11 @@ function loadFavoritesItems() {
 function addToFavorites(productId, productName, productPrice, productImage) {
   if (!productId) return;
 
+  if (!appState.user) {
+    showAuthModal("favorites");
+    return;
+  }
+
   // Check if product already exists in favorites
   const existingIndex = appState.favorites.findIndex(
     (item) => item.id === productId
@@ -2484,22 +2695,35 @@ function addToFavorites(productId, productName, productPrice, productImage) {
 
   // Only add if it doesn't already exist (prevent duplicates)
   if (existingIndex === -1) {
-    appState.favorites.push({
-      id: productId,
-      name: productName,
-      price: productPrice,
-      image: productImage,
-      addedAt: new Date().toISOString(),
-    });
+    // Add to backend
+    RestClient.post(
+      "favorites/add",
+      { product_id: productId },
+      (response) => {
+        // Add to local state
+        appState.favorites.push({
+          id: productId,
+          name: productName,
+          price: productPrice,
+          image: productImage,
+          addedAt: new Date().toISOString(),
+        });
 
-    // Deduplicate before saving (extra safety)
-    appState.favorites = deduplicateFavorites(appState.favorites);
+        // Update storage
+        localStorage.setItem(
+          "zimFavorites",
+          JSON.stringify(appState.favorites)
+        );
 
-    // Update storage
-    localStorage.setItem("zimFavorites", JSON.stringify(appState.favorites));
-
-    // Update all favorite buttons for this product on the current page
-    updateFavoriteButtonsForProduct(productId, true);
+        // Update all favorite buttons for this product on the current page
+        updateFavoriteButtonsForProduct(productId, true);
+        showToast("Added to favorites!", "success");
+      },
+      (err) => {
+        console.error("Failed to add to favorites:", err);
+        showToast("Failed to add to favorites", "error");
+      }
+    );
   }
 }
 
@@ -2525,21 +2749,34 @@ function updateFavoriteButtonsForProduct(productId, isFavorited) {
 
 // Remove from favorites
 function removeFromFavorites(productId) {
-  // Remove from favorites array
-  appState.favorites = appState.favorites.filter(
-    (item) => item.id !== productId
+  if (!appState.user) return;
+
+  // Remove from backend
+  RestClient.delete(
+    `favorites/remove/${productId}`,
+    null,
+    (response) => {
+      // Remove from favorites array (use == to handle string/number mismatch)
+      appState.favorites = appState.favorites.filter(
+        (item) => item.id != productId
+      );
+
+      // Update storage
+      localStorage.setItem("zimFavorites", JSON.stringify(appState.favorites));
+
+      // Update favorite button state for this product
+      updateFavoriteButtonsForProduct(productId, false);
+
+      // Immediately re-render the favorites list
+      loadFavoritesItems();
+
+      showToast("Removed from favorites", "success");
+    },
+    (err) => {
+      console.error("Failed to remove from favorites:", err);
+      showToast("Failed to remove from favorites", "error");
+    }
   );
-
-  // Update storage
-  localStorage.setItem("zimFavorites", JSON.stringify(appState.favorites));
-
-  // Reload favorites page if currently viewing it
-  if (window.location.hash.includes("favorite")) {
-    loadFavoritesItems();
-  }
-
-  // Update favorite button state for this product
-  updateFavoriteButtonsForProduct(productId, false);
 }
 
 // Main router function

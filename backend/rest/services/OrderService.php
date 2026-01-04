@@ -57,12 +57,73 @@ class OrderService extends BaseService
 
     public function createOrderFromCart($user_id, $order_data)
     {
-        // Load server cart
+        $context = $this->buildOrderDraft($user_id, $order_data);
+
+        $order = [
+            'user_id' => $user_id,
+            'total_amount' => $context['totals']['subtotal'] + $context['totals']['delivery_total'] + $context['totals']['assembly_total'],
+            'order_date' => date('Y-m-d H:i:s'),
+            'status' => 'pending',
+            'delivery_type' => $context['delivery_type'],
+            'assembly_option' => $context['assembly_option'],
+            'delivery_fee' => $context['totals']['delivery_total'],
+            'assembly_fee' => $context['totals']['assembly_total'],
+            'shipping_address' => $context['shipping_address']
+        ];
+
+        $order_items = [];
+        foreach ($context['cart_items'] as $item) {
+            $order_items[] = [
+                'product_id' => $item['product_id'],
+                'quantity' => $item['quantity'],
+                'price' => $item['price']
+            ];
+
+            $stockUpdated = $this->productDao->updateStock($item['product_id'], $item['quantity']);
+            if (!$stockUpdated) {
+                throw new Exception("Insufficient stock for product: " . ($item['name'] ?? $item['product_id']));
+            }
+        }
+
+        $order_id = $this->dao->createOrderWithItems($order, $order_items);
+
+        if ($context['cart_id'] && !$context['using_payload_items']) {
+            $this->cartDao->clearCart($context['cart_id']);
+        }
+
+        return [
+            'order_id' => $order_id,
+            'totals' => $context['totals'],
+            'delivery_type' => $context['delivery_type'],
+            'assembly_option' => $context['assembly_option']
+        ];
+    }
+
+    public function draftOrderFromCart($user_id, $order_data)
+    {
+        $context = $this->buildOrderDraft($user_id, $order_data);
+
+        return [
+            'totals' => $context['totals'],
+            'delivery_type' => $context['delivery_type'],
+            'assembly_option' => $context['assembly_option'],
+            'shipping_address' => $context['shipping_address'],
+            'items' => array_map(function ($item) {
+                return [
+                    'product_id' => $item['product_id'],
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price'],
+                ];
+            }, $context['cart_items'])
+        ];
+    }
+
+    private function buildOrderDraft($user_id, $order_data)
+    {
         $cart = $this->cartDao->getCartByUserId($user_id);
         $cart_items = $cart ? $this->cartDao->getCartItems($cart['cart_id']) : [];
         $usingPayloadItems = false;
 
-        // If server cart is empty, allow creating from payload items (local cart)
         if ((!$cart || empty($cart_items)) && !empty($order_data['items']) && is_array($order_data['items'])) {
             $usingPayloadItems = true;
             $cart_items = [];
@@ -104,7 +165,10 @@ class OrderService extends BaseService
             throw new Exception("Cart is empty");
         }
 
-        // Calculate totals
+        if (empty($order_data['shipping_address'])) {
+            throw new Exception("Shipping address is required");
+        }
+
         if ($usingPayloadItems) {
             $subtotal = 0;
             $deliveryTotal = 0;
@@ -125,11 +189,10 @@ class OrderService extends BaseService
             $totals = $this->cartDao->getCartTotal($cart['cart_id']);
         }
 
-        // Normalize options (accept legacy aliases but store canonical values)
         $deliveryMap = [
             'home' => 'home',
             'store_pickup' => 'store_pickup',
-            'pickup' => 'store_pickup', // legacy alias
+            'pickup' => 'store_pickup',
         ];
         $rawDelivery = $order_data['delivery_type'] ?? 'store_pickup';
         $deliveryType = $deliveryMap[$rawDelivery] ?? 'store_pickup';
@@ -137,12 +200,11 @@ class OrderService extends BaseService
         $assemblyMap = [
             'worker_assembly' => 'worker_assembly',
             'package' => 'package',
-            'none' => 'package', // legacy alias for no assembly
+            'none' => 'package',
         ];
         $rawAssembly = $order_data['assembly_option'] ?? 'package';
         $assemblyOption = $assemblyMap[$rawAssembly] ?? 'package';
 
-        // Apply option-based fee adjustments
         if ($deliveryType === 'store_pickup') {
             $totals['delivery_total'] = 0;
         }
@@ -151,47 +213,14 @@ class OrderService extends BaseService
             $totals['assembly_total'] = 0;
         }
 
-        // Prepare order data
-        $order = [
-            'user_id' => $user_id,
-            'total_amount' => $totals['subtotal'] + $totals['delivery_total'] + $totals['assembly_total'],
-            'order_date' => date('Y-m-d H:i:s'),
-            'status' => 'pending',
-            'delivery_type' => $deliveryType,
-            'assembly_option' => $assemblyOption,
-            'delivery_fee' => $totals['delivery_total'],
-            'assembly_fee' => $totals['assembly_total'],
-            'shipping_address' => $order_data['shipping_address']
-        ];
-
-        // Prepare order items and update stock
-        $order_items = [];
-        foreach ($cart_items as $item) {
-            $order_items[] = [
-                'product_id' => $item['product_id'],
-                'quantity' => $item['quantity'],
-                'price' => $item['price']
-            ];
-
-            $stockUpdated = $this->productDao->updateStock($item['product_id'], $item['quantity']);
-            if (!$stockUpdated) {
-                throw new Exception("Insufficient stock for product: " . ($item['name'] ?? $item['product_id']));
-            }
-        }
-
-        // Create order
-        $order_id = $this->dao->createOrderWithItems($order, $order_items);
-
-        // Clear cart after successful order when using server cart
-        if ($cart && !$usingPayloadItems) {
-            $this->cartDao->clearCart($cart['cart_id']);
-        }
-
         return [
-            'order_id' => $order_id,
+            'cart_items' => $cart_items,
             'totals' => $totals,
             'delivery_type' => $deliveryType,
-            'assembly_option' => $assemblyOption
+            'assembly_option' => $assemblyOption,
+            'shipping_address' => $order_data['shipping_address'],
+            'using_payload_items' => $usingPayloadItems,
+            'cart_id' => $cart['cart_id'] ?? null,
         ];
     }
 
