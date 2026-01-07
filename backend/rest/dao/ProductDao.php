@@ -21,6 +21,21 @@ class ProductDao extends BaseDao
         return $this->hasStockQuantityColumn;
     }
 
+    // Override add() to use product_id instead of id
+    public function add($entity)
+    {
+        // Call parent's add method
+        $result = parent::add($entity);
+
+        // Rename 'id' to 'product_id' if parent set it
+        if (isset($result['id'])) {
+            $result['product_id'] = $result['id'];
+            unset($result['id']);
+        }
+
+        return $result;
+    }
+
     // Basic CRUD
     public function getProductById($product_id)
     {
@@ -225,6 +240,30 @@ class ProductDao extends BaseDao
         $stmt->bindParam(':product_id', $product_id);
         $stmt->execute();
         return $stmt->fetchAll();
+    }
+
+    public function insertProductImage($product_id, $image_url, $is_primary = 1)
+    {
+        $stmt = $this->connection->prepare("
+            INSERT INTO product_images (product_id, image_url, is_primary)
+            VALUES (:product_id, :image_url, :is_primary)
+        ");
+        $stmt->bindParam(':product_id', $product_id);
+        $stmt->bindParam(':image_url', $image_url);
+        $stmt->bindParam(':is_primary', $is_primary, PDO::PARAM_INT);
+        return $stmt->execute();
+    }
+
+    public function updateProductImage($product_image_id, $image_url)
+    {
+        $stmt = $this->connection->prepare("
+            UPDATE product_images
+            SET image_url = :image_url
+            WHERE image_id = :image_id
+        ");
+        $stmt->bindParam(':image_id', $product_image_id);
+        $stmt->bindParam(':image_url', $image_url);
+        return $stmt->execute();
     }
 
     // 8. Product with Fees (from our previous discussion)

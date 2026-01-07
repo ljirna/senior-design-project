@@ -1,6 +1,6 @@
 <!-- ================= ADMIN PRODUCTS MANAGEMENT ================= -->
 <main class="container page-container">
-  <!-- Page Header with Back Button -->
+  <!-- Page Header -->
   <div class="section-header" style="margin-bottom: 2rem">
     <div
       style="
@@ -22,158 +22,120 @@
     </div>
   </div>
 
-  <!-- Add Product Button -->
-  <div class="mb-4 text-start">
-    <button class="table-action-btn" id="add-product-btn">
+  <!-- Filters and Search -->
+  <div
+    style="
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    "
+  >
+    <!-- Search -->
+    <div>
+      <label
+        style="
+          display: block;
+          margin-bottom: 0.5rem;
+          font-weight: 600;
+          color: var(--medium-brown);
+        "
+        >Search Products</label
+      >
+      <input
+        type="text"
+        id="product-search"
+        placeholder="Search by name..."
+        style="
+          width: 100%;
+          padding: 0.8rem;
+          border: 1px solid var(--creme-dark);
+          border-radius: 4px;
+        "
+      />
+    </div>
+
+    <!-- Category Filter -->
+    <div>
+      <label
+        style="
+          display: block;
+          margin-bottom: 0.5rem;
+          font-weight: 600;
+          color: var(--medium-brown);
+        "
+        >Category</label
+      >
+      <select
+        id="category-filter"
+        style="
+          width: 100%;
+          padding: 0.8rem;
+          border: 1px solid var(--creme-dark);
+          border-radius: 4px;
+        "
+      >
+        <option value="">All Categories</option>
+      </select>
+    </div>
+
+    <!-- Add Product Button -->
+    <button
+      id="add-product-btn"
+      style="
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 0.8rem 1.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+        align-self: flex-end;
+        font-weight: 600;
+      "
+    >
       <i class="fas fa-plus"></i> Add Product
     </button>
   </div>
 
+  <!-- Results Info -->
+  <div style="margin-bottom: 1rem; color: var(--medium-brown)">
+    <p>Showing <strong id="product-count">0</strong> products</p>
+  </div>
+
   <!-- Products Grid -->
-  <div class="row" id="products-grid" style="margin-top: 2rem">
-    <!-- Products will be loaded here -->
-    <div class="col-lg-4 col-md-6 mb-4">
-      <div class="product-card-admin">
-        <img
-          src="https://images.unsplash.com/photo-1540574163026-643ea20ade25?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-          alt="Modern Sofa"
-          class="product-image-admin"
-        />
-        <div class="product-content-admin">
-          <h3 class="product-title-admin">Modern Leather Sofa</h3>
-          <p class="product-category-admin">Sofas & Couches</p>
-          <div class="product-price-admin">$1,299.99</div>
-          <div class="product-meta-admin"></div>
-          <div class="product-actions-admin">
-            <button class="table-action-btn" onclick="editProduct(1)">
-              <i class="fas fa-edit"></i> Edit
-            </button>
-            <button
-              class="table-action-btn secondary"
-              onclick="deleteProduct(1)"
-            >
-              <i class="fas fa-trash"></i> Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+  <div class="row" id="products-grid"></div>
 
-    <div class="col-lg-4 col-md-6 mb-4">
-      <div class="product-card-admin">
-        <img
-          src="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-          alt="Coffee Table"
-          class="product-image-admin"
-        />
-        <div class="product-content-admin">
-          <h3 class="product-title-admin">Glass Coffee Table</h3>
-          <p class="product-category-admin">Tables</p>
-          <div class="product-price-admin">$299.99</div>
-          <div class="product-meta-admin"></div>
-          <div class="product-actions-admin">
-            <button class="table-action-btn" onclick="editProduct(2)">
-              <i class="fas fa-edit"></i> Edit
-            </button>
-            <button
-              class="table-action-btn secondary"
-              onclick="deleteProduct(2)"
-            >
-              <i class="fas fa-trash"></i> Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+  <!-- Empty State -->
+  <div
+    id="products-empty"
+    style="text-align: center; padding: 3rem; display: none"
+  >
+    <i
+      class="fas fa-inbox"
+      style="font-size: 3rem; color: var(--creme-dark); margin-bottom: 1rem"
+    ></i>
+    <p style="color: var(--medium-brown); font-size: 1.1rem">
+      No products found
+    </p>
+  </div>
 
-    <div class="col-lg-4 col-md-6 mb-4">
-      <div class="product-card-admin">
-        <img
-          src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-          alt="Office Chair"
-          class="product-image-admin"
-        />
-        <div class="product-content-admin">
-          <h3 class="product-title-admin">Ergonomic Office Chair</h3>
-          <p class="product-category-admin">Chairs</p>
-          <div class="product-price-admin">$199.99</div>
-          <div class="product-meta-admin"></div>
-          <div class="product-actions-admin">
-            <button class="table-action-btn" onclick="editProduct(3)">
-              <i class="fas fa-edit"></i> Edit
-            </button>
-            <button
-              class="table-action-btn secondary"
-              onclick="deleteProduct(3)"
-            >
-              <i class="fas fa-trash"></i> Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-lg-4 col-md-6 mb-4">
-      <div class="product-card-admin">
-        <img
-          src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-          alt="Bed Frame"
-          class="product-image-admin"
-        />
-        <div class="product-content-admin">
-          <h3 class="product-title-admin">King Size Bed Frame</h3>
-          <p class="product-category-admin">Beds</p>
-          <div class="product-price-admin">$899.99</div>
-          <div class="product-meta-admin"></div>
-          <div class="product-actions-admin">
-            <button class="table-action-btn" onclick="editProduct(4)">
-              <i class="fas fa-edit"></i> Edit
-            </button>
-            <button
-              class="table-action-btn secondary"
-              onclick="deleteProduct(4)"
-            >
-              <i class="fas fa-trash"></i> Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-lg-4 col-md-6 mb-4">
-      <div class="product-card-admin">
-        <img
-          src="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-          alt="Dining Table"
-          class="product-image-admin"
-        />
-        <div class="product-content-admin">
-          <h3 class="product-title-admin">Oak Dining Table Set</h3>
-          <p class="product-category-admin">Tables</p>
-          <div class="product-price-admin">$1,499.99</div>
-          <div class="product-meta-admin"></div>
-          <div class="product-actions-admin">
-            <button class="table-action-btn" onclick="editProduct(5)">
-              <i class="fas fa-edit"></i> Edit
-            </button>
-            <button
-              class="table-action-btn secondary"
-              onclick="deleteProduct(5)"
-            >
-              <i class="fas fa-trash"></i> Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+  <!-- Loading State -->
+  <div id="products-loading" style="text-align: center; padding: 3rem">
+    <div class="spinner" style="margin: 0 auto"></div>
+    <p style="color: var(--medium-brown); margin-top: 1rem">
+      Loading products...
+    </p>
   </div>
 </main>
 
 <!-- Add Product Modal -->
 <div class="admin-modal-overlay" id="addProductModal">
-  <div class="admin-modal" style="max-width: 600px">
+  <div
+    class="admin-modal"
+    style="max-width: 600px; max-height: 90vh; overflow-y: auto"
+  >
     <div class="modal-header">
-      <h3>Add Product</h3>
+      <h3>Add New Product</h3>
       <button class="modal-close" onclick="closeModal('addProductModal')">
         &times;
       </button>
@@ -195,12 +157,6 @@
             <label for="add_product_category">Category *</label>
             <select class="form-input" id="add_product_category" required>
               <option value="">Select Category</option>
-              <option value="1">Sofas & Couches</option>
-              <option value="2">Tables</option>
-              <option value="3">Chairs</option>
-              <option value="4">Beds</option>
-              <option value="5">Storage</option>
-              <option value="6">Outdoor</option>
             </select>
           </div>
 
@@ -227,7 +183,64 @@
         </div>
 
         <div class="form-group">
-          <label for="add_product_image">Product Image *</label>
+          <label for="add_product_dimensions"
+            >Dimensions (W x H x D in cm)</label
+          >
+          <input
+            type="text"
+            class="form-input"
+            id="add_product_dimensions"
+            placeholder="e.g., 100 x 200 x 50"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="add_product_weight">Weight (kg)</label>
+          <input
+            type="number"
+            class="form-input"
+            id="add_product_weight"
+            step="0.1"
+            min="0"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="add_product_delivery_fee"
+            >Delivery Fee Override ($)</label
+          >
+          <input
+            type="number"
+            class="form-input"
+            id="add_product_delivery_fee"
+            step="0.01"
+            min="0"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="add_product_assembly_fee"
+            >Assembly Fee Override ($)</label
+          >
+          <input
+            type="number"
+            class="form-input"
+            id="add_product_assembly_fee"
+            step="0.01"
+            min="0"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="add_product_image">Product Image</label>
+          <div style="margin-bottom: 1rem">
+            <img
+              id="add_product_image_preview"
+              src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%23e0e0e0' width='200' height='200'/%3E%3Ctext x='50%25' y='50%25' font-size='14' fill='%23999' text-anchor='middle' dy='.3em'%3ENo Image%3C/text%3E%3C/svg%3E"
+              alt="Product preview"
+              style="max-width: 200px; max-height: 200px; border-radius: 4px"
+            />
+          </div>
           <input
             type="file"
             class="form-input"
@@ -236,14 +249,19 @@
             required
           />
           <small style="color: var(--medium-brown)"
-            >Select an image file (JPG, PNG, etc.)</small
+            >JPG, PNG, GIF, WebP up to 5MB</small
           >
         </div>
 
         <button
           type="submit"
           class="table-action-btn"
-          style="width: 100%; margin-top: 1rem"
+          style="
+            width: 100%;
+            margin-top: 1rem;
+            background-color: #28a745;
+            color: white;
+          "
         >
           <i class="fas fa-plus"></i> Add Product
         </button>
@@ -254,7 +272,10 @@
 
 <!-- Edit Product Modal -->
 <div class="admin-modal-overlay" id="editProductModal">
-  <div class="admin-modal" style="max-width: 600px">
+  <div
+    class="admin-modal"
+    style="max-width: 600px; max-height: 90vh; overflow-y: auto"
+  >
     <div class="modal-header">
       <h3>Edit Product</h3>
       <button class="modal-close" onclick="closeModal('editProductModal')">
@@ -280,12 +301,6 @@
             <label for="edit_product_category">Category *</label>
             <select class="form-input" id="edit_product_category" required>
               <option value="">Select Category</option>
-              <option value="1">Sofas & Couches</option>
-              <option value="2">Tables</option>
-              <option value="3">Chairs</option>
-              <option value="4">Beds</option>
-              <option value="5">Storage</option>
-              <option value="6">Outdoor</option>
             </select>
           </div>
 
@@ -312,7 +327,64 @@
         </div>
 
         <div class="form-group">
+          <label for="edit_product_dimensions"
+            >Dimensions (W x H x D in cm)</label
+          >
+          <input
+            type="text"
+            class="form-input"
+            id="edit_product_dimensions"
+            placeholder="e.g., 100 x 200 x 50"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="edit_product_weight">Weight (kg)</label>
+          <input
+            type="number"
+            class="form-input"
+            id="edit_product_weight"
+            step="0.1"
+            min="0"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="edit_product_delivery_fee"
+            >Delivery Fee Override ($)</label
+          >
+          <input
+            type="number"
+            class="form-input"
+            id="edit_product_delivery_fee"
+            step="0.01"
+            min="0"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="edit_product_assembly_fee"
+            >Assembly Fee Override ($)</label
+          >
+          <input
+            type="number"
+            class="form-input"
+            id="edit_product_assembly_fee"
+            step="0.01"
+            min="0"
+          />
+        </div>
+
+        <div class="form-group">
           <label for="edit_product_image">Product Image</label>
+          <div style="margin-bottom: 1rem">
+            <img
+              id="edit_product_image_preview"
+              src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%23e0e0e0' width='200' height='200'/%3E%3Ctext x='50%25' y='50%25' font-size='14' fill='%23999' text-anchor='middle' dy='.3em'%3ENo Image%3C/text%3E%3C/svg%3E"
+              alt="Product preview"
+              style="max-width: 200px; max-height: 200px; border-radius: 4px"
+            />
+          </div>
           <input
             type="file"
             class="form-input"
@@ -320,36 +392,148 @@
             accept="image/*"
           />
           <small style="color: var(--medium-brown)"
-            >Leave empty to keep current image</small
+            >JPG, PNG, GIF, WebP up to 5MB</small
           >
         </div>
 
-        <button
-          type="submit"
-          class="table-action-btn"
-          style="width: 100%; margin-top: 1rem"
-        >
-          <i class="fas fa-save"></i> Save Changes
-        </button>
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem">
+          <button type="submit" class="table-action-btn" style="flex: 1">
+            <i class="fas fa-save"></i> Save Changes
+          </button>
+          <button
+            type="button"
+            class="table-action-btn secondary"
+            onclick="deleteProductConfirm()"
+            style="flex: 1"
+          >
+            <i class="fas fa-trash"></i> Delete
+          </button>
+        </div>
       </form>
     </div>
   </div>
 </div>
 
 <script>
-  let currentProductId = null;
+  let allProducts = [];
+  let allCategories = [];
+  let filteredProducts = [];
 
-  document.addEventListener("DOMContentLoaded", function () {
-    console.log("Admin products page loaded");
+  // Initialize if DOM is already loaded (happens when injected into existing page)
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function () {
+      initAdminProducts_Page();
+    });
+  } else {
+    // DOM already loaded - page was dynamically injected
+    // Initialize after a small delay to ensure elements are in DOM
+    setTimeout(() => {
+      initAdminProducts_Page();
+    }, 100);
+  }
 
-    // Add product button
+  // This function is called both by DOMContentLoaded and by router
+  function initAdminProducts_Page() {
+    // Check if required elements exist
+    const requiredElements = [
+      "products-loading",
+      "products-grid",
+      "product-search",
+      "category-filter",
+      "add-product-btn",
+    ];
+
+    const missingElements = requiredElements.filter(
+      (id) => !document.getElementById(id)
+    );
+    if (missingElements.length > 0) {
+      console.error("[AdminProducts] Missing elements:", missingElements);
+      return;
+    }
+
+    // Load categories FIRST, then products, then setup listeners
+    loadCategoriesAndThenProducts();
+    setupEventListeners();
+  }
+
+  // Load categories first, then load products after categories are ready
+  function loadCategoriesAndThenProducts() {
+    const token = localStorage.getItem("user_token");
+
+    if (!token) {
+      console.error("[AdminProducts] No token");
+      return;
+    }
+
+    // Load categories
+    fetch("http://localhost/diplomski/backend/categories", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authentication: token,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        allCategories = Array.isArray(data) ? data : data.data || [];
+
+        // Populate category selects
+        const categorySelects = [
+          "add_product_category",
+          "edit_product_category",
+        ];
+        categorySelects.forEach((selectId) => {
+          const select = document.getElementById(selectId);
+          if (!select) return;
+          // Clear existing options except the first one
+          while (select.options.length > 1) {
+            select.remove(1);
+          }
+          allCategories.forEach((cat) => {
+            const option = document.createElement("option");
+            option.value = cat.category_id || cat.id;
+            option.textContent = cat.name;
+            select.appendChild(option);
+          });
+        });
+
+        // Populate filter
+        const filterSelect = document.getElementById("category-filter");
+        if (filterSelect) {
+          // Clear existing options except the first one
+          while (filterSelect.options.length > 1) {
+            filterSelect.remove(1);
+          }
+          allCategories.forEach((cat) => {
+            const option = document.createElement("option");
+            option.value = cat.category_id || cat.id;
+            option.textContent = cat.name;
+            filterSelect.appendChild(option);
+          });
+        }
+
+        // NOW load products after categories are ready
+        loadProducts();
+      })
+      .catch((error) => {
+        console.error("[AdminProducts] Error loading categories:", error);
+        loadProducts(); // Still load products even if categories fail
+      });
+  }
+
+  // Make it global so router can call it
+  window.initAdminProducts_Page = initAdminProducts_Page;
+
+  function setupEventListeners() {
     document
       .getElementById("add-product-btn")
       .addEventListener("click", function () {
-        openAddProductModal();
+        document.getElementById("add-product-form").reset();
+        document.getElementById("add_product_image_preview").src =
+          "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%23e0e0e0' width='200' height='200'/%3E%3Ctext x='50%25' y='50%25' font-size='14' fill='%23999' text-anchor='middle' dy='.3em'%3ENo Image%3C/text%3E%3C/svg%3E";
+        openModal("addProductModal");
       });
 
-    // Add product form
     document
       .getElementById("add-product-form")
       .addEventListener("submit", function (e) {
@@ -357,226 +541,592 @@
         addProduct();
       });
 
-    // Edit product form
     document
       .getElementById("edit-product-form")
       .addEventListener("submit", function (e) {
         e.preventDefault();
         saveProduct();
       });
-  });
 
-  function openAddProductModal() {
-    document.getElementById("add-product-form").reset();
-    openModal("addProductModal");
+    document
+      .getElementById("add_product_image")
+      .addEventListener("change", function (e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (event) {
+            document.getElementById("add_product_image_preview").src =
+              event.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+    document
+      .getElementById("product-search")
+      .addEventListener("input", applyFilters);
+    document
+      .getElementById("category-filter")
+      .addEventListener("change", applyFilters);
+
+    // Add image preview for edit form
+    document
+      .getElementById("edit_product_image")
+      .addEventListener("change", function (e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (event) {
+            document.getElementById("edit_product_image_preview").src =
+              event.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+      });
   }
 
-  function editProduct(productId) {
-    currentProductId = productId;
+  function loadProducts() {
+    const token = localStorage.getItem("user_token");
+    const loadingDiv = document.getElementById("products-loading");
+    const emptyDiv = document.getElementById("products-empty");
+    const grid = document.getElementById("products-grid");
 
-    // In a real app, you would fetch the product data from your API
-    // For now, we'll fill with sample data
-    const products = {
-      1: {
-        name: "Modern Leather Sofa",
-        category: "1",
-        price: "1299.99",
-        description: "A comfortable modern leather sofa for your living room.",
-      },
-      2: {
-        name: "Glass Coffee Table",
-        category: "2",
-        price: "299.99",
-        description: "Stylish glass coffee table for modern interiors.",
-      },
-      3: {
-        name: "Ergonomic Office Chair",
-        category: "3",
-        price: "199.99",
-        description: "Comfortable ergonomic chair for long working hours.",
-      },
-      4: {
-        name: "King Size Bed Frame",
-        category: "4",
-        price: "899.99",
-        description: "Solid wood king size bed frame with storage.",
-      },
-      5: {
-        name: "Oak Dining Table Set",
-        category: "2",
-        price: "1499.99",
-        description: "Complete dining set with 6 chairs made of solid oak.",
-      },
-    };
-
-    const product = products[productId];
-    if (product) {
-      document.getElementById("edit_product_id").value = productId;
-      document.getElementById("edit_product_name").value = product.name;
-      document.getElementById("edit_product_category").value = product.category;
-      document.getElementById("edit_product_price").value = product.price;
-      document.getElementById("edit_product_description").value =
-        product.description;
-
-      openModal("editProductModal");
-    }
-  }
-
-  function addProduct() {
-    const name = document.getElementById("add_product_name").value;
-    const category = document.getElementById("add_product_category").value;
-    const price = document.getElementById("add_product_price").value;
-    const description = document.getElementById(
-      "add_product_description"
-    ).value;
-    const imageFile = document.getElementById("add_product_image").files[0];
-
-    if (!name || !category || !price || !imageFile) {
-      if (typeof showToast === "function") {
-        showToast("Please fill in all required fields", "error");
-      }
+    if (!loadingDiv) {
+      console.error("[AdminProducts] loadingDiv not found!");
       return;
     }
 
-    // In a real app, you would:
-    // 1. Upload the image to your server
-    // 2. Get the image URL
-    // 3. Send product data to your API
-
-    // Simulate API call
-    if (typeof showToast === "function") {
-      showToast("Adding product...", "info");
+    if (!token) {
+      console.error("[AdminProducts] No token found in localStorage");
+      loadingDiv.style.display = "none";
+      showToast("Session expired. Please login again.", "error");
+      window.location.hash = "#login";
+      return;
     }
 
-    setTimeout(() => {
-      if (typeof showToast === "function") {
-        showToast("Product added successfully!", "success");
-      }
-      closeModal("addProductModal");
+    loadingDiv.style.display = "block";
+    if (emptyDiv) emptyDiv.style.display = "none";
+    if (grid) grid.innerHTML = "";
 
-      // Add the new product to the grid (in a real app, you would reload or append)
-      // For now, we'll just show a success message
-      refreshProductsGrid();
-    }, 1000);
+    const apiUrl = "http://localhost/diplomski/backend/products?limit=100";
+
+    fetch(apiUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authentication: token,
+      },
+    })
+      .then((response) => {
+        if (response.status === 401) {
+          console.error(
+            "[AdminProducts] 401 Unauthorized - token may be invalid"
+          );
+          showToast("Unauthorized. Please login again.", "error");
+          window.location.hash = "#login";
+          return null;
+        }
+
+        if (!response.ok) {
+          console.error(
+            "[AdminProducts] Non-OK status:",
+            response.status,
+            response.statusText
+          );
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return response.json();
+      })
+      .then((data) => {
+        if (!data) {
+          loadingDiv.style.display = "none";
+          return;
+        }
+
+        // Handle both array response and {data: [...]} response format
+        if (Array.isArray(data)) {
+          allProducts = data;
+        } else if (data.data && Array.isArray(data.data)) {
+          allProducts = data.data;
+        } else {
+          allProducts = [];
+        }
+
+        filteredProducts = [...allProducts];
+
+        loadingDiv.style.display = "none";
+        renderProducts();
+      })
+      .catch((error) => {
+        console.error("[AdminProducts] Error loading products:", error);
+        console.error("[AdminProducts] Error stack:", error.stack);
+        loadingDiv.style.display = "none";
+        if (emptyDiv) {
+          emptyDiv.style.display = "block";
+          emptyDiv.innerHTML = `<p>Error loading products: ${error.message}</p>`;
+        }
+        showToast("Error loading products: " + error.message, "error");
+      });
+  }
+
+  function applyFilters() {
+    const searchTerm = document
+      .getElementById("product-search")
+      .value.toLowerCase();
+    const categoryId = document.getElementById("category-filter").value;
+
+    filteredProducts = allProducts.filter((product) => {
+      if (searchTerm && !product.name.toLowerCase().includes(searchTerm)) {
+        return false;
+      }
+
+      if (categoryId && product.category_id != categoryId) {
+        return false;
+      }
+
+      return true;
+    });
+
+    renderProducts();
+  }
+
+  function renderProducts() {
+    const grid = document.getElementById("products-grid");
+    const emptyDiv = document.getElementById("products-empty");
+    const countDiv = document.getElementById("product-count");
+
+    if (!grid) {
+      console.error("[AdminProducts] products-grid element not found!");
+      return;
+    }
+
+    grid.innerHTML = "";
+    if (countDiv) countDiv.textContent = filteredProducts.length;
+
+    if (filteredProducts.length === 0) {
+      if (emptyDiv) emptyDiv.style.display = "block";
+      grid.style.display = "none";
+      return;
+    }
+
+    if (emptyDiv) emptyDiv.style.display = "none";
+    grid.style.display = "grid";
+    filteredProducts.forEach((product, index) => {
+      try {
+        const col = document.createElement("div");
+        col.className = "col-lg-4 col-md-6 mb-4";
+        col.innerHTML = `
+          <div class="product-card-admin">
+            <img src="${
+              product.image_url ||
+              "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%23e0e0e0' width='300' height='300'/%3E%3Ctext x='50%25' y='50%25' font-size='16' fill='%23999' text-anchor='middle' dy='.3em'%3ENo Image%3C/text%3E%3C/svg%3E"
+            }" alt="${product.name}" class="product-image-admin" />
+            <div class="product-content-admin">
+              <h3 class="product-title-admin">${product.name}</h3>
+              <p class="product-category-admin">${getCategoryName(
+                product.category_id
+              )}</p>
+              <div class="product-price-admin">$${parseFloat(
+                product.price
+              ).toFixed(2)}</div>
+              <div class="product-actions-admin">
+                <button class="table-action-btn" onclick="editProduct(${
+                  product.product_id
+                })" style="flex: 1">
+                  <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="table-action-btn secondary" onclick="deleteProductConfirm(${
+                  product.product_id
+                })" style="flex: 1">
+                  <i class="fas fa-trash"></i> Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        grid.appendChild(col);
+      } catch (error) {
+        console.error(
+          "[AdminProducts] Error rendering product at index",
+          index,
+          ":",
+          error,
+          "Product:",
+          product
+        );
+      }
+    });
+  }
+
+  function getCategoryName(categoryId) {
+    if (!categoryId) return "Uncategorized";
+
+    const category = allCategories.find((c) => {
+      // Check both category_id and id fields
+      return c.category_id == categoryId || c.id == categoryId;
+    });
+
+    return category ? category.name : "Uncategorized";
+  }
+
+  function editProduct(productId) {
+    const product = allProducts.find((p) => p.product_id == productId);
+    if (!product) {
+      showToast("Product not found", "error");
+      return;
+    }
+
+    document.getElementById("edit_product_id").value = productId;
+    document.getElementById("edit_product_name").value = product.name || "";
+    document.getElementById("edit_product_category").value =
+      product.category_id || "";
+    document.getElementById("edit_product_price").value = product.price || "";
+    document.getElementById("edit_product_description").value =
+      product.description || "";
+    document.getElementById("edit_product_dimensions").value =
+      product.width_cm && product.height_cm && product.depth_cm
+        ? `${product.width_cm} x ${product.height_cm} x ${product.depth_cm}`
+        : "";
+    document.getElementById("edit_product_weight").value =
+      product.weight_kg || "";
+    document.getElementById("edit_product_delivery_fee").value =
+      product.delivery_fee_override || "";
+    document.getElementById("edit_product_assembly_fee").value =
+      product.assembly_fee_override || "";
+
+    // Set image preview
+    const imagePreview = document.getElementById("edit_product_image_preview");
+    if (product.image_url) {
+      imagePreview.src = product.image_url;
+    } else {
+      imagePreview.src =
+        "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%23e0e0e0' width='200' height='200'/%3E%3Ctext x='50%25' y='50%25' font-size='14' fill='%23999' text-anchor='middle' dy='.3em'%3ENo Image%3C/text%3E%3C/svg%3E";
+    }
+
+    // Clear the file input
+    document.getElementById("edit_product_image").value = "";
+
+    openModal("editProductModal");
+  }
+
+  function addProduct() {
+    const name = document.getElementById("add_product_name").value.trim();
+    const categoryId = document.getElementById("add_product_category").value;
+    const price = document.getElementById("add_product_price").value;
+    const description = document
+      .getElementById("add_product_description")
+      .value.trim();
+    const dimensions = document
+      .getElementById("add_product_dimensions")
+      .value.trim();
+    const weight = document.getElementById("add_product_weight").value || null;
+    const deliveryFee =
+      document.getElementById("add_product_delivery_fee").value || null;
+    const assemblyFee =
+      document.getElementById("add_product_assembly_fee").value || null;
+    const imageFile = document.getElementById("add_product_image").files[0];
+
+    if (!name || !categoryId || !price) {
+      showToast("Please fill in all required fields", "error");
+      return;
+    }
+
+    if (!imageFile) {
+      showToast("Please select a product image", "error");
+      return;
+    }
+
+    const token = localStorage.getItem("user_token");
+
+    // Upload image first
+    uploadProductImage(imageFile, token, function (imageUrl) {
+      // After image upload, create the product with the image URL
+      createProductData(
+        name,
+        categoryId,
+        price,
+        description,
+        dimensions,
+        weight,
+        deliveryFee,
+        assemblyFee,
+        imageUrl,
+        token
+      );
+    });
+  }
+
+  function createProductData(
+    name,
+    categoryId,
+    price,
+    description,
+    dimensions,
+    weight,
+    deliveryFee,
+    assemblyFee,
+    imageUrl,
+    token
+  ) {
+    // Parse dimensions
+    let width, height, depth;
+    if (dimensions) {
+      const parts = dimensions.split("x").map((p) => parseFloat(p.trim()));
+      width = parts[0] || null;
+      height = parts[1] || null;
+      depth = parts[2] || null;
+    }
+
+    const productData = {
+      name: name,
+      category_id: categoryId,
+      price: price,
+      description: description,
+      width_cm: width,
+      height_cm: height,
+      depth_cm: depth,
+      weight_kg: weight,
+      delivery_fee_override: deliveryFee,
+      assembly_fee_override: assemblyFee,
+      image_url: imageUrl,
+    };
+
+    showToast("Adding product...", "info");
+
+    fetch("http://localhost/diplomski/backend/products", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authentication: token,
+      },
+      body: JSON.stringify(productData),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          return response.json().then((data) => {
+            throw new Error(data.error || "Error adding product");
+          });
+        }
+        return response.json();
+      })
+      .then((data) => {
+        showToast("Product added successfully!", "success");
+        closeModal("addProductModal");
+        // Reset form
+        document.getElementById("add-product-form").reset();
+        document.getElementById("add_product_image_preview").src =
+          "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%23e0e0e0' width='200' height='200'/%3E%3Ctext x='50%25' y='50%25' font-size='14' fill='%23999' text-anchor='middle' dy='.3em'%3ENo Image%3C/text%3E%3C/svg%3E";
+        loadProducts();
+      })
+      .catch((error) => {
+        console.error("Error adding product:", error);
+        showToast(error.message || "Error adding product.", "error");
+      });
   }
 
   function saveProduct() {
     const productId = document.getElementById("edit_product_id").value;
-    const name = document.getElementById("edit_product_name").value;
-    const category = document.getElementById("edit_product_category").value;
+    const name = document.getElementById("edit_product_name").value.trim();
+    const categoryId = document.getElementById("edit_product_category").value;
     const price = document.getElementById("edit_product_price").value;
-    const description = document.getElementById(
-      "edit_product_description"
-    ).value;
+    const description = document
+      .getElementById("edit_product_description")
+      .value.trim();
+    const dimensions = document
+      .getElementById("edit_product_dimensions")
+      .value.trim();
+    const weight = document.getElementById("edit_product_weight").value || null;
+    const deliveryFee =
+      document.getElementById("edit_product_delivery_fee").value || null;
+    const assemblyFee =
+      document.getElementById("edit_product_assembly_fee").value || null;
     const imageFile = document.getElementById("edit_product_image").files[0];
 
-    if (!name || !category || !price) {
-      if (typeof showToast === "function") {
-        showToast("Please fill in all required fields", "error");
-      }
+    if (!name || !categoryId || !price) {
+      showToast("Please fill in all required fields", "error");
       return;
     }
 
-    // In a real app, you would:
-    // 1. If there's a new image, upload it
-    // 2. Update product data via API
+    const token = localStorage.getItem("user_token");
 
-    if (typeof showToast === "function") {
-      showToast("Updating product...", "info");
+    // If there's an image file to upload, upload it first
+    if (imageFile) {
+      uploadProductImage(imageFile, token, function (imageUrl) {
+        // After image upload, update the product with the image URL
+        updateProductData(
+          productId,
+          name,
+          categoryId,
+          price,
+          description,
+          dimensions,
+          weight,
+          deliveryFee,
+          assemblyFee,
+          imageUrl,
+          token
+        );
+      });
+    } else {
+      // No image to upload, just update the product
+      updateProductData(
+        productId,
+        name,
+        categoryId,
+        price,
+        description,
+        dimensions,
+        weight,
+        deliveryFee,
+        assemblyFee,
+        null,
+        token
+      );
+    }
+  }
+
+  function uploadProductImage(file, token, callback) {
+    const formData = new FormData();
+    formData.append("itemImage", file);
+
+    fetch("http://localhost/diplomski/backend/api/upload/item-image/", {
+      method: "POST",
+      headers: {
+        Authentication: token,
+      },
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          callback("assets/img/products/" + data.filename);
+        } else {
+          throw new Error(data.message || "Image upload failed");
+        }
+      })
+      .catch((error) => {
+        console.error("Error uploading image:", error);
+        showToast("Error uploading image: " + error.message, "error");
+      });
+  }
+
+  function updateProductData(
+    productId,
+    name,
+    categoryId,
+    price,
+    description,
+    dimensions,
+    weight,
+    deliveryFee,
+    assemblyFee,
+    imageUrl,
+    token
+  ) {
+    // Parse dimensions
+    let width, height, depth;
+    if (dimensions) {
+      const parts = dimensions.split("x").map((p) => parseFloat(p.trim()));
+      width = parts[0] || null;
+      height = parts[1] || null;
+      depth = parts[2] || null;
     }
 
-    setTimeout(() => {
-      if (typeof showToast === "function") {
-        showToast("Product updated successfully!", "success");
-      }
-      closeModal("editProductModal");
+    const productData = {
+      name: name,
+      category_id: categoryId,
+      price: price,
+      description: description,
+      width_cm: width,
+      height_cm: height,
+      depth_cm: depth,
+      weight_kg: weight,
+      delivery_fee_override: deliveryFee,
+      assembly_fee_override: assemblyFee,
+    };
 
-      // Update the product card in the grid
-      updateProductCard(productId, {
-        name: name,
-        category: category,
-        price: price,
-        description: description,
+    // Add image URL only if it was provided
+    if (imageUrl) {
+      productData.image_url = imageUrl;
+    }
+
+    showToast("Updating product...", "info");
+
+    fetch(`http://localhost/diplomski/backend/products/${productId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authentication: token,
+      },
+      body: JSON.stringify(productData),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          return response.json().then((data) => {
+            throw new Error(data.error || "Error updating product");
+          });
+        }
+        return response.json();
+      })
+      .then((data) => {
+        showToast("Product updated successfully!", "success");
+        closeModal("editProductModal");
+        loadProducts();
+      })
+      .catch((error) => {
+        console.error("Error updating product:", error);
+        showToast(error.message || "Error updating product.", "error");
       });
-    }, 1000);
+  }
+
+  function deleteProductConfirm(productId = null) {
+    const id = productId || document.getElementById("edit_product_id").value;
+    const product = allProducts.find((p) => p.id == id);
+
+    if (!product) {
+      showToast("Product not found", "error");
+      return;
+    }
+
+    if (
+      confirm(
+        `Are you sure you want to delete "${product.name}"? This action cannot be undone.`
+      )
+    ) {
+      deleteProduct(id);
+    }
   }
 
   function deleteProduct(productId) {
-    if (typeof showToast === "function") {
-      showToast("Delete product #" + productId + "?", "warning", 5000);
-    }
+    const token = localStorage.getItem("user_token");
 
-    // In a real app, you would show a confirmation dialog
-    // For now, we'll simulate deletion
-    if (confirm("Are you sure you want to delete this product?")) {
-      if (typeof showToast === "function") {
-        showToast("Deleting product...", "info");
-      }
+    showToast("Deleting product...", "info");
 
-      setTimeout(() => {
-        if (typeof showToast === "function") {
-          showToast("Product deleted successfully!", "success");
+    fetch(`http://localhost/diplomski/backend/products/${productId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authentication: token,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          return response.json().then((data) => {
+            throw new Error(data.error || "Error deleting product");
+          });
         }
-        // Remove product card from grid
-        removeProductCard(productId);
-      }, 1000);
-    }
-  }
-
-  function updateProductCard(productId, data) {
-    // Find and update the product card
-    const productCards = document.querySelectorAll(
-      "#products-grid .product-card-admin"
-    );
-    productCards.forEach((card) => {
-      const editBtn = card.querySelector(
-        '.table-action-btn[onclick*="editProduct(' + productId + ')"]'
-      );
-      if (editBtn) {
-        // Update card content
-        const title = card.querySelector(".product-title-admin");
-        const category = card.querySelector(".product-category-admin");
-        const price = card.querySelector(".product-price-admin");
-
-        if (title) title.textContent = data.name;
-        if (category) {
-          const categories = {
-            1: "Sofas & Couches",
-            2: "Tables",
-            3: "Chairs",
-            4: "Beds",
-            5: "Storage",
-            6: "Outdoor",
-          };
-          category.textContent = categories[data.category] || "Uncategorized";
-        }
-        if (price) price.textContent = "$" + parseFloat(data.price).toFixed(2);
-      }
-    });
-  }
-
-  function removeProductCard(productId) {
-    // Find and remove the product card
-    const productCards = document.querySelectorAll("#products-grid .col-lg-4");
-    productCards.forEach((col) => {
-      const card = col.querySelector(".product-card-admin");
-      if (card) {
-        const editBtn = card.querySelector(
-          '.table-action-btn[onclick*="editProduct(' + productId + ')"]'
-        );
-        if (editBtn) {
-          col.remove();
-        }
-      }
-    });
-  }
-
-  function refreshProductsGrid() {
-    // In a real app, you would fetch products from your API
-    // For now, we'll just show a toast
-    if (typeof showToast === "function") {
-      showToast("Products refreshed!", "success");
-    }
+        return response.json();
+      })
+      .then((data) => {
+        showToast("Product deleted successfully!", "success");
+        closeModal("editProductModal");
+        loadProducts();
+      })
+      .catch((error) => {
+        console.error("Error deleting product:", error);
+        showToast(error.message || "Error deleting product.", "error");
+      });
   }
 
   function openModal(modalId) {
@@ -595,7 +1145,6 @@
 </script>
 
 <style>
-  /* Product Card Styles for Admin */
   .product-card-admin {
     position: relative;
     overflow: hidden;
@@ -669,7 +1218,6 @@
     padding: 0.5rem;
   }
 
-  /* Form Styles */
   .form-group {
     margin-bottom: 1rem;
   }
@@ -687,6 +1235,7 @@
     border: 1px solid var(--creme-dark);
     border-radius: 4px;
     background-color: white;
+    font-family: inherit;
   }
 
   .form-input:focus {
@@ -694,7 +1243,12 @@
     border-color: var(--burgundy-light);
   }
 
-  /* Grid Layout */
+  .form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
   .row {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -704,6 +1258,10 @@
   @media (max-width: 768px) {
     .row {
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+
+    .form-row-2 {
+      grid-template-columns: 1fr;
     }
   }
 </style>

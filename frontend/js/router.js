@@ -66,8 +66,6 @@ function toggleNavbarOnAdminPages(page) {
 
 // Initialize app
 function initApp() {
-  console.log("Initializing ZIM Commerce SPA...");
-
   // Add CSS for router features
   addRouterStyles();
 
@@ -90,8 +88,6 @@ function initApp() {
 
   // Start router
   router();
-
-  console.log("SPA initialized successfully");
 }
 
 // Add necessary CSS
@@ -433,8 +429,6 @@ function disableAdminCSS() {
 // Load page content
 async function loadPage(page, params = {}) {
   try {
-    console.log(`Loading page: ${page}`);
-
     // Check authentication for protected pages
     if (requiresAuth(page) && !appState.user) {
       showAuthModal(page);
@@ -478,19 +472,15 @@ async function loadPage(page, params = {}) {
     // Try each path until one works
     for (const path of paths) {
       try {
-        console.log(`Trying path: ${path}`);
         const response = await fetch(path);
 
         if (response.ok) {
           html = await response.text();
-          console.log(`Success with path: ${path}`);
           break;
         } else {
-          console.log(`Path ${path} returned status: ${response.status}`);
         }
       } catch (error) {
         lastError = error;
-        console.log(`Failed with path ${path}:`, error.message);
       }
     }
 
@@ -505,7 +495,28 @@ async function loadPage(page, params = {}) {
     app.style.opacity = "0.8";
 
     setTimeout(() => {
+      // Parse HTML and extract scripts
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, "text/html");
+      const scripts = doc.querySelectorAll("script");
+
+      // Set the HTML content
       app.innerHTML = html;
+
+      // Re-execute all scripts that were in the HTML
+      scripts.forEach((oldScript) => {
+        const newScript = document.createElement("script");
+        // Copy attributes
+        Array.from(oldScript.attributes).forEach((attr) => {
+          newScript.setAttribute(attr.name, attr.value);
+        });
+        // Copy content
+        newScript.textContent = oldScript.textContent;
+        // Execute the script by appending to document
+        document.head.appendChild(newScript);
+        document.head.removeChild(newScript);
+      });
+
       app.style.opacity = "1";
 
       // Update page metadata
@@ -609,8 +620,6 @@ function updateActiveNavLink(page) {
 
 // Initialize page-specific scripts
 function initPageScripts(page, params) {
-  console.log(`Initializing scripts for: ${page}`);
-
   // Reinitialize dropdowns for newly loaded content
   initDropdowns();
 
@@ -678,8 +687,6 @@ function initPageScripts(page, params) {
 
 // Home page initialization
 function initHomePage() {
-  console.log("Initializing home page");
-
   const productsGrid = document.querySelector(".products-grid");
   if (!productsGrid) return;
 
@@ -743,8 +750,6 @@ function initHomePage() {
 
 // Product page initialization
 function initProductPage(params) {
-  console.log("Initializing product page with params:", params);
-
   // Get product ID from params
   const productId = params.id;
 
@@ -765,7 +770,6 @@ function initProductPage(params) {
   ProductService.getById(
     productId,
     function (product) {
-      console.log("Product loaded:", product);
       displayProductDetails(product);
       loadRelatedProducts(product.category_id, productId);
       initProductInteractions(product);
@@ -1424,8 +1428,6 @@ function openChangePasswordModal() {
 
 // Profile page initialization
 async function initProfilePage() {
-  console.log("Initializing profile page");
-
   // Sync appState.user from localStorage if not set
   if (!appState.user && localStorage.getItem("zimUser")) {
     appState.user = JSON.parse(localStorage.getItem("zimUser"));
@@ -1567,8 +1569,6 @@ async function initProfilePage() {
 
 // Products page initialization
 function initProductsPage(params) {
-  console.log("Initializing products page with params:", params);
-
   const productsGrid = document.querySelector(".products-grid");
   if (!productsGrid) return;
 
@@ -1710,8 +1710,6 @@ function handleProductsError(error) {
 
 // Search page initialization
 function initSearchPage(params) {
-  console.log("Initializing search page with params:", params);
-
   const searchTerm = params.q || "";
   const searchResultsContainer = document.getElementById("search-results");
   const noResultsDiv = document.querySelector(".no-results");
@@ -1911,8 +1909,6 @@ function initFavoriteButtons() {
 
 // Cart page initialization
 function initCartPage() {
-  console.log("Initializing cart page");
-
   if (!appState.user) {
     window.location.hash = "login";
     return;
@@ -1924,8 +1920,6 @@ function initCartPage() {
 
 // Login page initialization
 function initLoginPage() {
-  console.log("Initializing login page");
-
   const loginForm = document.getElementById("loginForm");
   if (loginForm) {
     // Use UserService.init to attach validation/submit handler (jQuery validate)
@@ -1954,8 +1948,6 @@ function initLoginPage() {
 
 // Register page initialization
 function initRegisterPage() {
-  console.log("Initializing register page");
-
   // Delegate registration validation & submit to UserService
   if (window.UserService && UserService.init) UserService.init();
 
@@ -1981,7 +1973,6 @@ function initRegisterPage() {
 // ADMIN PAGE INITIALIZATIONS
 
 function initAdminDashboard() {
-  console.log("Initializing admin dashboard");
   enableAdminCSS();
 
   // Update current date and time
@@ -2006,7 +1997,6 @@ function initAdminDashboard() {
 }
 
 function initAdminOrders() {
-  console.log("Initializing admin orders");
   enableAdminCSS();
 
   // Initialize order management functionality
@@ -2024,56 +2014,35 @@ function initAdminOrders() {
 }
 
 function initAdminProducts() {
-  console.log("Initializing admin products");
   enableAdminCSS();
 
-  // Initialize product management functionality
-  const imageUploadArea = document.querySelector(".image-upload-area");
-  if (imageUploadArea) {
-    imageUploadArea.addEventListener("click", function () {
-      const input = document.createElement("input");
-      input.type = "file";
-      input.accept = "image/*";
-      input.multiple = true;
-      input.click();
-
-      input.addEventListener("change", function (e) {
-        const files = e.target.files;
-        if (files.length > 0) {
-          showToast(`${files.length} image(s) selected for upload`, "success");
-        }
-      });
-    });
+  // Call the admin products page initialization
+  if (window.initAdminProducts_Page) {
+    window.initAdminProducts_Page();
   }
 }
 
 function initAdminUsers() {
-  console.log("Initializing admin users");
   enableAdminCSS();
 }
 
 function initAdminCategories() {
-  console.log("Initializing admin categories");
   enableAdminCSS();
 }
 
 function initAdminSettings() {
-  console.log("Initializing admin settings");
   enableAdminCSS();
 }
 
 function initAdminReports() {
-  console.log("Initializing admin reports");
   enableAdminCSS();
 }
 
 function initAdminOrderDetail(params) {
-  console.log("Initializing order detail:", params.id);
   enableAdminCSS();
 
   // Load order details based on params.id
   if (params.id) {
-    console.log(`Loading order #${params.id} details`);
     // Here you would typically fetch order details from an API
   }
 }
@@ -2366,8 +2335,6 @@ function loadStripeLibrary() {
 
 // Payment page initialization
 async function initPaymentPage() {
-  console.log("Initializing payment page");
-
   if (!appState.user) {
     window.location.hash = "login";
     return;
@@ -2943,8 +2910,6 @@ function parseHash() {
 
 // Favorites page initialization
 function initFavoritesPage() {
-  console.log("Initializing favorites page");
-
   if (!appState.user) {
     window.location.hash = "login";
     return;

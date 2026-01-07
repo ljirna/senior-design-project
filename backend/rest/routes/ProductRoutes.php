@@ -133,7 +133,7 @@ Flight::group('/products', function () {
         }
 
         try {
-            $product = Flight::productService()->add($data);
+            $product = Flight::productService()->create($data);
             Flight::json($product, 201);
         } catch (Exception $e) {
             Flight::json(['error' => $e->getMessage()], 400);

@@ -13,56 +13,40 @@
         <h1>User Information</h1>
         <p>Manage All Users</p>
       </div>
-      <button
-        class="table-action-btn secondary"
-        onclick="window.location.hash='admin-dashboard'"
-      >
-        <i class="fas fa-arrow-left"></i> Back to Dashboard
-      </button>
+      <div style="display: flex; gap: 1rem">
+        <button
+          class="table-action-btn"
+          onclick="openCreateUserModal()"
+          style="background-color: #28a745; color: white"
+        >
+          <i class="fas fa-plus"></i> Add User
+        </button>
+        <button
+          class="table-action-btn secondary"
+          onclick="window.location.hash='admin-dashboard'"
+        >
+          <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </button>
+      </div>
     </div>
   </div>
 
   <!-- Users Grid -->
   <div class="row" id="users-on-admin-dashboard">
-    <!-- User 1 - Admin -->
-    <div class="col-lg-4 col-md-6 mb-4">
-      <div class="speaker">
-        <div class="details">
-          <h3>John Admin</h3>
-          <p><i class="fas fa-envelope"></i> admin@zim.com</p>
-          <p><i class="fas fa-phone"></i> +1 234 567 8900</p>
-          <p><i class="fas fa-map-marker-alt"></i> New York, NY</p>
-          <p><i class="fas fa-calendar"></i> Joined: Jan 10, 2024</p>
-          <p>
-            <i class="fas fa-tag"></i>
-            <span class="badge-admin">Administrator</span>
-          </p>
-          <div class="admin-actions">
-            <button class="table-action-btn" onclick="editUser(1)">
-              <i class="fas fa-edit"></i> Edit
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Users will be loaded dynamically from API -->
+  </div>
 
-    <!-- User 2 - Customer -->
-    <div class="col-lg-4 col-md-6 mb-4">
-      <div class="speaker">
-        <div class="details">
-          <h3>Jane Smith</h3>
-          <p><i class="fas fa-envelope"></i> jane@example.com</p>
-          <p><i class="fas fa-phone"></i> +1 234 567 8901</p>
-          <p><i class="fas fa-map-marker-alt"></i> Chicago, IL</p>
-          <p><i class="fas fa-calendar"></i> Joined: Jan 15, 2024</p>
-          <div class="admin-actions">
-            <button class="table-action-btn" onclick="editUser(2)">
-              <i class="fas fa-edit"></i> Edit
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+  <!-- Loading indicator -->
+  <div id="users-loading" style="text-align: center; padding: 2rem">
+    <p>Loading users...</p>
+  </div>
+
+  <!-- No users message -->
+  <div
+    id="users-empty"
+    style="text-align: center; padding: 2rem; display: none"
+  >
+    <p>No users found.</p>
   </div>
 </main>
 
@@ -90,7 +74,7 @@
             type="email"
             class="form-input"
             id="edit_user_email"
-            required
+            disabled
           />
         </div>
 
@@ -124,20 +108,89 @@
           </select>
         </div>
 
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem">
+          <button type="submit" class="table-action-btn" style="flex: 1">
+            <i class="fas fa-save"></i> Save Changes
+          </button>
+          <button
+            type="button"
+            class="table-action-btn secondary"
+            onclick="deleteUserConfirm()"
+            style="flex: 1"
+          >
+            <i class="fas fa-trash"></i> Delete
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Create User Modal -->
+<div class="admin-modal-overlay" id="createUserModal">
+  <div class="admin-modal" style="max-width: 500px">
+    <div class="modal-header">
+      <h3>Create New User</h3>
+      <button class="modal-close" onclick="closeModal('createUserModal')">
+        &times;
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="create-user-form">
         <div class="form-group">
-          <label for="edit_user_status">Status</label>
-          <select id="edit_user_status" class="form-input">
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
+          <label for="create_user_name">Full Name *</label>
+          <input
+            type="text"
+            class="form-input"
+            id="create_user_name"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="create_user_email">Email *</label>
+          <input
+            type="email"
+            class="form-input"
+            id="create_user_email"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="create_user_password">Password *</label>
+          <input
+            type="password"
+            class="form-input"
+            id="create_user_password"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="create_user_phone">Phone Number</label>
+          <input type="tel" class="form-input" id="create_user_phone" />
+        </div>
+
+        <div class="form-group">
+          <label for="create_user_role">Role</label>
+          <select id="create_user_role" class="form-input">
+            <option value="customer">Customer</option>
+            <option value="admin">Administrator</option>
           </select>
         </div>
 
         <button
           type="submit"
           class="table-action-btn"
-          style="width: 100%; margin-top: 1rem"
+          style="
+            width: 100%;
+            margin-top: 1rem;
+            background-color: #28a745;
+            color: white;
+          "
         >
-          <i class="fas fa-save"></i> Save Changes
+          <i class="fas fa-plus"></i> Create User
         </button>
       </form>
     </div>
@@ -145,8 +198,12 @@
 </div>
 
 <script>
+  let allUsers = [];
+  let currentEditingUserId = null;
+
   document.addEventListener("DOMContentLoaded", function () {
     console.log("Admin users page loaded");
+    loadUsers();
 
     // Edit user form
     document
@@ -155,257 +212,335 @@
         e.preventDefault();
         saveUserChanges();
       });
+
+    // Create user form
+    document
+      .getElementById("create-user-form")
+      .addEventListener("submit", function (e) {
+        e.preventDefault();
+        createUser();
+      });
   });
 
-  function editUser(userId) {
-    // In a real app, you would fetch user data from API
-    // For now, we'll fill with sample data
-    const users = {
-      1: {
-        name: "John Admin",
-        email: "admin@zim.com",
-        phone: "+1 234 567 8900",
-        address: "123 Main St",
-        city: "New York",
-        postal: "10001",
-        role: "admin",
-        status: "active",
-      },
-      2: {
-        name: "Jane Smith",
-        email: "jane@example.com",
-        phone: "+1 234 567 8901",
-        address: "456 Oak Ave",
-        city: "Chicago",
-        postal: "60601",
-        role: "customer",
-        status: "active",
-      },
-      3: {
-        name: "Robert Johnson",
-        email: "robert@example.com",
-        phone: "+1 234 567 8902",
-        address: "789 Pine Rd",
-        city: "Miami",
-        postal: "33101",
-        role: "customer",
-        status: "inactive",
-      },
-      4: {
-        name: "Maria Garcia",
-        email: "maria@example.com",
-        phone: "+1 234 567 8903",
-        address: "101 Maple St",
-        city: "Los Angeles",
-        postal: "90001",
-        role: "customer",
-        status: "pending",
-      },
-      5: {
-        name: "Michael Brown",
-        email: "michael@example.com",
-        phone: "+1 234 567 8904",
-        address: "202 Elm Blvd",
-        city: "Seattle",
-        postal: "98101",
-        role: "customer",
-        status: "active",
-      },
-    };
-
-    const user = users[userId];
-    if (user) {
-      document.getElementById("edit_user_id").value = userId;
-      document.getElementById("edit_user_name").value = user.name;
-      document.getElementById("edit_user_email").value = user.email;
-      document.getElementById("edit_user_phone").value = user.phone;
-      document.getElementById("edit_user_address").value = user.address;
-      document.getElementById("edit_user_city").value = user.city;
-      document.getElementById("edit_user_postal").value = user.postal;
-      document.getElementById("edit_user_role").value = user.role;
-      document.getElementById("edit_user_status").value =
-        user.status === "pending" ? "active" : user.status;
-
-      openModal("editUserModal");
+  // Load all users from API
+  function loadUsers() {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      showToast("Session expired. Please login again.", "error");
+      return;
     }
+
+    const loadingDiv = document.getElementById("users-loading");
+    const emptyDiv = document.getElementById("users-empty");
+    const usersGrid = document.getElementById("users-on-admin-dashboard");
+
+    loadingDiv.style.display = "block";
+    emptyDiv.style.display = "none";
+    usersGrid.innerHTML = "";
+
+    fetch("http://localhost/diplomski/backend/api/users?limit=100", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authentication: token,
+      },
+    })
+      .then((response) => {
+        if (response.status === 401) {
+          showToast("Unauthorized. Please login again.", "error");
+          window.location.hash = "#login";
+          return null;
+        }
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (!data) return;
+        allUsers = Array.isArray(data) ? data : data.data || [];
+
+        loadingDiv.style.display = "none";
+
+        if (allUsers.length === 0) {
+          emptyDiv.style.display = "block";
+          return;
+        }
+
+        renderUsers(allUsers);
+      })
+      .catch((error) => {
+        console.error("Error loading users:", error);
+        loadingDiv.style.display = "none";
+        showToast("Error loading users. Please try again.", "error");
+      });
   }
 
+  // Render users in the grid
+  function renderUsers(users) {
+    const usersGrid = document.getElementById("users-on-admin-dashboard");
+    usersGrid.innerHTML = "";
+
+    users.forEach((user) => {
+      const userCard = createUserCard(user);
+      usersGrid.appendChild(userCard);
+    });
+  }
+
+  // Create a user card element
+  function createUserCard(user) {
+    const col = document.createElement("div");
+    col.className = "col-lg-4 col-md-6 mb-4";
+
+    const isAdmin = user.role === "admin";
+    const joinDate = user.created_at
+      ? new Date(user.created_at).toLocaleDateString()
+      : "N/A";
+
+    col.innerHTML = `
+      <div class="speaker">
+        <div class="details">
+          <h3>${user.full_name}</h3>
+          <p><i class="fas fa-envelope"></i> ${user.email}</p>
+          ${
+            user.phone
+              ? `<p><i class="fas fa-phone"></i> ${user.phone}</p>`
+              : ""
+          }
+          ${
+            user.address
+              ? `<p><i class="fas fa-map-marker-alt"></i> ${user.address}</p>`
+              : ""
+          }
+          <p><i class="fas fa-calendar"></i> Joined: ${joinDate}</p>
+          ${
+            isAdmin
+              ? `<p><i class="fas fa-tag"></i> <span class="badge-admin">Administrator</span></p>`
+              : ""
+          }
+          <div class="admin-actions">
+            <button class="table-action-btn" onclick="editUser(${user.id})">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    return col;
+  }
+
+  // Open edit user modal
+  function editUser(userId) {
+    const user = allUsers.find((u) => u.id === userId);
+    if (!user) {
+      showToast("User not found", "error");
+      return;
+    }
+
+    currentEditingUserId = userId;
+    document.getElementById("edit_user_id").value = userId;
+    document.getElementById("edit_user_name").value = user.full_name || "";
+    document.getElementById("edit_user_email").value = user.email || "";
+    document.getElementById("edit_user_phone").value = user.phone || "";
+    document.getElementById("edit_user_address").value = user.address || "";
+    document.getElementById("edit_user_city").value = user.city || "";
+    document.getElementById("edit_user_postal").value = user.postal_code || "";
+    document.getElementById("edit_user_role").value = user.role || "customer";
+
+    openModal("editUserModal");
+  }
+
+  // Save user changes
   function saveUserChanges() {
     const userId = document.getElementById("edit_user_id").value;
-    const name = document.getElementById("edit_user_name").value;
+    const name = document.getElementById("edit_user_name").value.trim();
+    const phone = document.getElementById("edit_user_phone").value.trim();
+    const address = document.getElementById("edit_user_address").value.trim();
+    const city = document.getElementById("edit_user_city").value.trim();
+    const postal = document.getElementById("edit_user_postal").value.trim();
     const role = document.getElementById("edit_user_role").value;
-    const status = document.getElementById("edit_user_status").value;
 
-    if (typeof showToast === "function") {
-      showToast(`Saving changes for ${name}...`, "info");
+    if (!name) {
+      showToast("Full name is required", "error");
+      return;
     }
 
-    setTimeout(() => {
-      if (typeof showToast === "function") {
-        showToast("User updated successfully!", "success");
-      }
-      closeModal("editUserModal");
-
-      // Update the user card in the grid
-      updateUserCard(userId, { name, role, status });
-    }, 1000);
-  }
-
-  function updateUserCard(userId, data) {
-    // Find and update the user card
-    const userCards = document.querySelectorAll(
-      "#users-on-admin-dashboard .speaker .details"
-    );
-    userCards.forEach((card) => {
-      const h3 = card.querySelector("h3");
-      if (h3.textContent === getUserNameById(userId)) {
-        // Update name
-        h3.textContent = data.name;
-
-        // Update role badge if exists
-        const roleBadge = card.querySelector(".badge-admin");
-        if (roleBadge) {
-          if (data.role === "admin") {
-            roleBadge.textContent = "Administrator";
-            roleBadge.style.display = "inline-block";
-          } else {
-            roleBadge.style.display = "none";
-          }
-        }
-      }
-    });
-  }
-
-  function toggleUserStatus(userId) {
-    const userCards = document.querySelectorAll(
-      "#users-on-admin-dashboard .speaker .details"
-    );
-    userCards.forEach((card) => {
-      const h3 = card.querySelector("h3");
-      if (h3.textContent === getUserNameById(userId)) {
-        const actionBtn = card.querySelector(
-          ".admin-actions .table-action-btn.secondary"
-        );
-        if (actionBtn.textContent.includes("Deactivate")) {
-          // Change to Activate
-          actionBtn.innerHTML = '<i class="fas fa-user-check"></i> Activate';
-          actionBtn.onclick = function () {
-            toggleUserStatus(userId);
-          };
-          if (typeof showToast === "function") {
-            showToast("User deactivated!", "success");
-          }
-        } else {
-          // Change to Deactivate
-          actionBtn.innerHTML = '<i class="fas fa-user-slash"></i> Deactivate';
-          actionBtn.onclick = function () {
-            toggleUserStatus(userId);
-          };
-          if (typeof showToast === "function") {
-            showToast("User activated!", "success");
-          }
-        }
-      }
-    });
-  }
-
-  function approveUser(userId) {
-    const userCards = document.querySelectorAll(
-      "#users-on-admin-dashboard .speaker .details"
-    );
-    userCards.forEach((card) => {
-      const h3 = card.querySelector("h3");
-      if (h3.textContent === getUserNameById(userId)) {
-        // Remove pending badge
-        const pendingBadge = card.querySelector(".badge-pending");
-        if (pendingBadge) {
-          pendingBadge.style.display = "none";
-        }
-
-        // Update action buttons
-        const actionsDiv = card.querySelector(".admin-actions");
-        if (actionsDiv) {
-          actionsDiv.innerHTML = `
-            <button class="table-action-btn" onclick="editUser(${userId})">
-              <i class="fas fa-edit"></i> Edit
-            </button>
-            <button class="table-action-btn secondary" onclick="toggleUserStatus(${userId})">
-              <i class="fas fa-user-slash"></i> Deactivate
-            </button>
-          `;
-        }
-
-        if (typeof showToast === "function") {
-          showToast("User approved!", "success");
-        }
-      }
-    });
-  }
-
-  function rejectUser(userId) {
-    const userCards = document.querySelectorAll(
-      "#users-on-admin-dashboard .speaker .details"
-    );
-    userCards.forEach((card) => {
-      const h3 = card.querySelector("h3");
-      if (h3.textContent === getUserNameById(userId)) {
-        // Remove the card
-        const speakerDiv = card.closest(".col-lg-4");
-        if (speakerDiv) {
-          speakerDiv.remove();
-        }
-
-        if (typeof showToast === "function") {
-          showToast("User rejected!", "success");
-        }
-      }
-    });
-  }
-
-  function promoteToAdmin(userId) {
-    const userCards = document.querySelectorAll(
-      "#users-on-admin-dashboard .speaker .details"
-    );
-    userCards.forEach((card) => {
-      const h3 = card.querySelector("h3");
-      if (h3.textContent === getUserNameById(userId)) {
-        // Add admin badge
-        const orderInfo = card.querySelector("p:last-of-type");
-        if (orderInfo && !orderInfo.querySelector(".badge-admin")) {
-          const adminBadge = document.createElement("span");
-          adminBadge.className = "badge-admin";
-          adminBadge.textContent = "Administrator";
-          adminBadge.style.cssText =
-            "background-color: rgba(128, 0, 32, 0.1); color: var(--burgundy-primary); padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; margin-left: 0.5rem;";
-          orderInfo.appendChild(adminBadge);
-        }
-
-        // Update action buttons
-        const actionsDiv = card.querySelector(".admin-actions");
-        if (actionsDiv) {
-          actionsDiv.innerHTML = `
-            <button class="table-action-btn" onclick="editUser(${userId})">
-              <i class="fas fa-edit"></i> Edit
-            </button>
-          `;
-        }
-
-        if (typeof showToast === "function") {
-          showToast("User promoted to administrator!", "success");
-        }
-      }
-    });
-  }
-
-  function getUserNameById(userId) {
-    const names = {
-      1: "John Admin",
-      2: "Jane Smith",
-      3: "Robert Johnson",
-      4: "Maria Garcia",
-      5: "Michael Brown",
+    const token = localStorage.getItem("token");
+    const updateData = {
+      full_name: name,
+      phone: phone,
+      address: address,
+      city: city,
+      postal_code: postal,
     };
-    return names[userId] || "User";
+
+    showToast("Saving changes...", "info");
+
+    // First update basic user info
+    fetch(`http://localhost/diplomski/backend/api/users/${userId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authentication: token,
+      },
+      body: JSON.stringify(updateData),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        // Then update role if it changed
+        const currentUser = allUsers.find((u) => u.id === parseInt(userId));
+        if (currentUser.role !== role) {
+          return fetch(
+            `http://localhost/diplomski/backend/api/users/${userId}/role`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                Authentication: token,
+              },
+              body: JSON.stringify({ role: role }),
+            }
+          ).then((response) => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          });
+        }
+        return data;
+      })
+      .then((data) => {
+        showToast("User updated successfully!", "success");
+        closeModal("editUserModal");
+        loadUsers(); // Reload users
+      })
+      .catch((error) => {
+        console.error("Error saving user:", error);
+        showToast("Error saving user changes. Please try again.", "error");
+      });
+  }
+
+  // Delete user confirmation
+  function deleteUserConfirm() {
+    const userId = document.getElementById("edit_user_id").value;
+    const user = allUsers.find((u) => u.id === parseInt(userId));
+
+    if (!user) {
+      showToast("User not found", "error");
+      return;
+    }
+
+    if (
+      confirm(
+        `Are you sure you want to delete ${user.full_name}? This action cannot be undone.`
+      )
+    ) {
+      deleteUser(userId);
+    }
+  }
+
+  // Delete user
+  function deleteUser(userId) {
+    const token = localStorage.getItem("token");
+
+    showToast("Deleting user...", "info");
+
+    fetch(`http://localhost/diplomski/backend/api/users/${userId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authentication: token,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        showToast("User deleted successfully!", "success");
+        closeModal("editUserModal");
+        loadUsers(); // Reload users
+      })
+      .catch((error) => {
+        console.error("Error deleting user:", error);
+        showToast("Error deleting user. Please try again.", "error");
+      });
+  }
+
+  // Open create user modal
+  function openCreateUserModal() {
+    document.getElementById("create-user-form").reset();
+    openModal("createUserModal");
+  }
+
+  // Create new user
+  function createUser() {
+    const name = document.getElementById("create_user_name").value.trim();
+    const email = document.getElementById("create_user_email").value.trim();
+    const password = document.getElementById("create_user_password").value;
+    const phone = document.getElementById("create_user_phone").value.trim();
+    const role = document.getElementById("create_user_role").value;
+
+    if (!name || !email || !password) {
+      showToast("Name, email, and password are required", "error");
+      return;
+    }
+
+    if (password.length < 6) {
+      showToast("Password must be at least 6 characters", "error");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    const userData = {
+      full_name: name,
+      email: email,
+      password: password,
+      phone: phone,
+      role: role,
+    };
+
+    showToast("Creating user...", "info");
+
+    fetch("http://localhost/diplomski/backend/api/users", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authentication: token,
+      },
+      body: JSON.stringify(userData),
+    })
+      .then((response) => {
+        if (response.status === 400) {
+          return response.json().then((data) => {
+            throw new Error(data.error || "Error creating user");
+          });
+        }
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        showToast("User created successfully!", "success");
+        closeModal("createUserModal");
+        loadUsers(); // Reload users
+      })
+      .catch((error) => {
+        console.error("Error creating user:", error);
+        showToast(
+          error.message || "Error creating user. Please try again.",
+          "error"
+        );
+      });
   }
 
   function openModal(modalId) {

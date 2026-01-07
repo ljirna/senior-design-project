@@ -10,7 +10,14 @@ var UserService = {
       // Already logged in — only redirect from login/register pages
       const currentHash = window.location.hash.substring(1);
       if (currentHash === "login" || currentHash === "register") {
-        window.location.hash = "home";
+        // Redirect to appropriate dashboard based on role
+        const user =
+          window.appState.user || JSON.parse(localStorage.getItem("zimUser"));
+        const redirectHash =
+          user && user.role === Constants.ADMIN_ROLE
+            ? "admin-dashboard"
+            : "home";
+        window.location.hash = redirectHash;
       }
       return;
     }
@@ -48,6 +55,7 @@ var UserService = {
   },
 
   login: function (entity) {
+    console.log("[UserService.login] Starting login with email:", entity.email);
     $.ajax({
       url: Constants.PROJECT_BASE_URL + "auth/login",
       type: "POST",
@@ -55,29 +63,68 @@ var UserService = {
       contentType: "application/json",
       dataType: "json",
       success: function (result) {
+        console.log("[UserService.login] Login response received:", result);
+        console.log("[UserService.login] result.data:", result.data);
+        console.log(
+          "[UserService.login] result.data.token:",
+          result.data?.token
+        );
+
         if (result && result.data && result.data.token) {
+          console.log(
+            "[UserService.login] Token found, storing in localStorage"
+          );
           localStorage.setItem("user_token", result.data.token);
+          console.log(
+            "[UserService.login] Token stored, verifying:",
+            localStorage.getItem("user_token")
+          );
 
           // Store complete user object without token
           var user = Object.assign({}, result.data);
           delete user.token;
+          console.log("[UserService.login] User object to store:", user);
           localStorage.setItem("zimUser", JSON.stringify(user));
+          console.log(
+            "[UserService.login] zimUser stored, verifying:",
+            localStorage.getItem("zimUser")
+          );
 
           // Update appState if available
           if (window.appState) appState.user = user;
 
-          // Redirect to previous page or home
-          const prevHash = sessionStorage.getItem("prevHash") || "home";
-          window.location.hash = prevHash;
+          // Redirect based on user role
+          let redirectHash = sessionStorage.getItem("prevHash") || "home";
+          if (user.role === Constants.ADMIN_ROLE) {
+            redirectHash = "admin-dashboard";
+          }
+          console.log("[UserService.login] Redirecting to:", redirectHash);
+          window.location.hash = redirectHash;
 
           // Update header/menu
           if (window.UserService && UserService.generateMenuItems)
             UserService.generateMenuItems();
         } else {
+          console.error(
+            "[UserService.login] Missing token or data in response"
+          );
           toastr.error("Unexpected response from server");
         }
       },
       error: function (XMLHttpRequest, textStatus, errorThrown) {
+        console.error(
+          "[UserService.login] Error occurred:",
+          textStatus,
+          errorThrown
+        );
+        console.error(
+          "[UserService.login] Response status:",
+          XMLHttpRequest.status
+        );
+        console.error(
+          "[UserService.login] Response text:",
+          XMLHttpRequest.responseText
+        );
         try {
           var txt = XMLHttpRequest?.responseText;
           // If JSON with message
@@ -137,13 +184,46 @@ var UserService = {
   },
 
   logout: function () {
-    localStorage.removeItem("user_token");
-    localStorage.removeItem("zimUser");
-    if (window.appState) appState.user = null;
+    console.log("[UserService.logout] Starting logout process");
+    console.log(
+      "[UserService.logout] Before logout - localStorage keys:",
+      Object.keys(localStorage)
+    );
+
+    // Log all items that will be removed
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      console.log(
+        `[UserService.logout] Will remove: ${key} = ${localStorage.getItem(
+          key
+        )}`
+      );
+    }
+
+    // COMPLETELY CLEAR ALL localStorage
+    localStorage.clear();
+    console.log("[UserService.logout] Executed localStorage.clear()");
+
+    if (window.appState) {
+      appState.user = null;
+      console.log("[UserService.logout] Cleared appState.user");
+    }
+
+    console.log(
+      "[UserService.logout] After logout - localStorage keys:",
+      Object.keys(localStorage)
+    );
+
+    console.log(
+      "[UserService.logout] localStorage is now completely empty. All data removed."
+    );
+
     showToast("Successfully logged out", "success");
     window.location.hash = "home";
     if (window.UserService && UserService.generateMenuItems)
       UserService.generateMenuItems();
+
+    console.log("[UserService.logout] Logout complete");
   },
 
   changePassword: function (
