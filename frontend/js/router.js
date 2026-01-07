@@ -798,38 +798,61 @@ function displayProductDetails(product) {
     "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800";
 
   productContent.innerHTML = `
-    <!-- Product Gallery Section -->
-    <section class="product-gallery-section" aria-label="Product images">
-      <div class="product-main-image">
+    <!-- Product Gallery + Description Section -->
+    <div class="product-gallery-with-description">
+      <!-- Product Gallery Section -->
+      <section class="product-gallery-section" aria-label="Product images">
+        <div class="product-main-image">
+          ${
+            images.length > 1
+              ? `
+            <button class="carousel-btn carousel-prev" id="carouselPrev" aria-label="Previous image">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+          `
+              : ""
+          }
+          <img
+            id="mainProductImage"
+            src="${mainImage}"
+            alt="${product.name}"
+            data-product-id="${product.product_id}"
+            data-current-index="0"
+          />
+          ${
+            images.length > 1
+              ? `
+            <button class="carousel-btn carousel-next" id="carouselNext" aria-label="Next image">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+            <div class="carousel-indicators">
+              ${images
+                .map(
+                  (_, index) => `
+                <span class="indicator ${
+                  index === 0 ? "active" : ""
+                }" data-index="${index}"></span>
+              `
+                )
+                .join("")}
+            </div>
+          `
+              : ""
+          }
+        </div>
+
         ${
           images.length > 1
             ? `
-          <button class="carousel-btn carousel-prev" id="carouselPrev" aria-label="Previous image">
-            <i class="fas fa-chevron-left"></i>
-          </button>
-        `
-            : ""
-        }
-        <img
-          id="mainProductImage"
-          src="${mainImage}"
-          alt="${product.name}"
-          data-product-id="${product.product_id}"
-          data-current-index="0"
-        />
-        ${
-          images.length > 1
-            ? `
-          <button class="carousel-btn carousel-next" id="carouselNext" aria-label="Next image">
-            <i class="fas fa-chevron-right"></i>
-          </button>
-          <div class="carousel-indicators">
+          <div class="thumbnail-gallery">
             ${images
               .map(
-                (_, index) => `
-              <span class="indicator ${
+                (img, index) => `
+              <div class="thumbnail-item ${
                 index === 0 ? "active" : ""
-              }" data-index="${index}"></span>
+              }" data-image-index="${index}">
+                <img src="${img}" alt="${product.name} - Image ${index + 1}" />
+              </div>
             `
               )
               .join("")}
@@ -837,28 +860,16 @@ function displayProductDetails(product) {
         `
             : ""
         }
-      </div>
+      </section>
 
-      ${
-        images.length > 1
-          ? `
-        <div class="thumbnail-gallery">
-          ${images
-            .map(
-              (img, index) => `
-            <div class="thumbnail-item ${
-              index === 0 ? "active" : ""
-            }" data-image-index="${index}">
-              <img src="${img}" alt="${product.name} - Image ${index + 1}" />
-            </div>
-          `
-            )
-            .join("")}
-        </div>
-      `
-          : ""
-      }
-    </section>
+      <!-- Product Description Section -->
+      <div class="product-description-section">
+        <h3 class="description-title">About This Product</h3>
+        <p class="product-description-text">${
+          product.description || "No description available"
+        }</p>
+      </div>
+    </div>
 
     <!-- Product Info Section -->
     <section class="product-info-section" aria-label="Product information">
@@ -868,7 +879,6 @@ function displayProductDetails(product) {
           product.category_name || "Furniture"
         }</span>
         <h1 class="product-title" id="productTitle">${product.name}</h1>
-        <p class="product-subtitle">${product.description || ""}</p>
 
         <!-- Rating & Stock -->
         <div class="product-meta-row">
@@ -915,6 +925,74 @@ function displayProductDetails(product) {
               : ""
           }
         </ul>
+      `
+          : ""
+      }
+
+      <!-- Dimensions Section -->
+      ${
+        product.width_cm ||
+        product.height_cm ||
+        product.depth_cm ||
+        product.weight_kg
+          ? `
+        <div class="product-dimensions-section">
+          <h3 class="dimensions-title">Product Dimensions</h3>
+          <div class="dimensions-grid">
+            ${
+              product.width_cm
+                ? `
+              <div class="dimension-item">
+                <i class="fas fa-arrows-alt-h"></i>
+                <span class="dimension-label">Width</span>
+                <span class="dimension-value">${parseFloat(
+                  product.width_cm
+                ).toFixed(1)} cm</span>
+              </div>
+            `
+                : ""
+            }
+            ${
+              product.height_cm
+                ? `
+              <div class="dimension-item">
+                <i class="fas fa-arrows-alt-v"></i>
+                <span class="dimension-label">Height</span>
+                <span class="dimension-value">${parseFloat(
+                  product.height_cm
+                ).toFixed(1)} cm</span>
+              </div>
+            `
+                : ""
+            }
+            ${
+              product.depth_cm
+                ? `
+              <div class="dimension-item">
+                <i class="fas fa-arrows-alt"></i>
+                <span class="dimension-label">Depth</span>
+                <span class="dimension-value">${parseFloat(
+                  product.depth_cm
+                ).toFixed(1)} cm</span>
+              </div>
+            `
+                : ""
+            }
+            ${
+              product.weight_kg
+                ? `
+              <div class="dimension-item">
+                <i class="fas fa-weight"></i>
+                <span class="dimension-label">Weight</span>
+                <span class="dimension-value">${parseFloat(
+                  product.weight_kg
+                ).toFixed(1)} kg</span>
+              </div>
+            `
+                : ""
+            }
+          </div>
+        </div>
       `
           : ""
       }
@@ -1263,6 +1341,87 @@ function openEditProfileModal(user) {
   };
 }
 
+// Open change password modal
+function openChangePasswordModal() {
+  const modal = document.getElementById("changePasswordModal");
+  if (!modal) return;
+
+  // Clear form
+  document.getElementById("changePasswordForm").reset();
+
+  modal.style.display = "flex";
+
+  // Handle form submission
+  const form = document.getElementById("changePasswordForm");
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+
+    const currentPassword = document.getElementById("currentPassword").value;
+    const newPassword = document.getElementById("newPassword").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+
+    // Validate passwords match
+    if (newPassword !== confirmPassword) {
+      showToast("New passwords do not match", "error");
+      return;
+    }
+
+    // Validate password length
+    if (newPassword.length < 8) {
+      showToast("New password must be at least 8 characters long", "error");
+      return;
+    }
+
+    const submitButton = form.querySelector(".btn-save");
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = "Updating...";
+    }
+
+    UserService.changePassword(
+      appState.user.user_id,
+      currentPassword,
+      newPassword,
+      function (result) {
+        modal.style.display = "none";
+        showToast("Password changed successfully!", "success");
+        document.getElementById("changePasswordForm").reset();
+      },
+      function (error) {
+        showToast(error || "Failed to change password", "error");
+      }
+    );
+
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.textContent = "Update Password";
+    }
+  };
+
+  // Handle close button
+  const closeBtn = modal.querySelector(".close-modal");
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      modal.style.display = "none";
+    };
+  }
+
+  // Handle cancel button
+  const cancelBtn = modal.querySelector(".btn-cancel");
+  if (cancelBtn) {
+    cancelBtn.onclick = () => {
+      modal.style.display = "none";
+    };
+  }
+
+  // Close modal when clicking outside
+  window.onclick = (event) => {
+    if (event.target === modal) {
+      modal.style.display = "none";
+    }
+  };
+}
+
 // Profile page initialization
 async function initProfilePage() {
   console.log("Initializing profile page");
@@ -1376,6 +1535,8 @@ async function initProfilePage() {
         // Always open with the freshest user data
         const latestUser = appState.user || user;
         openEditProfileModal(latestUser);
+      } else if (action.includes("Change Password")) {
+        openChangePasswordModal();
       } else {
         showToast(`${action} feature coming soon!`, "info");
       }

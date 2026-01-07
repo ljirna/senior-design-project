@@ -2,18 +2,6 @@
   <div class="profile-page">
     <!-- Profile Header -->
     <div class="profile-header-compact">
-      <div class="profile-picture-compact">
-        <img
-          src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-          alt="Profile Picture"
-          class="profile-img-compact"
-          id="profileImage"
-        />
-        <button class="change-photo-btn-compact" title="Change profile picture">
-          <i class="fas fa-camera"></i>
-        </button>
-        <input type="file" id="profileImageInput" accept="image/*" style="display: none;" />
-      </div>
       <div class="profile-info-compact">
         <h1 class="profile-name">John Doe</h1>
         <p class="profile-email-compact">john.doe@example.com</p>
@@ -121,6 +109,41 @@
           </button>
           <button type="submit" class="btn-save">
             Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Change Password Modal -->
+  <div id="changePasswordModal" class="modal">
+    <div class="modal-content edit-profile-modal">
+      <div class="modal-header">
+        <h2>Change Password</h2>
+        <button class="close-modal" data-modal="changePasswordModal">&times;</button>
+      </div>
+      <form id="changePasswordForm" class="edit-profile-form">
+        <div class="form-group">
+          <label for="currentPassword">Current Password</label>
+          <input type="password" id="currentPassword" placeholder="Enter your current password" required />
+        </div>
+
+        <div class="form-group">
+          <label for="newPassword">New Password</label>
+          <input type="password" id="newPassword" placeholder="Enter your new password" required />
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Confirm New Password</label>
+          <input type="password" id="confirmPassword" placeholder="Confirm your new password" required />
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" data-modal="changePasswordModal">
+            Cancel
+          </button>
+          <button type="submit" class="btn-save">
+            Update Password
           </button>
         </div>
       </form>

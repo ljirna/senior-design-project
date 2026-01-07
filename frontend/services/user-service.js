@@ -146,6 +146,49 @@ var UserService = {
       UserService.generateMenuItems();
   },
 
+  changePassword: function (
+    userId,
+    currentPassword,
+    newPassword,
+    callback,
+    errorCallback
+  ) {
+    const token = localStorage.getItem("user_token");
+    $.ajax({
+      url: Constants.PROJECT_BASE_URL + "users/" + userId + "/change-password",
+      type: "POST",
+      data: JSON.stringify({
+        current_password: currentPassword,
+        new_password: newPassword,
+      }),
+      contentType: "application/json",
+      dataType: "json",
+      beforeSend: function (xhr) {
+        if (token) {
+          xhr.setRequestHeader("Authentication", token);
+        }
+      },
+      success: function (result) {
+        if (callback) callback(result);
+      },
+      error: function (XMLHttpRequest, textStatus, errorThrown) {
+        if (errorCallback) {
+          try {
+            var txt = XMLHttpRequest?.responseText;
+            try {
+              var parsed = JSON.parse(txt);
+              if (parsed?.message) txt = parsed.message;
+              if (parsed?.error) txt = parsed.error;
+            } catch (e) {}
+            errorCallback(txt ? txt : "Error changing password");
+          } catch (e) {
+            errorCallback("Error changing password");
+          }
+        }
+      },
+    });
+  },
+
   generateMenuItems: function () {
     const token = localStorage.getItem("user_token");
     const user = token ? Utils.parseJwt(token)?.user : null;

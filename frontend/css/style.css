@@ -1583,6 +1583,13 @@ a:hover {
   }
 }
 
+/* Product Gallery with Description Container */
+.product-gallery-with-description {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
 /* Product Gallery Styles */
 .product-gallery-section {
   position: relative;
@@ -1716,6 +1723,31 @@ a:hover {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* Product Description Section */
+.product-description-section {
+  padding: 1.5rem;
+  background-color: white;
+  border-radius: 8px;
+  border: 1px solid var(--creme-dark);
+}
+
+.description-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--burgundy-primary);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.product-description-text {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--medium-brown);
+  text-align: justify;
 }
 
 /* Product Info Section */
@@ -1857,6 +1889,69 @@ a:hover {
   margin-right: var(--spacing-xs);
   margin-top: 0.2rem;
   min-width: 20px;
+}
+
+/* Product Dimensions Section */
+.product-dimensions-section {
+  margin-bottom: var(--spacing-lg);
+  padding: 1.5rem;
+  background-color: var(--creme-light);
+  border-radius: 8px;
+  border-left: 4px solid var(--burgundy-primary);
+}
+
+.dimensions-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--burgundy-primary);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dimensions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.dimension-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1rem;
+  background-color: white;
+  border-radius: 6px;
+  border: 1px solid var(--creme-dark);
+  transition: all 0.3s ease;
+}
+
+.dimension-item:hover {
+  border-color: var(--burgundy-light);
+  box-shadow: 0 2px 8px rgba(128, 0, 32, 0.1);
+}
+
+.dimension-item i {
+  font-size: 1.5rem;
+  color: var(--burgundy-primary);
+  margin-bottom: 0.5rem;
+}
+
+.dimension-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--medium-brown);
+  margin-bottom: 0.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dimension-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--burgundy-primary);
 }
 
 /* Size/Configuration Options */

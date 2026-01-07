@@ -76,17 +76,22 @@ class ProductDao extends BaseDao
         $stmt = $this->connection->prepare("
             SELECT p.*, c.name as category_name,
                    (SELECT image_url FROM product_images WHERE product_id = p.product_id LIMIT 1) as image_url
-            FROM products p 
+            FROM (
+                SELECT MIN(product_id) as product_id
+                FROM products p
+                WHERE p.name LIKE :search 
+                   OR p.description LIKE :search
+                GROUP BY p.name
+            ) as unique_products
+            JOIN products p ON p.product_id = unique_products.product_id
             JOIN categories c ON p.category_id = c.category_id 
-            WHERE p.name LIKE :search 
-               OR p.description LIKE :search 
-               OR c.name LIKE :search 
             ORDER BY 
                 CASE 
                     WHEN p.name LIKE :exact THEN 1
                     WHEN p.description LIKE :exact THEN 2
                     ELSE 3
-                END
+                END,
+                p.name
             LIMIT :limit OFFSET :offset
         ");
         $search = "%" . $search_term . "%";
