@@ -42,7 +42,7 @@ var ProductService = {
     errorCallback
   ) {
     const params = new URLSearchParams();
-    params.append("search", searchTerm);
+    params.append("q", searchTerm);
     if (limit) params.append("limit", limit);
     if (offset) params.append("offset", offset);
 

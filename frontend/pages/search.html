@@ -1,0 +1,84 @@
+<main class="page-container">
+  <div class="container">
+    <h1 id="search-title">Search Results</h1>
+
+    <!-- Search Bar -->
+    <div class="products-search-container">
+      <input
+        type="text"
+        id="search-page-input"
+        class="products-search-input"
+        placeholder="Search products by name, category..."
+        aria-label="Search products"
+      />
+      <button
+        id="search-page-btn"
+        class="products-search-btn"
+        aria-label="Search products"
+      >
+        <i class="fas fa-search"></i> Search
+      </button>
+    </div>
+
+    <!-- Search Info -->
+    <div class="search-filters-container">
+      <div class="search-info">
+        <p id="results-count" class="results-count">Loading results...</p>
+      </div>
+    </div>
+
+    <!-- Search Results Grid -->
+    <div id="search-results" class="products-grid">
+      <!-- Search results will be displayed here -->
+      <div
+        class="no-results"
+        style="
+          display: none;
+          grid-column: 1 / -1;
+          text-align: center;
+          padding: 3rem;
+        "
+      >
+        <i
+          class="fas fa-search"
+          style="font-size: 3rem; color: #ccc; margin-bottom: 1rem"
+        ></i>
+        <p style="color: #666; margin-bottom: 1rem">
+          No products found matching your search
+        </p>
+        <a
+          href="#products"
+          class="btn btn-primary"
+          style="display: inline-block; margin-top: 1rem"
+          >Browse All Products</a
+        >
+      </div>
+    </div>
+  </div>
+</main>
+
+<style>
+  .search-filters-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background-color: var(--creme-light);
+    border-radius: 4px;
+  }
+
+  .search-info {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .results-count {
+    color: var(--dark-brown);
+    font-weight: 500;
+  }
+
+  .no-results {
+    color: #999;
+  }
+</style>

@@ -190,6 +190,8 @@ a:hover {
 
 .search-container {
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .search-input {
@@ -198,13 +200,20 @@ a:hover {
   border: 1px solid var(--creme-dark);
   border-radius: 4px;
   font-size: 0.9rem;
-  width: 200px;
+  width: 220px;
   background-color: white;
   color: var(--dark-brown);
+  transition: all 0.3s ease;
 }
 
 .search-input::placeholder {
   color: var(--light-brown);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--burgundy-primary);
+  box-shadow: 0 0 0 3px rgba(128, 0, 32, 0.1);
 }
 
 .search-btn {
@@ -216,6 +225,13 @@ a:hover {
   border: none;
   color: var(--burgundy-primary);
   cursor: pointer;
+  font-size: 1rem;
+  transition: color 0.3s ease;
+  padding: 0.5rem;
+}
+
+.search-btn:hover {
+  color: var(--burgundy-dark);
 }
 
 .action-icon {
@@ -358,6 +374,59 @@ a:hover {
 
 .section-header p {
   color: var(--medium-brown);
+}
+
+.products-search-container {
+  display: flex;
+  gap: 1rem;
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background-color: var(--creme-light);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(62, 39, 35, 0.08);
+}
+
+.products-search-input {
+  flex: 1;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--creme-dark);
+  border-radius: 4px;
+  font-size: 0.95rem;
+  background-color: white;
+  color: var(--dark-brown);
+  transition: all 0.3s ease;
+}
+
+.products-search-input::placeholder {
+  color: var(--light-brown);
+}
+
+.products-search-input:focus {
+  outline: none;
+  border-color: var(--burgundy-primary);
+  box-shadow: 0 0 0 3px rgba(128, 0, 32, 0.1);
+}
+
+.products-search-btn {
+  padding: 0.8rem 1.5rem;
+  background-color: var(--burgundy-primary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.products-search-btn:hover {
+  background-color: var(--burgundy-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(128, 0, 32, 0.2);
+}
+
+.products-search-btn:active {
+  transform: translateY(0);
 }
 
 .products-grid {

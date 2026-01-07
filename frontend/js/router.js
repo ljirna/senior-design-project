@@ -670,6 +670,9 @@ function initPageScripts(page, params) {
     case "admin-order-detail":
       initAdminOrderDetail(params);
       break;
+    case "search":
+      initSearchPage(params);
+      break;
   }
 }
 
@@ -1461,6 +1464,32 @@ function initProductsPage(params) {
         window.location.hash = href.substring(1);
       });
     });
+
+  // Products page search functionality
+  const productsSearchInput = document.getElementById("products-search-input");
+  const productsSearchBtn = document.getElementById("products-search-btn");
+
+  if (productsSearchInput && productsSearchBtn) {
+    productsSearchBtn.addEventListener("click", function () {
+      const searchTerm = productsSearchInput.value.trim();
+      if (searchTerm) {
+        window.location.hash = `search?q=${encodeURIComponent(searchTerm)}`;
+      } else {
+        showToast("Please enter a search term", "warning");
+      }
+    });
+
+    productsSearchInput.addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        const searchTerm = this.value.trim();
+        if (searchTerm) {
+          window.location.hash = `search?q=${encodeURIComponent(searchTerm)}`;
+        } else {
+          showToast("Please enter a search term", "warning");
+        }
+      }
+    });
+  }
 }
 
 // Helper function to display products
@@ -1516,6 +1545,153 @@ function handleProductsError(error) {
       '<div style="text-align:center; padding:2rem; color:red;">Failed to load products</div>';
   }
   console.error("Failed to load products:", error);
+}
+
+// Search page initialization
+function initSearchPage(params) {
+  console.log("Initializing search page with params:", params);
+
+  const searchTerm = params.q || "";
+  const searchResultsContainer = document.getElementById("search-results");
+  const noResultsDiv = document.querySelector(".no-results");
+  const searchTitleEl = document.getElementById("search-title");
+  const resultsCountEl = document.getElementById("results-count");
+  const searchPageInput = document.getElementById("search-page-input");
+  const searchPageBtn = document.getElementById("search-page-btn");
+
+  if (!searchResultsContainer) return;
+
+  // Populate search input with current search term
+  if (searchPageInput) {
+    searchPageInput.value = searchTerm;
+
+    // Add event listeners for search input
+    if (searchPageBtn) {
+      searchPageBtn.addEventListener("click", function () {
+        const newSearchTerm = searchPageInput.value.trim();
+        if (newSearchTerm) {
+          window.location.hash = `search?q=${encodeURIComponent(
+            newSearchTerm
+          )}`;
+        } else {
+          showToast("Please enter a search term", "warning");
+        }
+      });
+    }
+
+    searchPageInput.addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        const newSearchTerm = this.value.trim();
+        if (newSearchTerm) {
+          window.location.hash = `search?q=${encodeURIComponent(
+            newSearchTerm
+          )}`;
+        } else {
+          showToast("Please enter a search term", "warning");
+        }
+      }
+    });
+  }
+
+  // Update page header with search term
+  if (searchTerm) {
+    searchTitleEl.textContent = "Search Results";
+  } else {
+    searchTitleEl.textContent = "Search Products";
+  }
+
+  if (!searchTerm) {
+    searchResultsContainer.innerHTML = "";
+    if (noResultsDiv) {
+      noResultsDiv.style.display = "block";
+      noResultsDiv.innerHTML = `
+        <i class="fas fa-search" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+        <p style="color: #666; margin-bottom: 1rem;">Please enter a search term</p>
+        <a href="#products" class="btn btn-primary" style="display: inline-block; margin-top: 1rem;">Browse All Products</a>
+      `;
+    }
+    resultsCountEl.textContent = "No search query entered";
+    return;
+  }
+
+  // Show loading state
+  resultsCountEl.textContent = "Loading results...";
+  searchResultsContainer.innerHTML =
+    '<div style="text-align:center; padding:2rem; grid-column: 1 / -1;">Loading results...</div>';
+  if (noResultsDiv) noResultsDiv.style.display = "none";
+
+  // Call search API
+  ProductService.searchProducts(
+    searchTerm,
+    50,
+    0,
+    function (products) {
+      if (products && products.length > 0) {
+        resultsCountEl.textContent = `Found ${products.length} product(s) matching "${searchTerm}"`;
+        searchResultsContainer.innerHTML = products
+          .map(
+            (product) => `
+          <div class="product-card">
+            <button class="favorite-btn" aria-label="Add to favorites">
+              <i class="far fa-heart"></i>
+            </button>
+            <img
+              src="${
+                product.image_url ||
+                "https://images.unsplash.com/photo-1540574163026-643ea20ade25?w=600"
+              }"
+              alt="${product.name}"
+              class="product-image"
+            />
+            <div class="product-content">
+              <h3 class="product-title">${product.name}</h3>
+              <p class="product-category">${
+                product.category_name || "Furniture"
+              }</p>
+              <div class="product-price">${parseFloat(product.price).toFixed(
+                2
+              )} KM</div>
+              <div class="product-actions">
+                <a href="#single-product/${
+                  product.product_id
+                }" class="btn-see-more">View Details</a>
+              </div>
+            </div>
+          </div>
+        `
+          )
+          .join("");
+
+        if (noResultsDiv) noResultsDiv.style.display = "none";
+        // Initialize favorite buttons
+        initFavoriteButtons();
+      } else {
+        resultsCountEl.textContent = `No products found matching "${searchTerm}"`;
+        searchResultsContainer.innerHTML = "";
+        if (noResultsDiv) {
+          noResultsDiv.style.display = "block";
+          noResultsDiv.innerHTML = `
+            <i class="fas fa-search" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+            <p style="color: #666; margin-bottom: 1rem;">No products found matching your search</p>
+            <a href="#products" class="btn btn-primary" style="display: inline-block; margin-top: 1rem;">Browse All Products</a>
+          `;
+        }
+      }
+    },
+    function (error) {
+      resultsCountEl.textContent = "Error loading results";
+      searchResultsContainer.innerHTML = "";
+      if (noResultsDiv) {
+        noResultsDiv.style.display = "block";
+        noResultsDiv.innerHTML = `
+          <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+          <p style="color: #666; margin-bottom: 1rem;">Failed to load search results</p>
+          <a href="#products" class="btn btn-primary" style="display: inline-block; margin-top: 1rem;">Browse All Products</a>
+        `;
+      }
+      console.error("Failed to search products:", error);
+    }
+  );
 }
 
 // Initialize favorite buttons
@@ -1790,6 +1966,36 @@ function initGlobalEvents() {
         showAuthModal("cart");
       }
     });
+  }
+
+  // Search functionality
+  const searchInput = document.getElementById("search-input");
+  const searchBtn = document.getElementById("search-btn");
+
+  if (searchInput && !searchInput.hasAttribute("data-listener")) {
+    searchInput.setAttribute("data-listener", "true");
+
+    // Handle Enter key in search input
+    searchInput.addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        performSearch();
+      }
+    });
+
+    // Handle search button click
+    if (searchBtn) {
+      searchBtn.addEventListener("click", performSearch);
+    }
+  }
+
+  function performSearch() {
+    const searchTerm = searchInput.value.trim();
+    if (searchTerm) {
+      window.location.hash = `search?q=${encodeURIComponent(searchTerm)}`;
+      searchInput.value = "";
+    } else {
+      showToast("Please enter a search term", "warning");
+    }
   }
 }
 

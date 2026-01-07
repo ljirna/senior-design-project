@@ -1,7 +1,25 @@
 <main class="page-container">
   <div class="container">
     <h1>Our Products</h1>
-    
+
+    <!-- Products Search Bar -->
+    <div class="products-search-container">
+      <input
+        type="text"
+        id="products-search-input"
+        class="products-search-input"
+        placeholder="Search products by name, category..."
+        aria-label="Search products"
+      />
+      <button
+        id="products-search-btn"
+        class="products-search-btn"
+        aria-label="Search products"
+      >
+        <i class="fas fa-search"></i> Search
+      </button>
+    </div>
+
     <!-- Products Grid -->
     <div class="products-grid" id="products-content">
       <!-- Product 1 -->
@@ -134,39 +152,41 @@
 </main>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
+  document.addEventListener("DOMContentLoaded", function () {
     console.log("Products page loaded");
-    
+
     // Initialize favorite buttons
-    document.querySelectorAll(".favorite-btn").forEach(btn => {
-      btn.addEventListener("click", function() {
+    document.querySelectorAll(".favorite-btn").forEach((btn) => {
+      btn.addEventListener("click", function () {
         const icon = this.querySelector("i");
         if (icon.classList.contains("far")) {
           icon.classList.remove("far");
           icon.classList.add("fas");
-          if (typeof showToast === 'function') {
+          if (typeof showToast === "function") {
             showToast("Added to favorites!", "success");
           }
         } else {
           icon.classList.remove("fas");
           icon.classList.add("far");
-          if (typeof showToast === 'function') {
+          if (typeof showToast === "function") {
             showToast("Removed from favorites!", "info");
           }
         }
       });
     });
-    
+
     // Category filter buttons
-    document.querySelectorAll('.category-btn').forEach(btn => {
-      btn.addEventListener('click', function(e) {
+    document.querySelectorAll(".category-btn").forEach((btn) => {
+      btn.addEventListener("click", function (e) {
         e.preventDefault();
-        const href = this.getAttribute('href');
+        const href = this.getAttribute("href");
         window.location.hash = href.substring(1);
-        
+
         // Update active state
-        document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
+        document
+          .querySelectorAll(".category-btn")
+          .forEach((b) => b.classList.remove("active"));
+        this.classList.add("active");
       });
     });
   });
