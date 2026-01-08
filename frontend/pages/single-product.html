@@ -1,6 +1,5 @@
 <main class="page-container">
   <div class="product-detail-page">
-
     <div class="container">
       <!-- Product Content -->
       <div class="product-content-wrapper" id="productContent">
@@ -67,7 +66,6 @@
             <p class="product-subtitle">
               Premium full-grain leather with solid wood frame
             </p>
-
           </div>
 
           <!-- Price Section -->
@@ -148,7 +146,11 @@
         <div class="products-grid">
           <!-- Related Product 2 -->
           <div class="product-card">
-            <button class="favorite-btn" aria-label="Add to favorites">
+            <button
+              class="favorite-btn"
+              data-product-id="2"
+              aria-label="Add to favorites"
+            >
               <i class="far fa-heart"></i>
             </button>
 
@@ -185,20 +187,47 @@
 
     // Initialize favorite buttons in related products section
     document.querySelectorAll(".favorite-btn").forEach((btn) => {
-      btn.addEventListener("click", function () {
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
         const icon = this.querySelector("i");
+        const productId = this.getAttribute("data-product-id");
+
         if (icon.classList.contains("far")) {
-          icon.classList.remove("far");
-          icon.classList.add("fas");
-          if (typeof showToast === "function") {
-            showToast("Added to favorites!", "success");
-          }
+          // Add to favorites
+          FavoriteService.addToFavorites(
+            productId,
+            (response) => {
+              icon.classList.remove("far");
+              icon.classList.add("fas");
+              if (typeof showToast === "function") {
+                showToast("Added to favorites!", "success");
+              }
+            },
+            (error) => {
+              if (typeof showToast === "function") {
+                showToast("Failed to add to favorites", "error");
+              }
+              console.error("Error adding to favorites:", error);
+            }
+          );
         } else {
-          icon.classList.remove("fas");
-          icon.classList.add("far");
-          if (typeof showToast === "function") {
-            showToast("Removed from favorites!", "info");
-          }
+          // Remove from favorites
+          FavoriteService.removeFromFavorites(
+            productId,
+            (response) => {
+              icon.classList.remove("fas");
+              icon.classList.add("far");
+              if (typeof showToast === "function") {
+                showToast("Removed from favorites!", "info");
+              }
+            },
+            (error) => {
+              if (typeof showToast === "function") {
+                showToast("Failed to remove from favorites", "error");
+              }
+              console.error("Error removing from favorites:", error);
+            }
+          );
         }
       });
     });

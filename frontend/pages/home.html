@@ -3,81 +3,188 @@
   <section class="products-section">
     <h2 class="text-center">Highlighted Products</h2>
 
-    <div class="products-grid mt-4">
-      <!-- Product 1 -->
-      <div class="product-card">
-        <button class="favorite-btn" aria-label="Add to favorites">
-          <i class="far fa-heart"></i>
-        </button>
-
-        <img
-          src="https://images.unsplash.com/photo-1540574163026-643ea20ade25?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-          alt="Modern Sofa"
-          class="product-image"
-        />
-        <div class="product-content">
-          <h3 class="product-title">Modern Leather Sofa</h3>
-          <p class="product-category">Sofas & Couches</p>
-          <div class="product-price">$1,299.99</div>
-          <div class="product-actions">
-            <!-- FIX: Update href for SPA router -->
-            <a href="#single-product/1" class="btn-see-more">See More</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Product 2 -->
-      <div class="product-card">
-        <button class="favorite-btn" aria-label="Add to favorites">
-          <i class="far fa-heart"></i>
-        </button>
-
-        <img
-          src="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-          alt="Coffee Table"
-          class="product-image"
-        />
-        <div class="product-content">
-          <h3 class="product-title">Glass Coffee Table</h3>
-          <p class="product-category">Tables</p>
-          <div class="product-price">$299.99</div>
-          <div class="product-actions">
-            <!-- FIX: Update href for SPA router -->
-            <a href="#single-product/2" class="btn-see-more">See More</a>
-          </div>
-        </div>
-      </div>
+    <div
+      class="products-grid mt-4"
+      id="home-products-grid"
+      style="
+        min-height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      "
+    >
+      <p style="color: var(--medium-brown)">Loading products...</p>
     </div>
   </section>
 </main>
 
 <script>
-  // This script will run when the page loads
-  document.addEventListener("DOMContentLoaded", function () {
-    console.log("Home page loaded");
+  if (!window.homePageState) {
+    window.homePageState = {
+      allProducts: [],
+      allCategories: [],
+    };
+  }
 
-    // Initialize favorite buttons
-    const favoriteBtns = document.querySelectorAll(".favorite-btn");
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function () {
+      initHomePage();
+    });
+  } else {
+    setTimeout(() => {
+      initHomePage();
+    }, 100);
+  }
+
+  function initHomePage() {
+    loadHomeProducts();
+  }
+
+  function loadHomeProducts() {
+    CategoryService.getAll(
+      (categories) => {
+        window.homePageState.allCategories = Array.isArray(categories)
+          ? categories
+          : categories.data || [];
+      },
+      (error) => {
+        console.error("Error loading categories:", error);
+      }
+    );
+
+    ProductService.getAll(
+      null,
+      null,
+      (products) => {
+        window.homePageState.allProducts = Array.isArray(products)
+          ? products
+          : products.data || [];
+
+        renderHomeProducts();
+      },
+      (error) => {
+        console.error("Error loading products:", error);
+      }
+    );
+  }
+
+  function renderHomeProducts() {
+    const container = document.getElementById("home-products-grid");
+    if (!container) return;
+
+    let displayProducts = window.homePageState.allProducts.slice(0, 3);
+
+    if (displayProducts.length === 0) {
+      container.innerHTML =
+        '<p style="color: var(--medium-brown); grid-column: 1 / -1; text-align: center">No products available</p>';
+      return;
+    }
+
+    container.innerHTML = "";
+    container.style.display = "grid";
+
+    displayProducts.forEach((product) => {
+      const card = createHomeProductCard(product);
+      container.appendChild(card);
+    });
+
+    setupHomePageFavoriteButtons();
+  }
+
+  function createHomeProductCard(product) {
+    const card = document.createElement("div");
+    card.className = "product-card";
+
+    const categoryName =
+      window.homePageState.allCategories.find(
+        (c) =>
+          c.category_id == product.category_id || c.id == product.category_id
+      )?.name || "Uncategorized";
+
+    const primaryImage =
+      product.images && product.images.length > 0
+        ? product.images[0].image_url
+        : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%23e0e0e0' width='300' height='300'/%3E%3Ctext x='50%25' y='50%25' font-size='16' fill='%23999' text-anchor='middle' dy='.3em'%3ENo Image%3C/text%3E%3C/svg%3E";
+
+    card.innerHTML = `
+      <button class="favorite-btn" data-product-id="${
+        product.product_id || product.id
+      }" aria-label="Add to favorites">
+        <i class="far fa-heart"></i>
+      </button>
+      <img
+        src="${primaryImage}"
+        alt="${product.name}"
+        class="product-image"
+      />
+      <div class="product-content">
+        <h3 class="product-title">${product.name}</h3>
+        <p class="product-category">${categoryName}</p>
+        <div class="product-price">$${parseFloat(product.price).toFixed(
+          2
+        )}</div>
+        <div class="product-actions">
+          <a href="#single-product/${
+            product.product_id || product.id
+          }" class="btn-see-more">See More</a>
+        </div>
+      </div>
+    `;
+
+    return card;
+  }
+
+  function setupHomePageFavoriteButtons() {
+    const favoriteBtns = document.querySelectorAll(
+      "#home-products-grid .favorite-btn"
+    );
     favoriteBtns.forEach((btn) => {
-      btn.addEventListener("click", function () {
-        const icon = this.querySelector("i");
-        if (icon.classList.contains("far")) {
+      btn.removeEventListener("click", handleHomeFavoriteClick);
+      btn.addEventListener("click", handleHomeFavoriteClick);
+    });
+  }
+
+  function handleHomeFavoriteClick(e) {
+    e.preventDefault();
+    const icon = this.querySelector("i");
+    const productId = this.getAttribute("data-product-id");
+
+    if (icon.classList.contains("far")) {
+      FavoriteService.addToFavorites(
+        productId,
+        (response) => {
           icon.classList.remove("far");
           icon.classList.add("fas");
           this.style.color = "#e74c3c";
-          // You might want to use your showToast function here
           if (typeof showToast === "function") {
             showToast("Added to favorites!", "success");
           }
-        } else {
+        },
+        (error) => {
+          if (typeof showToast === "function") {
+            showToast("Failed to add to favorites", "error");
+          }
+          console.error("Error adding to favorites:", error);
+        }
+      );
+    } else {
+      FavoriteService.removeFromFavorites(
+        productId,
+        (response) => {
           icon.classList.remove("fas");
           icon.classList.add("far");
           this.style.color = "";
           if (typeof showToast === "function") {
             showToast("Removed from favorites!", "info");
           }
+        },
+        (error) => {
+          if (typeof showToast === "function") {
+            showToast("Failed to remove from favorites", "error");
+          }
+          console.error("Error removing from favorites:", error);
         }
-      });
-    });
-  });
+      );
+    }
+  }
 </script>

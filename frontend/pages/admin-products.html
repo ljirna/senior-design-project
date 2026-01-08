@@ -512,6 +512,7 @@
       allProducts: [],
       allCategories: [],
       filteredProducts: [],
+      isLoadingProducts: false,
     };
   }
 
@@ -624,60 +625,73 @@
 
   function setupEventListeners() {
     // Remove old listeners by cloning and replacing elements to avoid duplicates
-    const addBtn = document.getElementById("add-product-btn");
+    let addBtn = document.getElementById("add-product-btn");
     if (addBtn && addBtn.parentNode) {
       const addBtnClone = addBtn.cloneNode(true);
       addBtn.parentNode.replaceChild(addBtnClone, addBtn);
+      addBtn = addBtnClone;
     }
 
-    const addForm = document.getElementById("add-product-form");
+    let addForm = document.getElementById("add-product-form");
     if (addForm && addForm.parentNode) {
       const addFormClone = addForm.cloneNode(true);
       addForm.parentNode.replaceChild(addFormClone, addForm);
+      addForm = addFormClone;
     }
 
-    const editForm = document.getElementById("edit-product-form");
+    let editForm = document.getElementById("edit-product-form");
     if (editForm && editForm.parentNode) {
       const editFormClone = editForm.cloneNode(true);
       editForm.parentNode.replaceChild(editFormClone, editForm);
+      editForm = editFormClone;
     }
 
-    const addImageInput = document.getElementById("add_product_image");
+    let addImageInput = document.getElementById("add_product_image");
     if (addImageInput && addImageInput.parentNode) {
       const addImageInputClone = addImageInput.cloneNode(true);
       addImageInput.parentNode.replaceChild(addImageInputClone, addImageInput);
+      addImageInput = addImageInputClone;
     }
 
-    const editImageInput = document.getElementById("edit_product_image");
+    let editImageInput = document.getElementById("edit_product_image");
     if (editImageInput && editImageInput.parentNode) {
       const editImageInputClone = editImageInput.cloneNode(true);
       editImageInput.parentNode.replaceChild(
         editImageInputClone,
         editImageInput
       );
+      editImageInput = editImageInputClone;
     }
 
-    const searchInput = document.getElementById("product-search");
+    let searchInput = document.getElementById("product-search");
     if (searchInput && searchInput.parentNode) {
       const searchInputClone = searchInput.cloneNode(true);
       searchInput.parentNode.replaceChild(searchInputClone, searchInput);
+      searchInput = searchInputClone;
     }
 
-    const categoryFilter = document.getElementById("category-filter");
+    let categoryFilter = document.getElementById("category-filter");
     if (categoryFilter && categoryFilter.parentNode) {
       const categoryFilterClone = categoryFilter.cloneNode(true);
       categoryFilter.parentNode.replaceChild(
         categoryFilterClone,
         categoryFilter
       );
+      categoryFilter = categoryFilterClone;
     }
 
     // Add event listeners
-    const addProductBtn = document.getElementById("add-product-btn");
-    if (addProductBtn) {
-      addProductBtn.addEventListener("click", function () {
-        document.getElementById("add-product-form").reset();
-        document.getElementById("add_product_images_preview").innerHTML = "";
+    if (addBtn) {
+      addBtn.addEventListener("click", function () {
+        if (addForm) {
+          addForm.reset();
+        }
+        const previewDiv = document.getElementById(
+          "add_product_images_preview"
+        );
+        if (previewDiv) {
+          previewDiv.innerHTML = "";
+        }
         openModal("addProductModal");
       });
     }
@@ -753,14 +767,12 @@
     }
   }
 
-  let isLoadingProducts = false;
-
   function loadProducts() {
-    if (isLoadingProducts) {
+    if (window.adminProductsState.isLoadingProducts) {
       return;
     }
 
-    isLoadingProducts = true;
+    window.adminProductsState.isLoadingProducts = true;
     const token = localStorage.getItem("user_token");
     const loadingDiv = document.getElementById("products-loading");
     const emptyDiv = document.getElementById("products-empty");
@@ -768,7 +780,7 @@
 
     if (!loadingDiv) {
       console.error("[AdminProducts] loadingDiv not found!");
-      isLoadingProducts = false;
+      window.adminProductsState.isLoadingProducts = false;
       return;
     }
 
@@ -777,7 +789,7 @@
       loadingDiv.style.display = "none";
       showToast("Session expired. Please login again.", "error");
       window.location.hash = "#login";
-      isLoadingProducts = false;
+      window.adminProductsState.isLoadingProducts = false;
       return;
     }
 
@@ -818,7 +830,7 @@
       .then((data) => {
         if (!data) {
           loadingDiv.style.display = "none";
-          isLoadingProducts = false;
+          window.adminProductsState.isLoadingProducts = false;
           return;
         }
 
@@ -853,14 +865,14 @@
         ];
 
         loadingDiv.style.display = "none";
-        isLoadingProducts = false;
+        window.adminProductsState.isLoadingProducts = false;
         renderProducts();
       })
       .catch((error) => {
         console.error("[AdminProducts] Error loading products:", error);
         console.error("[AdminProducts] Error stack:", error.stack);
         loadingDiv.style.display = "none";
-        isLoadingProducts = false;
+        window.adminProductsState.isLoadingProducts = false;
         if (emptyDiv) {
           emptyDiv.style.display = "block";
           emptyDiv.innerHTML = `<p>Error loading products: ${error.message}</p>`;

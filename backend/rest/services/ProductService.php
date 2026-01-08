@@ -72,32 +72,68 @@ class ProductService extends BaseService
 
     public function getAllProducts($limit = 20, $offset = 0)
     {
-        return $this->dao->getAllProducts($limit, $offset);
+        $products = $this->dao->getAllProducts($limit, $offset);
+        if ($products) {
+            foreach ($products as &$product) {
+                $product['images'] = $this->dao->getProductImages($product['product_id']);
+            }
+        }
+        return $products;
     }
 
     public function getProductsByCategory($category_id, $limit = 20, $offset = 0)
     {
-        return $this->dao->getProductsByCategory($category_id, $limit, $offset);
+        $products = $this->dao->getProductsByCategory($category_id, $limit, $offset);
+        if ($products) {
+            foreach ($products as &$product) {
+                $product['images'] = $this->dao->getProductImages($product['product_id']);
+            }
+        }
+        return $products;
     }
 
     public function searchProducts($search_term, $limit = 20, $offset = 0)
     {
-        return $this->dao->searchProducts($search_term, $limit, $offset);
+        $products = $this->dao->searchProducts($search_term, $limit, $offset);
+        if ($products) {
+            foreach ($products as &$product) {
+                $product['images'] = $this->dao->getProductImages($product['product_id']);
+            }
+        }
+        return $products;
     }
 
     public function getFeaturedProducts($limit = 8)
     {
-        return $this->dao->getFeaturedProducts($limit);
+        $products = $this->dao->getFeaturedProducts($limit);
+        if ($products) {
+            foreach ($products as &$product) {
+                $product['images'] = $this->dao->getProductImages($product['product_id']);
+            }
+        }
+        return $products;
     }
 
     public function getNewArrivals($limit = 8)
     {
-        return $this->dao->getNewArrivals($limit);
+        $products = $this->dao->getNewArrivals($limit);
+        if ($products) {
+            foreach ($products as &$product) {
+                $product['images'] = $this->dao->getProductImages($product['product_id']);
+            }
+        }
+        return $products;
     }
 
     public function getRelatedProducts($product_id, $category_id, $limit = 4)
     {
-        return $this->dao->getRelatedProducts($product_id, $category_id, $limit);
+        $products = $this->dao->getRelatedProducts($product_id, $category_id, $limit);
+        if ($products) {
+            foreach ($products as &$product) {
+                $product['images'] = $this->dao->getProductImages($product['product_id']);
+            }
+        }
+        return $products;
     }
 
     public function getProductWithFees($product_id)

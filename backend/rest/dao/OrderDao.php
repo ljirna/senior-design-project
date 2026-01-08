@@ -71,12 +71,9 @@ class OrderDao extends BaseDao
                    p.description as product_description,
                    p.delivery_fee_override,
                    p.assembly_fee_override,
-                   c.delivery_fee as category_delivery_fee,
-                   c.assembly_fee as category_assembly_fee,
                    (oi.quantity * oi.price) as item_total
             FROM order_items oi
             JOIN products p ON oi.product_id = p.product_id
-            JOIN categories c ON p.category_id = c.category_id
             WHERE oi.order_id = :order_id
             ORDER BY oi.order_item_id
         ");

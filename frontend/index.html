@@ -98,59 +98,13 @@
               <a href="#products" class="nav-link" id="nav-products"
                 >Products</a
               >
-              <ul class="dropdown-menu">
-                <!-- Individual Items -->
-                <li>
-                  <a href="#products?category=chair" class="dropdown-item">
-                    <i class="fas fa-chair"></i> Chair
-                  </a>
-                </li>
-                <li>
-                  <a href="#products?category=bed" class="dropdown-item">
-                    <i class="fas fa-bed"></i> Bed
-                  </a>
-                </li>
-                <li>
-                  <a href="#products?category=kitchen" class="dropdown-item">
-                    <i class="fas fa-utensils"></i> Kitchen
-                  </a>
-                </li>
-
-                <!-- Room Categories -->
-                <li class="dropdown-divider"></li>
-                <li>
-                  <a href="#products?category=living" class="dropdown-item">
-                    <i class="fas fa-couch"></i> Living Room
-                  </a>
-                </li>
-                <li>
-                  <a href="#products?category=bedroom" class="dropdown-item">
-                    <i class="fas fa-bed"></i> Bedroom
-                  </a>
-                </li>
-                <li>
-                  <a href="#products?category=dining" class="dropdown-item">
-                    <i class="fas fa-utensils"></i> Dining Room
-                  </a>
-                </li>
-                <li>
-                  <a href="#products?category=office" class="dropdown-item">
-                    <i class="fas fa-laptop"></i> Home Office
-                  </a>
-                </li>
-                <li>
-                  <a href="#products?category=outdoor" class="dropdown-item">
-                    <i class="fas fa-umbrella-beach"></i> Outdoor
-                  </a>
-                </li>
-
-                <!-- All Products -->
-                <li class="dropdown-divider"></li>
+              <ul class="dropdown-menu" id="categories-dropdown">
                 <li>
                   <a href="#products" class="dropdown-item">
                     <i class="fas fa-th-large"></i> All Products
                   </a>
                 </li>
+                <li class="dropdown-divider"></li>
               </ul>
             </li>
 
@@ -227,6 +181,48 @@
     <script src="services/user-service.js?v=1.0"></script>
     <script src="services/cart-service.js?v=1.0"></script>
     <script src="services/product-service.js?v=1.0"></script>
+    <script src="services/category-service.js?v=1.0"></script>
+    <script src="services/favorite-service.js?v=1.0"></script>
+    <!-- Initialize categories dropdown -->
+    <script>
+      function loadCategoriesInDropdown() {
+        if (typeof CategoryService === "undefined") {
+          setTimeout(loadCategoriesInDropdown, 100);
+          return;
+        }
+
+        CategoryService.getAll(
+          (categories) => {
+            const dropdown = document.getElementById("categories-dropdown");
+            if (!dropdown) return;
+
+            const arr = Array.isArray(categories)
+              ? categories
+              : categories.data || [];
+
+            arr.forEach((category) => {
+              const li = document.createElement("li");
+              const link = document.createElement("a");
+              link.href =
+                "#products?category=" + (category.category_id || category.id);
+              link.className = "dropdown-item";
+              link.textContent = category.name;
+              li.appendChild(link);
+              dropdown.appendChild(li);
+            });
+          },
+          (error) => {
+            console.error("Error loading categories in dropdown:", error);
+          }
+        );
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", loadCategoriesInDropdown);
+      } else {
+        loadCategoriesInDropdown();
+      }
+    </script>
     <!-- Load router with error handling -->
     <script>
       // Fallback if router fails

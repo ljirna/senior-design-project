@@ -20,174 +20,311 @@
       </button>
     </div>
 
+    <!-- Category Filter Section -->
+    <!-- Moved to header navigation dropdown -->
+
     <!-- Products Grid -->
-    <div class="products-grid" id="products-content">
-      <!-- Product 1 -->
-      <div class="product-card">
-        <button class="favorite-btn" aria-label="Add to favorites">
-          <i class="far fa-heart"></i>
-        </button>
-
-        <img
-          src="https://images.unsplash.com/photo-1540574163026-643ea20ade25?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-          alt="Modern Sofa"
-          class="product-image"
-        />
-        <div class="product-content">
-          <h3 class="product-title">Modern Leather Sofa</h3>
-          <p class="product-category">Sofas & Couches</p>
-          <div class="product-price">$1,299.99</div>
-          <div class="product-actions">
-            <a href="#single-product/1" class="btn-see-more">See More</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Product 2 -->
-      <div class="product-card">
-        <button class="favorite-btn" aria-label="Add to favorites">
-          <i class="far fa-heart"></i>
-        </button>
-
-        <img
-          src="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-          alt="Coffee Table"
-          class="product-image"
-        />
-        <div class="product-content">
-          <h3 class="product-title">Glass Coffee Table</h3>
-          <p class="product-category">Tables</p>
-          <div class="product-price">$299.99</div>
-          <div class="product-actions">
-            <a href="#single-product/2" class="btn-see-more">See More</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Product 3 -->
-      <div class="product-card">
-        <button class="favorite-btn" aria-label="Add to favorites">
-          <i class="far fa-heart"></i>
-        </button>
-
-        <img
-          src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-          alt="Leather Lounge Chair"
-          class="product-image"
-        />
-        <div class="product-content">
-          <h3 class="product-title">Leather Lounge Chair</h3>
-          <p class="product-category">Chairs</p>
-          <div class="product-price">$499.99</div>
-          <div class="product-actions">
-            <a href="#single-product/3" class="btn-see-more">See More</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Product 4 -->
-      <div class="product-card">
-        <button class="favorite-btn" aria-label="Add to favorites">
-          <i class="far fa-heart"></i>
-        </button>
-
-        <img
-          src="https://images.unsplash.com/photo-1567016432779-094069958ea5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-          alt="Side Table"
-          class="product-image"
-        />
-        <div class="product-content">
-          <h3 class="product-title">Wooden Side Table</h3>
-          <p class="product-category">Tables</p>
-          <div class="product-price">$199.99</div>
-          <div class="product-actions">
-            <a href="#single-product/4" class="btn-see-more">See More</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Product 5 -->
-      <div class="product-card">
-        <button class="favorite-btn" aria-label="Add to favorites">
-          <i class="far fa-heart"></i>
-        </button>
-
-        <img
-          src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-          alt="Dining Table"
-          class="product-image"
-        />
-        <div class="product-content">
-          <h3 class="product-title">Wooden Dining Table</h3>
-          <p class="product-category">Dining Room</p>
-          <div class="product-price">$799.99</div>
-          <div class="product-actions">
-            <a href="#single-product/5" class="btn-see-more">See More</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Product 6 -->
-      <div class="product-card">
-        <button class="favorite-btn" aria-label="Add to favorites">
-          <i class="far fa-heart"></i>
-        </button>
-
-        <img
-          src="https://images.unsplash.com/photo-1595526051245-4506e0005bd0?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-          alt="Bed"
-          class="product-image"
-        />
-        <div class="product-content">
-          <h3 class="product-title">King Size Bed</h3>
-          <p class="product-category">Bedroom</p>
-          <div class="product-price">$1,599.99</div>
-          <div class="product-actions">
-            <a href="#single-product/6" class="btn-see-more">See More</a>
-          </div>
-        </div>
-      </div>
+    <div
+      class="products-grid"
+      id="products-content"
+      style="
+        min-height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      "
+    >
+      <p style="color: var(--medium-brown)">Loading products...</p>
     </div>
   </div>
 </main>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    console.log("Products page loaded");
+  if (!window.productsPageState) {
+    window.productsPageState = {
+      allProducts: [],
+      allCategories: [],
+      selectedCategoryId: "",
+    };
+  }
 
-    // Initialize favorite buttons
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function () {
+      initProductsPage();
+    });
+  } else {
+    setTimeout(() => {
+      initProductsPage();
+    }, 100);
+  }
+
+  // Listen for hash changes to update category filter
+  window.addEventListener("hashchange", function () {
+    const hash = window.location.hash;
+    const hashParams = new URLSearchParams(hash.split("?")[1]);
+    const categoryParam = hashParams.get("category");
+
+    if (categoryParam) {
+      window.productsPageState.selectedCategoryId = categoryParam;
+      loadProductsByCategory(categoryParam);
+    } else {
+      window.productsPageState.selectedCategoryId = "";
+      loadCategoriesAndProducts();
+    }
+  });
+
+  function initProductsPage() {
+    const container = document.getElementById("products-content");
+    if (!container) return;
+
+    // Check URL hash for category parameter (hash-based routing)
+    const hash = window.location.hash;
+    const hashParams = new URLSearchParams(hash.split("?")[1]);
+    const categoryParam = hashParams.get("category");
+
+    setupSearchListeners();
+
+    if (categoryParam) {
+      window.productsPageState.selectedCategoryId = categoryParam;
+      loadProductsByCategory(categoryParam);
+    } else {
+      loadCategoriesAndProducts();
+    }
+  }
+
+  function loadCategoriesAndProducts() {
+    CategoryService.getAll(
+      (categories) => {
+        window.productsPageState.allCategories = Array.isArray(categories)
+          ? categories
+          : categories.data || [];
+      },
+      (error) => {
+        console.error("Error loading categories:", error);
+      }
+    );
+
+    ProductService.getAll(
+      null,
+      null,
+      (products) => {
+        window.productsPageState.allProducts = Array.isArray(products)
+          ? products
+          : products.data || [];
+
+        renderProducts();
+      },
+      (error) => {
+        console.error("Error loading products:", error);
+      }
+    );
+  }
+
+  function loadProductsByCategory(categoryId) {
+    CategoryService.getAll(
+      (categories) => {
+        window.productsPageState.allCategories = Array.isArray(categories)
+          ? categories
+          : categories.data || [];
+      },
+      (error) => {
+        console.error("Error loading categories:", error);
+      }
+    );
+
+    ProductService.getByCategory(
+      categoryId,
+      null,
+      null,
+      (products) => {
+        window.productsPageState.allProducts = Array.isArray(products)
+          ? products
+          : products.data || [];
+
+        renderProducts();
+      },
+      (error) => {
+        console.error("Error loading products by category:", error);
+      }
+    );
+  }
+
+  function renderProducts() {
+    const container = document.getElementById("products-content");
+    if (!container) return;
+
+    const products = window.productsPageState.allProducts;
+
+    if (products.length === 0) {
+      container.innerHTML =
+        '<div style="text-align: center; padding: 3rem; grid-column: 1 / -1"><p style="color: var(--medium-brown); font-size: 1.1rem">No products found</p></div>';
+      return;
+    }
+
+    container.innerHTML = "";
+    container.style.display = "grid";
+
+    products.forEach((product) => {
+      const card = createProductCard(product);
+      container.appendChild(card);
+    });
+
+    setupFavoriteButtons();
+  }
+
+  function createProductCard(product) {
+    const card = document.createElement("div");
+    card.className = "product-card";
+
+    const categoryName =
+      window.productsPageState.allCategories.find(
+        (c) =>
+          c.category_id == product.category_id || c.id == product.category_id
+      )?.name || "Uncategorized";
+
+    const primaryImage =
+      product.images && product.images.length > 0
+        ? product.images[0].image_url
+        : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%23e0e0e0' width='300' height='300'/%3E%3Ctext x='50%25' y='50%25' font-size='16' fill='%23999' text-anchor='middle' dy='.3em'%3ENo Image%3C/text%3E%3C/svg%3E";
+
+    card.innerHTML = `
+      <button class="favorite-btn" data-product-id="${
+        product.product_id || product.id
+      }" aria-label="Add to favorites">
+        <i class="far fa-heart"></i>
+      </button>
+      <img
+        src="${primaryImage}"
+        alt="${product.name}"
+        class="product-image"
+      />
+      <div class="product-content">
+        <h3 class="product-title">${product.name}</h3>
+        <p class="product-category">${categoryName}</p>
+        <div class="product-price">$${parseFloat(product.price).toFixed(
+          2
+        )}</div>
+        <div class="product-actions">
+          <a href="#single-product/${
+            product.product_id || product.id
+          }" class="btn-see-more">See More</a>
+        </div>
+      </div>
+    `;
+
+    return card;
+  }
+
+  function setupFavoriteButtons() {
     document.querySelectorAll(".favorite-btn").forEach((btn) => {
-      btn.addEventListener("click", function () {
-        const icon = this.querySelector("i");
-        if (icon.classList.contains("far")) {
+      btn.removeEventListener("click", handleFavoriteClick);
+      btn.addEventListener("click", handleFavoriteClick);
+    });
+  }
+
+  function handleFavoriteClick(e) {
+    e.preventDefault();
+    const icon = this.querySelector("i");
+    const productId = this.getAttribute("data-product-id");
+
+    if (icon.classList.contains("far")) {
+      FavoriteService.addToFavorites(
+        productId,
+        (response) => {
           icon.classList.remove("far");
           icon.classList.add("fas");
           if (typeof showToast === "function") {
             showToast("Added to favorites!", "success");
           }
-        } else {
+        },
+        (error) => {
+          if (typeof showToast === "function") {
+            showToast("Failed to add to favorites", "error");
+          }
+          console.error("Error adding to favorites:", error);
+        }
+      );
+    } else {
+      FavoriteService.removeFromFavorites(
+        productId,
+        (response) => {
           icon.classList.remove("fas");
           icon.classList.add("far");
           if (typeof showToast === "function") {
             showToast("Removed from favorites!", "info");
           }
+        },
+        (error) => {
+          if (typeof showToast === "function") {
+            showToast("Failed to remove from favorites", "error");
+          }
+          console.error("Error removing from favorites:", error);
+        }
+      );
+    }
+  }
+
+  // Setup search when the page initializes
+  function setupSearchListeners() {
+    const searchBtn = document.getElementById("products-search-btn");
+    const searchInput = document.getElementById("products-search-input");
+
+    if (searchBtn && searchInput) {
+      // Remove any existing listeners by cloning
+      const newSearchBtn = searchBtn.cloneNode(true);
+      if (searchBtn.parentNode) {
+        searchBtn.parentNode.replaceChild(newSearchBtn, searchBtn);
+      }
+
+      const newSearchInput = searchInput.cloneNode(true);
+      if (searchInput.parentNode) {
+        searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+      }
+
+      // Add new listeners
+      newSearchBtn.addEventListener("click", performSearch);
+      newSearchInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          performSearch();
         }
       });
-    });
+    }
+  }
 
-    // Category filter buttons
-    document.querySelectorAll(".category-btn").forEach((btn) => {
-      btn.addEventListener("click", function (e) {
-        e.preventDefault();
-        const href = this.getAttribute("href");
-        window.location.hash = href.substring(1);
+  function performSearch() {
+    const searchTerm = document
+      .getElementById("products-search-input")
+      .value.trim();
+    if (!searchTerm) {
+      renderProducts();
+      return;
+    }
 
-        // Update active state
-        document
-          .querySelectorAll(".category-btn")
-          .forEach((b) => b.classList.remove("active"));
-        this.classList.add("active");
-      });
-    });
-  });
+    ProductService.searchProducts(
+      searchTerm,
+      null,
+      null,
+      (products) => {
+        window.productsPageState.allProducts = Array.isArray(products)
+          ? products
+          : products.data || [];
+
+        window.productsPageState.selectedCategoryId = "";
+        document.querySelectorAll(".category-btn").forEach((b) => {
+          b.classList.remove("active");
+        });
+        const allCategoriesBtn = document.querySelector(
+          "[data-category-id='']"
+        );
+        if (allCategoriesBtn) {
+          allCategoriesBtn.classList.add("active");
+        }
+
+        renderProducts();
+      },
+      (error) => {
+        console.error("Error searching products:", error);
+      }
+    );
+  }
 </script>

@@ -19,8 +19,6 @@ class FavoriteDao extends BaseDao
                    p.delivery_fee_override,
                    p.assembly_fee_override,
                    c.name as category_name,
-                   c.delivery_fee as category_delivery_fee,
-                   c.assembly_fee as category_assembly_fee,
                    (SELECT image_url FROM product_images WHERE product_id = p.product_id LIMIT 1) as image_url
             FROM favorites f
             JOIN products p ON f.product_id = p.product_id
