@@ -17,28 +17,6 @@ Flight::group('/categories', function () {
         }
     });
 
-    // Get category with fees - PUBLIC
-    Flight::route('GET /@category_id/fees', function ($category_id) {
-        $quantity = Flight::request()->query['quantity'] ?? 1;
-        
-        try {
-            $fees = Flight::categoryService()->calculateCategoryFees($category_id, $quantity);
-            Flight::json($fees);
-        } catch (Exception $e) {
-            Flight::json(['error' => $e->getMessage()], 404);
-        }
-    });
-
-    // Get category details with fees - PUBLIC
-    Flight::route('GET /@category_id/details', function ($category_id) {
-        $category = Flight::categoryService()->getCategoryWithFees($category_id);
-        if ($category) {
-            Flight::json($category);
-        } else {
-            Flight::json(['error' => 'Category not found'], 404);
-        }
-    });
-
     // Get popular categories (with products) - PUBLIC
     Flight::route('GET /popular', function () {
         $limit = Flight::request()->query['limit'] ?? 5;
@@ -56,15 +34,15 @@ Flight::group('/categories', function () {
     // Create category - ADMIN ONLY
     Flight::route('POST /', function () {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
-        
+
         $data = Flight::request()->data->getData();
         $validation = Flight::categoryService()->validateCategoryData($data);
-        
+
         if (!$validation['valid']) {
             Flight::json(['error' => $validation['errors']], 400);
             return;
         }
-        
+
         try {
             $category = Flight::categoryService()->add($data);
             Flight::json($category, 201);
@@ -76,15 +54,15 @@ Flight::group('/categories', function () {
     // Update category - ADMIN ONLY
     Flight::route('PUT /@category_id', function ($category_id) {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
-        
+
         $data = Flight::request()->data->getData();
         $validation = Flight::categoryService()->validateCategoryData($data);
-        
+
         if (!$validation['valid']) {
             Flight::json(['error' => $validation['errors']], 400);
             return;
         }
-        
+
         try {
             $category = Flight::categoryService()->update($category_id, $data);
             Flight::json($category);
@@ -96,7 +74,7 @@ Flight::group('/categories', function () {
     // Delete category - ADMIN ONLY
     Flight::route('DELETE /@category_id', function ($category_id) {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
-        
+
         try {
             Flight::categoryService()->delete($category_id);
             Flight::json(['success' => true, 'message' => 'Category deleted successfully']);
@@ -108,7 +86,7 @@ Flight::group('/categories', function () {
     // Validate category data - ADMIN ONLY
     Flight::route('POST /validate', function () {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
-        
+
         $data = Flight::request()->data->getData();
         $validation = Flight::categoryService()->validateCategoryData($data);
         Flight::json($validation);

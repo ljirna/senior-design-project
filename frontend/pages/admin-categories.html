@@ -29,147 +29,30 @@
     </button>
   </div>
 
-  <!-- Categories Grid -->
-  <div class="row" id="categories-on-admin-dashboard">
-    <!-- Category 1 -->
-    <div class="col-lg-4 col-md-6 mb-4">
-      <div class="speaker">
-        <div class="details">
-          <h3>Sofas & Couches</h3>
-          <p><i class="fas fa-couch"></i> Living room furniture</p>
-          <p><i class="fas fa-truck"></i> Delivery: $49.99</p>
-          <p><i class="fas fa-tools"></i> Assembly: $79.99</p>
-          <div class="admin-actions">
-            <button class="table-action-btn" onclick="editCategory(1)">
-              <i class="fas fa-edit"></i> Edit
-            </button>
-            <button
-              class="table-action-btn secondary"
-              onclick="deleteCategory(1)"
-            >
-              <i class="fas fa-trash"></i> Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Category 2 -->
-    <div class="col-lg-4 col-md-6 mb-4">
-      <div class="speaker">
-        <div class="details">
-          <h3>Tables</h3>
-          <p><i class="fas fa-table"></i> Dining and coffee tables</p>
-          <p><i class="fas fa-truck"></i> Delivery: $39.99</p>
-          <p><i class="fas fa-tools"></i> Assembly: $59.99</p>
-          <div class="admin-actions">
-            <button class="table-action-btn" onclick="editCategory(2)">
-              <i class="fas fa-edit"></i> Edit
-            </button>
-            <button
-              class="table-action-btn secondary"
-              onclick="deleteCategory(2)"
-            >
-              <i class="fas fa-trash"></i> Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Category 3 -->
-    <div class="col-lg-4 col-md-6 mb-4">
-      <div class="speaker">
-        <div class="details">
-          <h3>Chairs</h3>
-          <p><i class="fas fa-chair"></i> All types of chairs</p>
-          <p><i class="fas fa-truck"></i> Delivery: $29.99</p>
-          <p><i class="fas fa-tools"></i> Assembly: $49.99</p>
-          <div class="admin-actions">
-            <button class="table-action-btn" onclick="editCategory(3)">
-              <i class="fas fa-edit"></i> Edit
-            </button>
-            <button
-              class="table-action-btn secondary"
-              onclick="deleteCategory(3)"
-            >
-              <i class="fas fa-trash"></i> Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Category 4 -->
-    <div class="col-lg-4 col-md-6 mb-4">
-      <div class="speaker">
-        <div class="details">
-          <h3>Beds</h3>
-          <p><i class="fas fa-bed"></i> Bedroom furniture</p>
-          <p><i class="fas fa-truck"></i> Delivery: $79.99</p>
-          <p><i class="fas fa-tools"></i> Assembly: $99.99</p>
-          <div class="admin-actions">
-            <button class="table-action-btn" onclick="editCategory(4)">
-              <i class="fas fa-edit"></i> Edit
-            </button>
-            <button
-              class="table-action-btn secondary"
-              onclick="deleteCategory(4)"
-            >
-              <i class="fas fa-trash"></i> Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Category 5 -->
-    <div class="col-lg-4 col-md-6 mb-4">
-      <div class="speaker">
-        <div class="details">
-          <h3>Storage</h3>
-          <p><i class="fas fa-archive"></i> Wardrobes and shelves</p>
-          <p><i class="fas fa-truck"></i> Delivery: $59.99</p>
-          <p><i class="fas fa-tools"></i> Assembly: $89.99</p>
-          <div class="admin-actions">
-            <button class="table-action-btn" onclick="editCategory(5)">
-              <i class="fas fa-edit"></i> Edit
-            </button>
-            <button
-              class="table-action-btn secondary"
-              onclick="deleteCategory(5)"
-            >
-              <i class="fas fa-trash"></i> Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Category 6 -->
-    <div class="col-lg-4 col-md-6 mb-4">
-      <div class="speaker">
-        <div class="details">
-          <h3>Outdoor</h3>
-          <p><i class="fas fa-umbrella-beach"></i> Garden furniture</p>
-          <p><i class="fas fa-truck"></i> Delivery: $69.99</p>
-          <p><i class="fas fa-tools"></i> Assembly: $89.99</p>
-          <div class="admin-actions">
-            <button class="table-action-btn" onclick="editCategory(6)">
-              <i class="fas fa-edit"></i> Edit
-            </button>
-            <button
-              class="table-action-btn secondary"
-              onclick="deleteCategory(6)"
-            >
-              <i class="fas fa-trash"></i> Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+  <!-- Loading State -->
+  <div id="categories-loading" style="text-align: center; padding: 3rem">
+    <div class="spinner" style="margin: 0 auto"></div>
+    <p style="color: var(--medium-brown); margin-top: 1rem">
+      Loading categories...
+    </p>
   </div>
 
+  <!-- Empty State -->
+  <div
+    id="categories-empty"
+    style="text-align: center; padding: 3rem; display: none"
+  >
+    <i
+      class="fas fa-inbox"
+      style="font-size: 3rem; color: var(--creme-dark); margin-bottom: 1rem"
+    ></i>
+    <p style="color: var(--medium-brown); font-size: 1.1rem">
+      No categories found
+    </p>
+  </div>
+
+  <!-- Categories Grid -->
+  <div class="row" id="categories-on-admin-dashboard"></div>
 </main>
 
 <!-- Add/Edit Category Modal -->
@@ -199,257 +82,351 @@
           ></textarea>
         </div>
 
-        <div class="form-row-2">
-          <div class="form-group">
-            <label for="category_delivery">Delivery Fee ($)</label>
-            <input
-              type="number"
-              class="form-input"
-              id="category_delivery"
-              step="0.01"
-              min="0"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="category_assembly">Assembly Fee ($)</label>
-            <input
-              type="number"
-              class="form-input"
-              id="category_assembly"
-              step="0.01"
-              min="0"
-            />
-          </div>
+        <div style="display: flex; gap: 1rem; margin-top: 1rem">
+          <button type="submit" class="table-action-btn" style="flex: 1">
+            <i class="fas fa-save"></i> Save Category
+          </button>
+          <button
+            type="button"
+            class="table-action-btn secondary"
+            id="delete-category-btn"
+            style="flex: 1; display: none"
+            onclick="deleteCategoryConfirm()"
+          >
+            <i class="fas fa-trash"></i> Delete
+          </button>
         </div>
-
-        <button
-          type="submit"
-          class="table-action-btn"
-          style="width: 100%; margin-top: 1rem"
-        >
-          <i class="fas fa-save"></i> Save Category
-        </button>
       </form>
     </div>
   </div>
 </div>
 
 <script>
-  let isEditing = false;
+  // Use window object to avoid redeclaration errors
+  if (!window.adminCategoriesState) {
+    window.adminCategoriesState = {
+      allCategories: [],
+      isEditing: false,
+      currentEditingCategoryId: null,
+    };
+  }
 
-  document.addEventListener("DOMContentLoaded", function () {
-    console.log("Admin categories page loaded");
+  // Initialize
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initCategories);
+  } else {
+    setTimeout(() => {
+      initCategories();
+    }, 100);
+  }
 
-    // Add category button
+  window.initAdminCategories = initCategories;
+
+  function initCategories() {
+    loadCategories();
+    setupEventListeners();
+  }
+
+  function setupEventListeners() {
+    // Remove old listeners by cloning elements
+    const addBtn = document.getElementById("add-category-btn");
+    const addBtnClone = addBtn.cloneNode(true);
+    addBtn.parentNode.replaceChild(addBtnClone, addBtn);
+
+    const form = document.getElementById("category-form");
+    const formClone = form.cloneNode(true);
+    form.parentNode.replaceChild(formClone, form);
+
+    // Add new listeners
     document
       .getElementById("add-category-btn")
-      .addEventListener("click", function () {
-        openAddCategoryModal();
-      });
-
-    // Category form
+      .addEventListener("click", openAddCategoryModal);
     document
       .getElementById("category-form")
       .addEventListener("submit", function (e) {
         e.preventDefault();
         saveCategory();
       });
-  });
+  }
+
+  function loadCategories() {
+    const token = localStorage.getItem("user_token");
+    const loadingDiv = document.getElementById("categories-loading");
+    const emptyDiv = document.getElementById("categories-empty");
+    const grid = document.getElementById("categories-on-admin-dashboard");
+
+    if (!token) {
+      showToast("Session expired. Please login again.", "error");
+      window.location.hash = "#login";
+      return;
+    }
+
+    loadingDiv.style.display = "block";
+    if (emptyDiv) emptyDiv.style.display = "none";
+    if (grid) grid.innerHTML = "";
+
+    fetch("http://localhost/diplomski/backend/categories", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authentication: token,
+      },
+    })
+      .then((response) => {
+        if (response.status === 401) {
+          showToast("Unauthorized. Please login again.", "error");
+          window.location.hash = "#login";
+          return null;
+        }
+        if (!response.ok) throw new Error("Failed to load categories");
+        return response.json();
+      })
+      .then((data) => {
+        if (!data) {
+          loadingDiv.style.display = "none";
+          return;
+        }
+
+        window.adminCategoriesState.allCategories = Array.isArray(data)
+          ? data
+          : data.data || [];
+        loadingDiv.style.display = "none";
+
+        if (window.adminCategoriesState.allCategories.length === 0) {
+          if (emptyDiv) emptyDiv.style.display = "block";
+          if (grid) grid.style.display = "none";
+        } else {
+          if (emptyDiv) emptyDiv.style.display = "none";
+          if (grid) grid.style.display = "grid";
+          renderCategories();
+        }
+      })
+      .catch((error) => {
+        console.error("Error loading categories:", error);
+        loadingDiv.style.display = "none";
+        if (emptyDiv) {
+          emptyDiv.style.display = "block";
+          emptyDiv.innerHTML = `<p>Error loading categories: ${error.message}</p>`;
+        }
+        showToast("Error loading categories: " + error.message, "error");
+      });
+  }
+
+  function renderCategories() {
+    const grid = document.getElementById("categories-on-admin-dashboard");
+    grid.innerHTML = "";
+
+    window.adminCategoriesState.allCategories.forEach((category) => {
+      const col = document.createElement("div");
+      col.className = "col-lg-4 col-md-6 mb-4";
+      col.innerHTML = `
+        <div class="speaker">
+          <div class="details">
+            <h3>${category.name}</h3>
+            <p><i class="fas fa-tag"></i> ${
+              category.description || "No description"
+            }</p>
+            <div class="admin-actions">
+              <button class="table-action-btn" onclick="editCategory(${
+                category.category_id
+              })" style="flex: 1">
+                <i class="fas fa-edit"></i> Edit
+              </button>
+              <button class="table-action-btn secondary" onclick="deleteCategoryDirect(${
+                category.category_id
+              })" style="flex: 1">
+                <i class="fas fa-trash"></i> Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      grid.appendChild(col);
+    });
+  }
 
   function openAddCategoryModal() {
-    isEditing = false;
+    window.adminCategoriesState.isEditing = false;
+    window.adminCategoriesState.currentEditingCategoryId = null;
     document.getElementById("modalTitle").textContent = "Add Category";
     document.getElementById("category-form").reset();
     document.getElementById("category_id").value = "";
+    document.getElementById("delete-category-btn").style.display = "none";
     openModal("categoryModal");
   }
 
   function editCategory(categoryId) {
-    isEditing = true;
-    document.getElementById("modalTitle").textContent = "Edit Category";
-
-    // Sample category data - in real app, fetch from API
-    const categories = {
-      1: {
-        name: "Sofas & Couches",
-        description: "Living room furniture",
-        delivery: "49.99",
-        assembly: "79.99",
-      },
-      2: {
-        name: "Tables",
-        description: "Dining and coffee tables",
-        delivery: "39.99",
-        assembly: "59.99",
-      },
-      3: {
-        name: "Chairs",
-        description: "All types of chairs",
-        delivery: "29.99",
-        assembly: "49.99",
-      },
-      4: {
-        name: "Beds",
-        description: "Bedroom furniture",
-        delivery: "79.99",
-        assembly: "99.99",
-      },
-      5: {
-        name: "Storage",
-        description: "Wardrobes and shelves",
-        delivery: "59.99",
-        assembly: "89.99",
-      },
-      6: {
-        name: "Outdoor",
-        description: "Garden furniture",
-        delivery: "69.99",
-        assembly: "89.99",
-      },
-    };
-
-    const category = categories[categoryId];
-    if (category) {
-      document.getElementById("category_id").value = categoryId;
-      document.getElementById("category_name").value = category.name;
-      document.getElementById("category_description").value =
-        category.description;
-      document.getElementById("category_delivery").value = category.delivery;
-      document.getElementById("category_assembly").value = category.assembly;
-
-      openModal("categoryModal");
+    const category = window.adminCategoriesState.allCategories.find(
+      (c) => c.category_id == categoryId
+    );
+    if (!category) {
+      showToast("Category not found", "error");
+      return;
     }
+
+    window.adminCategoriesState.isEditing = true;
+    window.adminCategoriesState.currentEditingCategoryId = categoryId;
+    document.getElementById("modalTitle").textContent = "Edit Category";
+    document.getElementById("category_id").value = categoryId;
+    document.getElementById("category_name").value = category.name;
+    document.getElementById("category_description").value =
+      category.description || "";
+    document.getElementById("delete-category-btn").style.display = "block";
+
+    openModal("categoryModal");
   }
 
   function saveCategory() {
     const categoryId = document.getElementById("category_id").value;
-    const name = document.getElementById("category_name").value;
-    const description = document.getElementById("category_description").value;
-    const delivery = document.getElementById("category_delivery").value;
-    const assembly = document.getElementById("category_assembly").value;
+    const name = document.getElementById("category_name").value.trim();
+    const description = document
+      .getElementById("category_description")
+      .value.trim();
 
     if (!name) {
-      if (typeof showToast === "function") {
-        showToast("Please enter category name", "error");
-      }
+      showToast("Please enter category name", "error");
       return;
     }
 
-    if (isEditing) {
+    const token = localStorage.getItem("user_token");
+
+    const categoryData = {
+      name: name,
+      description: description,
+    };
+
+    if (window.adminCategoriesState.isEditing) {
       // Update existing category
-      if (typeof showToast === "function") {
-        showToast(`Updating ${name}...`, "info");
-      }
+      showToast("Updating category...", "info");
 
-      setTimeout(() => {
-        if (typeof showToast === "function") {
-          showToast("Category updated!", "success");
+      fetch(
+        `http://localhost/diplomski/backend/categories/${window.adminCategoriesState.currentEditingCategoryId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authentication: token,
+          },
+          body: JSON.stringify(categoryData),
         }
-
-        // Update the category card
-        updateCategoryCard(categoryId, {
-          name,
-          description,
-          delivery,
-          assembly,
+      )
+        .then((response) => {
+          if (!response.ok) {
+            return response.json().then((data) => {
+              throw new Error(data.error || "Error updating category");
+            });
+          }
+          return response.json();
+        })
+        .then((data) => {
+          showToast("Category updated successfully!", "success");
+          closeModal("categoryModal");
+          loadCategories();
+        })
+        .catch((error) => {
+          console.error("Error updating category:", error);
+          showToast(error.message || "Error updating category.", "error");
         });
-        closeModal("categoryModal");
-      }, 1000);
     } else {
       // Add new category
-      if (typeof showToast === "function") {
-        showToast(`Adding ${name}...`, "info");
-      }
+      showToast("Adding category...", "info");
 
-      setTimeout(() => {
-        if (typeof showToast === "function") {
-          showToast("Category added!", "success");
-        }
-
-        // Add new category card
-        addCategoryCard({ name, description, delivery, assembly });
-        closeModal("categoryModal");
-      }, 1000);
+      fetch("http://localhost/diplomski/backend/categories", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authentication: token,
+        },
+        body: JSON.stringify(categoryData),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            return response.json().then((data) => {
+              throw new Error(data.error || "Error adding category");
+            });
+          }
+          return response.json();
+        })
+        .then((data) => {
+          showToast("Category added successfully!", "success");
+          closeModal("categoryModal");
+          loadCategories();
+        })
+        .catch((error) => {
+          console.error("Error adding category:", error);
+          showToast(error.message || "Error adding category.", "error");
+        });
     }
   }
 
-  function updateCategoryCard(categoryId, data) {
-    // Find and update the category card
-    const categoryCards = document.querySelectorAll(
-      "#categories-on-admin-dashboard .speaker .details"
+  function deleteCategoryConfirm() {
+    const categoryId = document.getElementById("category_id").value;
+    const category = window.adminCategoriesState.allCategories.find(
+      (c) => c.category_id == categoryId
     );
-    categoryCards.forEach((card, index) => {
-      if (index + 1 === parseInt(categoryId)) {
-        const h3 = card.querySelector("h3");
-        const description = card.querySelector("p:nth-of-type(1)");
-        const delivery = card.querySelector("p:nth-of-type(2)");
-        const assembly = card.querySelector("p:nth-of-type(3)");
 
-        if (h3) h3.textContent = data.name;
-        if (description)
-          description.innerHTML = `<i class="fas fa-${getCategoryIcon(
-            data.name
-          )}"></i> ${data.description}`;
-        if (delivery)
-          delivery.innerHTML = `<i class="fas fa-truck"></i> Delivery: $${data.delivery}`;
-        if (assembly)
-          assembly.innerHTML = `<i class="fas fa-tools"></i> Assembly: $${data.assembly}`;
-      }
-    });
+    if (!category) {
+      showToast("Category not found", "error");
+      return;
+    }
+
+    if (
+      confirm(
+        `Are you sure you want to delete "${category.name}"? This action cannot be undone.`
+      )
+    ) {
+      deleteCategory(categoryId);
+    }
   }
 
-  function addCategoryCard(data) {
-    const grid = document.getElementById("categories-on-admin-dashboard");
-    const newId = grid.children.length + 1;
+  function deleteCategoryDirect(categoryId) {
+    const category = window.adminCategoriesState.allCategories.find(
+      (c) => c.category_id == categoryId
+    );
 
-    const categoryCard = document.createElement("div");
-    categoryCard.className = "col-lg-4 col-md-6 mb-4";
-    categoryCard.innerHTML = `
-      <div class="speaker">
-        <div class="details">
-          <h3>${data.name}</h3>
-          <p><i class="fas fa-${getCategoryIcon(data.name)}"></i> ${
-      data.description
-    }</p>
-          <p><i class="fas fa-truck"></i> Delivery: $${data.delivery}</p>
-          <p><i class="fas fa-tools"></i> Assembly: $${data.assembly}</p>
-          <div class="admin-actions">
-            <button class="table-action-btn" onclick="editCategory(${newId})">
-              <i class="fas fa-edit"></i> Edit
-            </button>
-            <button class="table-action-btn secondary" onclick="deleteCategory(${newId})">
-              <i class="fas fa-trash"></i> Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
+    if (!category) {
+      showToast("Category not found", "error");
+      return;
+    }
 
-    grid.appendChild(categoryCard);
+    if (
+      confirm(
+        `Are you sure you want to delete "${category.name}"? This action cannot be undone.`
+      )
+    ) {
+      deleteCategory(categoryId);
+    }
   }
 
   function deleteCategory(categoryId) {
-    if (confirm("Are you sure you want to delete this category?")) {
-      if (typeof showToast === "function") {
-        showToast("Deleting category...", "info");
-      }
+    const token = localStorage.getItem("user_token");
 
-      setTimeout(() => {
-        // Find and remove the category card
-        const categoryCards = document.querySelectorAll(
-          "#categories-on-admin-dashboard .col-lg-4"
-        );
-        categoryCards.forEach((card, index) => {
-          if (index + 1 === parseInt(categoryId)) {
-            card.remove();
-            if (typeof showToast === "function") {
-              showToast("Category deleted!", "success");
-            }
-          }
-        });
-      }, 1000);
-    }
+    showToast("Deleting category...", "info");
+
+    fetch(`http://localhost/diplomski/backend/categories/${categoryId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authentication: token,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          return response.json().then((data) => {
+            throw new Error(data.error || "Error deleting category");
+          });
+        }
+        return response.json();
+      })
+      .then((data) => {
+        showToast("Category deleted successfully!", "success");
+        closeModal("categoryModal");
+        loadCategories();
+      })
+      .catch((error) => {
+        console.error("Error deleting category:", error);
+        showToast(error.message || "Error deleting category.", "error");
+      });
   }
 
   function getCategoryIcon(name) {
@@ -463,6 +440,8 @@
       Living: "home",
       Dining: "utensils",
       Office: "laptop",
+      Bedroom: "bed",
+      Garden: "leaf",
     };
 
     for (const [key, icon] of Object.entries(icons)) {

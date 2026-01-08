@@ -506,9 +506,14 @@
 </div>
 
 <script>
-  let allProducts = [];
-  let allCategories = [];
-  let filteredProducts = [];
+  // Use window object to avoid redeclaration errors when page loads multiple times
+  if (!window.adminProductsState) {
+    window.adminProductsState = {
+      allProducts: [],
+      allCategories: [],
+      filteredProducts: [],
+    };
+  }
 
   // Initialize if DOM is already loaded (happens when injected into existing page)
   if (document.readyState === "loading") {
@@ -566,7 +571,9 @@
     })
       .then((response) => response.json())
       .then((data) => {
-        allCategories = Array.isArray(data) ? data : data.data || [];
+        window.adminProductsState.allCategories = Array.isArray(data)
+          ? data
+          : data.data || [];
 
         // Populate category selects
         const categorySelects = [
@@ -580,7 +587,7 @@
           while (select.options.length > 1) {
             select.remove(1);
           }
-          allCategories.forEach((cat) => {
+          window.adminProductsState.allCategories.forEach((cat) => {
             const option = document.createElement("option");
             option.value = cat.category_id || cat.id;
             option.textContent = cat.name;
@@ -595,7 +602,7 @@
           while (filterSelect.options.length > 1) {
             filterSelect.remove(1);
           }
-          allCategories.forEach((cat) => {
+          window.adminProductsState.allCategories.forEach((cat) => {
             const option = document.createElement("option");
             option.value = cat.category_id || cat.id;
             option.textContent = cat.name;
@@ -618,59 +625,82 @@
   function setupEventListeners() {
     // Remove old listeners by cloning and replacing elements to avoid duplicates
     const addBtn = document.getElementById("add-product-btn");
-    const addBtnClone = addBtn.cloneNode(true);
-    addBtn.parentNode.replaceChild(addBtnClone, addBtn);
+    if (addBtn && addBtn.parentNode) {
+      const addBtnClone = addBtn.cloneNode(true);
+      addBtn.parentNode.replaceChild(addBtnClone, addBtn);
+    }
 
     const addForm = document.getElementById("add-product-form");
-    const addFormClone = addForm.cloneNode(true);
-    addForm.parentNode.replaceChild(addFormClone, addForm);
+    if (addForm && addForm.parentNode) {
+      const addFormClone = addForm.cloneNode(true);
+      addForm.parentNode.replaceChild(addFormClone, addForm);
+    }
 
     const editForm = document.getElementById("edit-product-form");
-    const editFormClone = editForm.cloneNode(true);
-    editForm.parentNode.replaceChild(editFormClone, editForm);
+    if (editForm && editForm.parentNode) {
+      const editFormClone = editForm.cloneNode(true);
+      editForm.parentNode.replaceChild(editFormClone, editForm);
+    }
 
     const addImageInput = document.getElementById("add_product_image");
-    const addImageInputClone = addImageInput.cloneNode(true);
-    addImageInput.parentNode.replaceChild(addImageInputClone, addImageInput);
+    if (addImageInput && addImageInput.parentNode) {
+      const addImageInputClone = addImageInput.cloneNode(true);
+      addImageInput.parentNode.replaceChild(addImageInputClone, addImageInput);
+    }
 
     const editImageInput = document.getElementById("edit_product_image");
-    const editImageInputClone = editImageInput.cloneNode(true);
-    editImageInput.parentNode.replaceChild(editImageInputClone, editImageInput);
+    if (editImageInput && editImageInput.parentNode) {
+      const editImageInputClone = editImageInput.cloneNode(true);
+      editImageInput.parentNode.replaceChild(
+        editImageInputClone,
+        editImageInput
+      );
+    }
 
     const searchInput = document.getElementById("product-search");
-    const searchInputClone = searchInput.cloneNode(true);
-    searchInput.parentNode.replaceChild(searchInputClone, searchInput);
+    if (searchInput && searchInput.parentNode) {
+      const searchInputClone = searchInput.cloneNode(true);
+      searchInput.parentNode.replaceChild(searchInputClone, searchInput);
+    }
 
     const categoryFilter = document.getElementById("category-filter");
-    const categoryFilterClone = categoryFilter.cloneNode(true);
-    categoryFilter.parentNode.replaceChild(categoryFilterClone, categoryFilter);
+    if (categoryFilter && categoryFilter.parentNode) {
+      const categoryFilterClone = categoryFilter.cloneNode(true);
+      categoryFilter.parentNode.replaceChild(
+        categoryFilterClone,
+        categoryFilter
+      );
+    }
 
     // Add event listeners
-    document
-      .getElementById("add-product-btn")
-      .addEventListener("click", function () {
+    const addProductBtn = document.getElementById("add-product-btn");
+    if (addProductBtn) {
+      addProductBtn.addEventListener("click", function () {
         document.getElementById("add-product-form").reset();
         document.getElementById("add_product_images_preview").innerHTML = "";
         openModal("addProductModal");
       });
+    }
 
-    document
-      .getElementById("add-product-form")
-      .addEventListener("submit", function (e) {
+    const addProductForm = document.getElementById("add-product-form");
+    if (addProductForm) {
+      addProductForm.addEventListener("submit", function (e) {
         e.preventDefault();
         addProduct();
       });
+    }
 
-    document
-      .getElementById("edit-product-form")
-      .addEventListener("submit", function (e) {
+    const editProductForm = document.getElementById("edit-product-form");
+    if (editProductForm) {
+      editProductForm.addEventListener("submit", function (e) {
         e.preventDefault();
         saveProduct();
       });
+    }
 
-    document
-      .getElementById("add_product_image")
-      .addEventListener("change", function (e) {
+    const addProductImage = document.getElementById("add_product_image");
+    if (addProductImage) {
+      addProductImage.addEventListener("change", function (e) {
         const files = e.target.files;
         const preview = document.getElementById("add_product_images_preview");
         preview.innerHTML = "";
@@ -693,18 +723,23 @@
           }
         }
       });
+    }
 
-    document
-      .getElementById("product-search")
-      .addEventListener("input", applyFilters);
-    document
-      .getElementById("category-filter")
-      .addEventListener("change", applyFilters);
+    // Add event listeners for search and filter
+    const searchInputElement = document.getElementById("product-search");
+    if (searchInputElement) {
+      searchInputElement.addEventListener("input", applyFilters);
+    }
+
+    const categoryFilterElement = document.getElementById("category-filter");
+    if (categoryFilterElement) {
+      categoryFilterElement.addEventListener("change", applyFilters);
+    }
 
     // Add image preview for edit form
-    document
-      .getElementById("edit_product_image")
-      .addEventListener("change", function (e) {
+    const editProductImage = document.getElementById("edit_product_image");
+    if (editProductImage) {
+      editProductImage.addEventListener("change", function (e) {
         const file = e.target.files[0];
         if (file) {
           const reader = new FileReader();
@@ -715,6 +750,7 @@
           reader.readAsDataURL(file);
         }
       });
+    }
   }
 
   let isLoadingProducts = false;
@@ -788,17 +824,17 @@
 
         // Handle both array response and {data: [...]} response format
         if (Array.isArray(data)) {
-          allProducts = data;
+          window.adminProductsState.allProducts = data;
         } else if (data.data && Array.isArray(data.data)) {
-          allProducts = data.data;
+          window.adminProductsState.allProducts = data.data;
         } else {
-          allProducts = [];
+          window.adminProductsState.allProducts = [];
         }
 
         // Remove duplicates by product_id
         const uniqueProducts = [];
         const seenIds = new Set();
-        for (const product of allProducts) {
+        for (const product of window.adminProductsState.allProducts) {
           const id = product.product_id || product.id;
           if (!seenIds.has(id)) {
             seenIds.add(id);
@@ -806,11 +842,15 @@
           }
         }
 
-        if (uniqueProducts.length !== allProducts.length) {
-          allProducts = uniqueProducts;
+        if (
+          uniqueProducts.length !== window.adminProductsState.allProducts.length
+        ) {
+          window.adminProductsState.allProducts = uniqueProducts;
         }
 
-        filteredProducts = [...allProducts];
+        window.adminProductsState.filteredProducts = [
+          ...window.adminProductsState.allProducts,
+        ];
 
         loadingDiv.style.display = "none";
         isLoadingProducts = false;
@@ -835,17 +875,18 @@
       .value.toLowerCase();
     const categoryId = document.getElementById("category-filter").value;
 
-    filteredProducts = allProducts.filter((product) => {
-      if (searchTerm && !product.name.toLowerCase().includes(searchTerm)) {
-        return false;
-      }
+    window.adminProductsState.filteredProducts =
+      window.adminProductsState.allProducts.filter((product) => {
+        if (searchTerm && !product.name.toLowerCase().includes(searchTerm)) {
+          return false;
+        }
 
-      if (categoryId && product.category_id != categoryId) {
-        return false;
-      }
+        if (categoryId && product.category_id != categoryId) {
+          return false;
+        }
 
-      return true;
-    });
+        return true;
+      });
 
     renderProducts();
   }
@@ -861,9 +902,10 @@
     }
 
     grid.innerHTML = "";
-    if (countDiv) countDiv.textContent = filteredProducts.length;
+    if (countDiv)
+      countDiv.textContent = window.adminProductsState.filteredProducts.length;
 
-    if (filteredProducts.length === 0) {
+    if (window.adminProductsState.filteredProducts.length === 0) {
       if (emptyDiv) emptyDiv.style.display = "block";
       grid.style.display = "none";
       return;
@@ -871,7 +913,7 @@
 
     if (emptyDiv) emptyDiv.style.display = "none";
     grid.style.display = "grid";
-    filteredProducts.forEach((product, index) => {
+    window.adminProductsState.filteredProducts.forEach((product, index) => {
       try {
         const col = document.createElement("div");
         col.className = "col-lg-4 col-md-6 mb-4";
@@ -921,7 +963,7 @@
   function getCategoryName(categoryId) {
     if (!categoryId) return "Uncategorized";
 
-    const category = allCategories.find((c) => {
+    const category = window.adminProductsState.allCategories.find((c) => {
       // Check both category_id and id fields
       return c.category_id == categoryId || c.id == categoryId;
     });
@@ -930,7 +972,9 @@
   }
 
   function editProduct(productId) {
-    const product = allProducts.find((p) => p.product_id == productId);
+    const product = window.adminProductsState.allProducts.find(
+      (p) => p.product_id == productId
+    );
     if (!product) {
       showToast("Product not found", "error");
       return;
@@ -1327,7 +1371,9 @@
 
   function deleteProductConfirm(productId = null) {
     const id = productId || document.getElementById("edit_product_id").value;
-    const product = allProducts.find((p) => p.product_id == id || p.id == id);
+    const product = window.adminProductsState.allProducts.find(
+      (p) => p.product_id == id || p.id == id
+    );
 
     if (!product) {
       showToast("Product not found", "error");

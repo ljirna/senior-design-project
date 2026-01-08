@@ -314,11 +314,11 @@ class ProductDao extends BaseDao
             SELECT 
                 p.*,
                 c.name as category_name,
-                COALESCE(p.delivery_fee_override, c.delivery_fee) as delivery_fee,
-                COALESCE(p.assembly_fee_override, c.assembly_fee) as assembly_fee,
+                p.delivery_fee_override as delivery_fee,
+                p.assembly_fee_override as assembly_fee,
                 p.price + 
-                    COALESCE(p.delivery_fee_override, c.delivery_fee) + 
-                    COALESCE(p.assembly_fee_override, c.assembly_fee) as total_price
+                    p.delivery_fee_override + 
+                    p.assembly_fee_override as total_price
             FROM products p
             JOIN categories c ON p.category_id = c.category_id
             WHERE p.product_id = :product_id

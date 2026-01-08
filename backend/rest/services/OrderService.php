@@ -147,8 +147,8 @@ class OrderService extends BaseService
                     throw new Exception("Insufficient stock for product: " . $product['name']);
                 }
 
-                $deliveryFee = $product['delivery_fee'] ?? ($product['delivery_fee_override'] ?? 0);
-                $assemblyFee = $product['assembly_fee'] ?? ($product['assembly_fee_override'] ?? 0);
+                $deliveryFee = $product['delivery_fee_override'] ?? 0;
+                $assemblyFee = $product['assembly_fee_override'] ?? 0;
 
                 $cart_items[] = [
                     'product_id' => $product['product_id'],

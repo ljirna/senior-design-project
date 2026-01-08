@@ -31,21 +31,6 @@ class CategoryDao extends BaseDao
         return $stmt->fetchAll();
     }
 
-    // Get category with fees
-    public function getCategoryWithFees($category_id)
-    {
-        $stmt = $this->connection->prepare("
-            SELECT *, 
-                   delivery_fee as default_delivery_fee,
-                   assembly_fee as default_assembly_fee
-            FROM categories 
-            WHERE category_id = :category_id
-        ");
-        $stmt->bindParam(':category_id', $category_id);
-        $stmt->execute();
-        return $stmt->fetch();
-    }
-
     // Get categories with products
     public function getCategoriesWithProducts($limit = 5)
     {
@@ -88,5 +73,51 @@ class CategoryDao extends BaseDao
         $stmt->bindParam(':search', $search);
         $stmt->execute();
         return $stmt->fetchAll();
+    }
+
+    // Override add() to use correct primary key
+    public function add($entity)
+    {
+        $query = "INSERT INTO categories (";
+        foreach ($entity as $column => $value) {
+            $query .= $column . ', ';
+        }
+        $query = substr($query, 0, -2);
+        $query .= ") VALUES (";
+        foreach ($entity as $column => $value) {
+            $query .= ":" . $column . ', ';
+        }
+        $query = substr($query, 0, -2);
+        $query .= ")";
+
+        $stmt = $this->connection->prepare($query);
+        $stmt->execute($entity);
+        $entity['category_id'] = $this->connection->lastInsertId();
+        return $entity;
+    }
+
+    // Override update() to use correct primary key
+    public function update($entity, $id, $id_column = "category_id")
+    {
+        $query = "UPDATE categories SET ";
+        foreach ($entity as $column => $value) {
+            if ($column !== 'category_id') {
+                $query .= $column . "=:" . $column . ", ";
+            }
+        }
+        $query = substr($query, 0, -2);
+        $query .= " WHERE category_id = :id";
+        $stmt = $this->connection->prepare($query);
+        $entity['id'] = $id;
+        $stmt->execute($entity);
+        return $entity;
+    }
+
+    // Override delete() to use correct primary key
+    public function delete($category_id)
+    {
+        $stmt = $this->connection->prepare("DELETE FROM categories WHERE category_id = :id");
+        $stmt->bindValue(':id', $category_id);
+        $stmt->execute();
     }
 }

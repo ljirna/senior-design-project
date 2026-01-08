@@ -52,15 +52,12 @@ class CartDao extends BaseDao
                 p.price,
                 p.delivery_fee_override,
                 p.assembly_fee_override,
-                c.delivery_fee as category_delivery_fee,
-                c.assembly_fee as category_assembly_fee,
                 (SELECT image_url FROM product_images WHERE product_id = p.product_id LIMIT 1) as image_url,
                 (p.price * ci.quantity) as subtotal,
-                (COALESCE(p.delivery_fee_override, c.delivery_fee) * ci.quantity) as delivery_fee_total,
-                (COALESCE(p.assembly_fee_override, c.assembly_fee) * ci.quantity) as assembly_fee_total
+                (p.delivery_fee_override * ci.quantity) as delivery_fee_total,
+                (p.assembly_fee_override * ci.quantity) as assembly_fee_total
             FROM cart_items ci
             JOIN products p ON ci.product_id = p.product_id
-            JOIN categories c ON p.category_id = c.category_id
             WHERE ci.cart_id = :cart_id
             ORDER BY ci.cart_item_id DESC
         ");
@@ -150,12 +147,11 @@ class CartDao extends BaseDao
         $stmt = $this->connection->prepare("
             SELECT 
                 SUM(p.price * ci.quantity) as subtotal,
-                SUM(COALESCE(p.delivery_fee_override, c.delivery_fee) * ci.quantity) as delivery_total,
-                SUM(COALESCE(p.assembly_fee_override, c.assembly_fee) * ci.quantity) as assembly_total,
+                SUM(p.delivery_fee_override * ci.quantity) as delivery_total,
+                SUM(p.assembly_fee_override * ci.quantity) as assembly_total,
                 COUNT(ci.cart_item_id) as item_count
             FROM cart_items ci
             JOIN products p ON ci.product_id = p.product_id
-            JOIN categories c ON p.category_id = c.category_id
             WHERE ci.cart_id = :cart_id
         ");
         $stmt->bindParam(':cart_id', $cart_id);
