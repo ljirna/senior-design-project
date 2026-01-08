@@ -184,6 +184,16 @@ var UserService = {
   },
 
   logout: function () {
+    // Check if already logged out (localStorage empty or no token)
+    const token = localStorage.getItem("user_token");
+    if (!token) {
+      showToast("Already logged out", "info");
+      if (window.UserService && UserService.generateMenuItems) {
+        UserService.generateMenuItems();
+      }
+      return;
+    }
+
     console.log("[UserService.logout] Starting logout process");
     console.log(
       "[UserService.logout] Before logout - localStorage keys:",
@@ -279,7 +289,6 @@ var UserService = {
       if (headerActions) {
         headerActions.innerHTML = `
           <a href="#cart" class="action-icon" id="nav-cart"><i class="fas fa-shopping-cart"></i></a>
-          <button class="btn" style="margin-left:8px; background:#800020; color:white;" onclick="UserService.logout()">Logout</button>
         `;
       }
 

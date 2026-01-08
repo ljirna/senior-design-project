@@ -896,7 +896,6 @@ function displayProductDetails(product) {
             product.price
           ).toFixed(2)} KM</span>
         </div>
-        <p class="price-note">Free shipping & 30-day return policy</p>
       </div>
 
       <!-- Additional Fees -->
@@ -2860,8 +2859,18 @@ async function initPaymentPage() {
 // Logout function
 function logout() {
   appState.user = null;
-  localStorage.removeItem("zimUser");
+  appState.cart = [];
+  appState.favorites = [];
+
+  // Clear all local storage
+  localStorage.clear();
+
   showToast("Successfully logged out", "success");
+
+  // Update navbar to show Login button instead of Logout
+  if (window.UserService && UserService.generateMenuItems) {
+    UserService.generateMenuItems();
+  }
 
   // Redirect to home if on protected page
   const currentPage = parseHash().page;
@@ -3053,7 +3062,12 @@ function addToFavorites(productId, productName, productPrice, productImage) {
       },
       (err) => {
         console.error("Failed to add to favorites:", err);
-        showToast("Failed to add to favorites", "error");
+        // Check if it's an authentication error
+        if (err && err.status === 401) {
+          showToast("Log in to add to favorites", "error");
+        } else {
+          showToast("Failed to add to favorites", "error");
+        }
       }
     );
   }

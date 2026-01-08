@@ -1443,6 +1443,7 @@ a:hover {
 
 .account-action-item.logout-btn {
   color: #e74c3c;
+  border: 2px solid #e74c3c;
 }
 
 .account-action-item.logout-btn .action-icon {
