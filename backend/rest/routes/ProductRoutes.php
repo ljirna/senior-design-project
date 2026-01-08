@@ -217,23 +217,39 @@ Flight::group('/products', function () {
             return;
         }
 
-        // This would handle file upload and save to database
-        Flight::json([
-            'success' => true,
-            'message' => 'Image added successfully',
-            'image_url' => $data['image_url']
-        ], 201);
+        try {
+            $result = Flight::productService()->addProductImage($product_id, $data['image_url']);
+            if (!$result) {
+                Flight::json(['error' => 'Failed to add image'], 400);
+                return;
+            }
+            Flight::json([
+                'success' => true,
+                'message' => 'Image added successfully',
+                'image_url' => $data['image_url']
+            ], 201);
+        } catch (Exception $e) {
+            Flight::json(['error' => $e->getMessage()], 400);
+        }
     });
 
     // Delete product image - ADMIN ONLY
     Flight::route('DELETE /@product_id/images/@image_id', function ($product_id, $image_id) {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
-        // This would delete image from storage and database
-        Flight::json([
-            'success' => true,
-            'message' => 'Image deleted successfully'
-        ]);
+        try {
+            $result = Flight::productService()->deleteProductImage($image_id, $product_id);
+            if (!$result) {
+                Flight::json(['error' => 'Image not found or cannot be deleted'], 404);
+                return;
+            }
+            Flight::json([
+                'success' => true,
+                'message' => 'Image deleted successfully'
+            ]);
+        } catch (Exception $e) {
+            Flight::json(['error' => $e->getMessage()], 400);
+        }
     });
 
     // Get product statistics - ADMIN ONLY

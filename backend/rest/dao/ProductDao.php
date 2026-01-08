@@ -36,6 +36,14 @@ class ProductDao extends BaseDao
         return $result;
     }
 
+    // Override delete() to use product_id instead of id
+    public function delete($product_id)
+    {
+        $stmt = $this->connection->prepare("DELETE FROM products WHERE product_id = :product_id");
+        $stmt->bindParam(':product_id', $product_id);
+        return $stmt->execute();
+    }
+
     // Basic CRUD
     public function getProductById($product_id)
     {
@@ -263,6 +271,39 @@ class ProductDao extends BaseDao
         ");
         $stmt->bindParam(':image_id', $product_image_id);
         $stmt->bindParam(':image_url', $image_url);
+        return $stmt->execute();
+    }
+
+    public function getProductImage($image_id)
+    {
+        $stmt = $this->connection->prepare("
+            SELECT * FROM product_images 
+            WHERE image_id = :image_id
+        ");
+        $stmt->bindParam(':image_id', $image_id);
+        $stmt->execute();
+        return $stmt->fetch();
+    }
+
+    public function deleteProductImage($image_id)
+    {
+        $stmt = $this->connection->prepare("
+            DELETE FROM product_images
+            WHERE image_id = :image_id
+        ");
+        $stmt->bindParam(':image_id', $image_id);
+        return $stmt->execute();
+    }
+
+    public function updateProductImagePrimary($image_id, $is_primary)
+    {
+        $stmt = $this->connection->prepare("
+            UPDATE product_images
+            SET is_primary = :is_primary
+            WHERE image_id = :image_id
+        ");
+        $stmt->bindParam(':image_id', $image_id);
+        $stmt->bindParam(':is_primary', $is_primary, PDO::PARAM_INT);
         return $stmt->execute();
     }
 

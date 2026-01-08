@@ -148,4 +148,46 @@ class ProductService extends BaseService
             'per_item' => $product['price']
         ];
     }
+
+    // Add new image to product
+    public function addProductImage($product_id, $image_url)
+    {
+        // Verify product exists
+        $product = $this->dao->getProductById($product_id);
+        if (!$product) {
+            throw new Exception('Product not found');
+        }
+
+        // Get existing images to determine if this should be primary
+        $images = $this->dao->getProductImages($product_id);
+        $is_primary = empty($images) ? 1 : 0; // Only primary if no images exist
+
+        return $this->dao->insertProductImage($product_id, $image_url, $is_primary);
+    }
+
+    // Delete product image
+    public function deleteProductImage($image_id, $product_id)
+    {
+        // Verify image belongs to the product
+        $image = $this->dao->getProductImage($image_id);
+        if (!$image || $image['product_id'] != $product_id) {
+            return false;
+        }
+
+        // Get remaining images for the product
+        $images = $this->dao->getProductImages($product_id);
+
+        // If we're deleting the primary image and there are other images, 
+        // make the first remaining image primary
+        if ($image['is_primary'] && count($images) > 1) {
+            foreach ($images as $img) {
+                if ($img['image_id'] != $image_id) {
+                    $this->dao->updateProductImagePrimary($img['image_id'], 1);
+                    break;
+                }
+            }
+        }
+
+        return $this->dao->deleteProductImage($image_id);
+    }
 }
