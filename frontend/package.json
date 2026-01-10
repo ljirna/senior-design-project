@@ -1,0 +1,14 @@
+{
+  "name": "zim-commerce-frontend",
+  "version": "1.0.0",
+  "description": "ZIM Commerce Frontend Tests",
+  "scripts": {
+    "test": "jest --detectOpenHandles",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0",
+    "jest-environment-jsdom": "^30.2.0"
+  }
+}

@@ -1,3 +1,23 @@
 /backend/vendor/
 /backend/stripe.php
 /backend/config.php
+/backend/composer.lock
+# Frontend
+/frontend/node_modules/
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Coverage reports
+/backend/coverage/
+/frontend/coverage/
