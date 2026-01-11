@@ -329,6 +329,7 @@ Flight::group('/stripe', function () use ($getCurrentUserId) {
                 'shipping_address' => $paymentIntent->metadata->shipping_address ?? null,
                 'delivery_type' => $paymentIntent->metadata->delivery_type ?? 'store_pickup',
                 'assembly_option' => $paymentIntent->metadata->assembly_option ?? 'package',
+                'status' => 'approved', // Set to approved since payment succeeded
             ];
 
             if (!empty($paymentIntent->metadata->items)) {

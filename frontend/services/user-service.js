@@ -42,6 +42,9 @@ var UserService = {
           email: { required: true, email: true },
           password: { required: true, minlength: 8 },
           confirmPassword: { required: true, equalTo: "#registerPassword" },
+          street: { required: true },
+          city: { required: true },
+          postalCode: { required: true },
         },
         messages: {
           confirmPassword: { equalTo: "Passwords do not match" },
@@ -151,6 +154,17 @@ var UserService = {
     // Map phone to phone_number if provided
     if (entity.phone) {
       payload.phone_number = entity.phone;
+    }
+
+    // Map address fields if provided
+    if (entity.street) {
+      payload.address = entity.street;
+    }
+    if (entity.city) {
+      payload.city = entity.city;
+    }
+    if (entity.postalCode) {
+      payload.postal_code = entity.postalCode;
     }
 
     $.ajax({

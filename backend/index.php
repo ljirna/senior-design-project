@@ -83,6 +83,6 @@ require_once __DIR__ . '/rest/routes/CartRoutes.php';
 require_once __DIR__ . '/rest/routes/OrderRoutes.php';
 require_once __DIR__ . '/rest/routes/FavoriteRoutes.php';
 require_once __DIR__ . '/rest/routes/PaymentRoutes.php';
-require_once __DIR__ . '/rest/routes/PaymentRoutes.php';
 require_once __DIR__ . '/rest/routes/AuthRoutes.php';
+// require_once __DIR__ . '/rest/routes/WebhookRoutes.php'; // Disabled for now, enable when webhooks needed
 Flight::start();

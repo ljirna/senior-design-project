@@ -63,7 +63,7 @@ class OrderService extends BaseService
             'user_id' => $user_id,
             'total_amount' => $context['totals']['subtotal'] + $context['totals']['delivery_total'] + $context['totals']['assembly_total'],
             'order_date' => date('Y-m-d H:i:s'),
-            'status' => 'pending',
+            'status' => isset($order_data['status']) ? $order_data['status'] : 'pending',
             'delivery_type' => $context['delivery_type'],
             'assembly_option' => $context['assembly_option'],
             'delivery_fee' => $context['totals']['delivery_total'],

@@ -2396,7 +2396,7 @@ async function initPaymentPage() {
     updateAddressUI();
   }
 
-  async function refreshPaymentIntent() {
+  async function refreshPaymentIntent(silent = false) {
     try {
       const payload = buildPaymentPayload();
       const intent = await createPaymentIntent(payload);
@@ -2408,10 +2408,13 @@ async function initPaymentPage() {
     } catch (err) {
       lastIntentError = err;
       console.error("Payment intent refresh failed", err);
-      if (typeof showToast === "function") {
-        showToast(err.message || "Payment details incomplete.", "error");
-      } else {
-        showPayError(err.message || "Payment details incomplete.");
+      // Only show error toasts if not in silent mode (i.e., user explicitly trying to pay)
+      if (!silent) {
+        if (typeof showToast === "function") {
+          showToast(err.message || "Payment details incomplete.", "error");
+        } else {
+          showPayError(err.message || "Payment details incomplete.");
+        }
       }
       throw err;
     }
@@ -2484,7 +2487,7 @@ async function initPaymentPage() {
       el.addEventListener("change", async () => {
         updateAddressUI();
         if (isAddressRequired()) {
-          await refreshPaymentIntent();
+          await refreshPaymentIntent(true); // Silent mode - don't show errors during form changes
         }
       });
     });
@@ -2496,7 +2499,7 @@ async function initPaymentPage() {
         input.addEventListener("blur", async () => {
           updateAddressUI();
           if (isAddressRequired()) {
-            await refreshPaymentIntent();
+            await refreshPaymentIntent(true); // Silent mode - don't show errors during form changes
           }
         });
       });
@@ -2812,6 +2815,30 @@ async function initPaymentPage() {
       payTotalEl.textContent = orderTotalEl.textContent;
     if (payDateEl) payDateEl.textContent = new Date().toLocaleString();
     if (payMethodEl) payMethodEl.textContent = `Card (${status})`;
+
+    // Store order details for success page - use serverTotals if available
+    if (orderIdValue) {
+      localStorage.setItem("lastOrderId", orderIdValue);
+      const summary = renderLocalSummary();
+      const orderDetails = {
+        order_id: orderIdValue,
+        order_date: new Date().toISOString(),
+        totals: {
+          subtotal: summary.subtotal || 0,
+          delivery: summary.delivery || 0,
+          assembly: summary.assembly || 0,
+          total: summary.total || 0,
+        },
+        status: "approved",
+      };
+      localStorage.setItem("lastOrderDetails", JSON.stringify(orderDetails));
+
+      // Redirect to success page after 2 seconds
+      setTimeout(() => {
+        window.location.href =
+          "/diplomski/frontend/pages/success.html?order_id=" + orderIdValue;
+      }, 2000);
+    }
 
     const continueBtn = document.getElementById("continue-shopping");
     if (continueBtn) {

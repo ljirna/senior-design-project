@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Successful - ZIM Furniture</title>
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/utilities.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <!-- Main Content -->
+    <main class="page-container">
+      <div class="container">
+        <div class="success-wrapper">
+          <!-- Success Icon -->
+          <div class="success-icon-large">
+            <i class="fas fa-check-circle"></i>
+          </div>
+
+          <!-- Success Title -->
+          <h1 class="section-title">Order Confirmed!</h1>
+
+          <!-- Success Message -->
+          <p class="success-message">
+            Thank you for your purchase. Your order has been successfully placed
+            and is now being processed.
+          </p>
+
+          <!-- Order Details Box -->
+          <div class="order-details-card">
+            <div class="order-detail-item">
+              <span class="detail-label">Order ID:</span>
+              <span class="detail-value" id="order-id">#-</span>
+            </div>
+            <div class="order-detail-item">
+              <span class="detail-label">Order Date:</span>
+              <span class="detail-value" id="order-date">-</span>
+            </div>
+            <div class="order-detail-item">
+              <span class="detail-label">Total Amount:</span>
+              <span class="detail-value" id="order-amount">-</span>
+            </div>
+            <div class="order-detail-item">
+              <span class="detail-label">Status:</span>
+              <span class="detail-value status-approved" id="order-status"
+                >Approved</span
+              >
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="success-buttons">
+            <button class="btn btn-primary" onclick="goHome()">
+              <i class="fas fa-home"></i> Go to Home
+            </button>
+            <button class="btn btn-secondary" onclick="continueShopping()">
+              <i class="fas fa-shopping-bag"></i> Continue Shopping
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-content">
+          <p>&copy; 2024 ZIM Furniture. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <style>
+      .success-wrapper {
+        max-width: 600px;
+        margin: 4rem auto;
+        padding: 3rem;
+        background: var(--creme-medium);
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+
+      .success-icon-large {
+        font-size: 5rem;
+        color: var(--success-color);
+        margin-bottom: 1.5rem;
+        animation: scaleIn 0.6s ease-out;
+      }
+
+      @keyframes scaleIn {
+        from {
+          transform: scale(0);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      .success-message {
+        color: var(--medium-brown);
+        font-size: 1.1rem;
+        margin-bottom: 2.5rem;
+        line-height: 1.6;
+      }
+
+      .order-details-card {
+        background: white;
+        border-left: 4px solid var(--burgundy-primary);
+        padding: 2rem;
+        margin-bottom: 2.5rem;
+        border-radius: 8px;
+        text-align: left;
+      }
+
+      .order-detail-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--creme-dark);
+      }
+
+      .order-detail-item:last-child {
+        border-bottom: none;
+      }
+
+      .detail-label {
+        font-weight: 600;
+        color: var(--dark-brown);
+      }
+
+      .detail-value {
+        color: var(--dark-brown);
+        font-weight: 500;
+      }
+
+      .status-approved {
+        display: inline-block;
+        background-color: #d4edda;
+        color: #155724;
+        padding: 0.35rem 0.85rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      .success-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .success-buttons .btn {
+        flex: 1;
+        min-width: 180px;
+        padding: 0.85rem 1.5rem;
+      }
+
+      @media (max-width: 768px) {
+        .success-wrapper {
+          margin: 2rem 1rem;
+          padding: 2rem;
+        }
+
+        .success-icon-large {
+          font-size: 3.5rem;
+        }
+
+        .success-buttons {
+          flex-direction: column;
+        }
+
+        .success-buttons .btn {
+          min-width: 100%;
+        }
+      }
+    </style>
+
+    <script>
+      function initSuccessPage() {
+        try {
+          const urlParams = new URLSearchParams(window.location.search);
+          const orderId = urlParams.get("order_id");
+          const lastOrderFromStorage = localStorage.getItem("lastOrderId");
+          const lastOrderDetails = localStorage.getItem("lastOrderDetails");
+
+          let finalOrderId = orderId || lastOrderFromStorage;
+          let orderDetails = null;
+
+          if (lastOrderDetails) {
+            orderDetails = JSON.parse(lastOrderDetails);
+          }
+
+          if (!finalOrderId) {
+            displaySuccessMessage({
+              order_id: "Processing",
+              totals: { subtotal: 0, delivery_total: 0, assembly_total: 0 },
+            });
+            return;
+          }
+
+          if (orderDetails) {
+            displaySuccessMessage(orderDetails);
+          } else {
+            const token = localStorage.getItem("token");
+            fetch(
+              `http://localhost/diplomski/backend/api/orders/${finalOrderId}`,
+              {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authentication: token,
+                },
+              }
+            )
+              .then((res) => res.json())
+              .then((order) => {
+                displaySuccessMessage(order);
+              })
+              .catch((err) => {
+                console.error("Failed to fetch order details:", err);
+                displaySuccessMessage({
+                  order_id: finalOrderId,
+                  totals: { subtotal: 0, delivery_total: 0, assembly_total: 0 },
+                });
+              });
+          }
+
+          localStorage.removeItem("lastOrderId");
+          localStorage.removeItem("lastOrderDetails");
+          localStorage.removeItem("zimCart");
+        } catch (err) {
+          console.error("Error initializing success page:", err);
+        }
+      }
+
+      function displaySuccessMessage(order) {
+        const orderIdEl = document.getElementById("order-id");
+        const orderDateEl = document.getElementById("order-date");
+        const orderAmountEl = document.getElementById("order-amount");
+        const orderStatusEl = document.getElementById("order-status");
+
+        if (orderIdEl && order.order_id) {
+          orderIdEl.textContent = "#" + order.order_id;
+        }
+
+        if (orderDateEl) {
+          if (order.order_date) {
+            const date = new Date(order.order_date);
+            orderDateEl.textContent = date.toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+          } else {
+            orderDateEl.textContent = new Date().toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            });
+          }
+        }
+
+        if (orderAmountEl) {
+          const currency = localStorage.getItem("currency") || "KM";
+          let total = 0;
+
+          if (order.totals) {
+            total =
+              (order.totals.subtotal || 0) +
+              (order.totals.delivery_total || 0) +
+              (order.totals.assembly_total || 0);
+          } else if (order.total_amount) {
+            total = order.total_amount;
+          }
+
+          orderAmountEl.textContent = total.toFixed(2) + " " + currency;
+        }
+
+        if (orderStatusEl) {
+          const status = (order.status || "approved").toLowerCase();
+          orderStatusEl.textContent =
+            status.charAt(0).toUpperCase() + status.slice(1);
+        }
+      }
+
+      function goHome() {
+        window.location.href = "/diplomski/frontend/index.html#home";
+      }
+
+      function continueShopping() {
+        window.location.href = "/diplomski/frontend/index.html#products";
+      }
+
+      document.addEventListener("DOMContentLoaded", initSuccessPage);
+    </script>
+  </body>
+</html>
+
+<style>
+  .success-page {
+    padding: 3rem 0;
+    min-height: 80vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  }
+
+  .success-container {
+    background: white;
+    border-radius: 12px;
+    padding: 3rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .success-icon {
+    font-size: 4rem;
+    color: #28a745;
+    margin-bottom: 1.5rem;
+    animation: scaleIn 0.6s ease-out;
+  }
+
+  @keyframes scaleIn {
+    from {
+      transform: scale(0);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .success-title {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+  }
+
+  .success-message {
+    color: #666;
+    font-size: 1rem;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+
+  .order-details-box {
+    background: #f8f9fa;
+    border-left: 4px solid #28a745;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border-radius: 6px;
+    text-align: left;
+  }
+
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  .detail-row:last-child {
+    border-bottom: none;
+  }
+
+  .detail-label {
+    font-weight: 600;
+    color: #495057;
+  }
+
+  .detail-value {
+    color: #212529;
+    font-weight: 500;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 0.35rem 0.85rem;
+    background-color: #d4edda;
+    color: #155724;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .next-steps-box {
+    background: #f8f9fa;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border-radius: 6px;
+    text-align: left;
+  }
+
+  .next-steps-box h2 {
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    color: #333;
+  }
+
+  .steps-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .steps-list li {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .steps-list li:last-child {
+    margin-bottom: 0;
+  }
+
+  .step-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #800020, #a00030);
+    color: white;
+    border-radius: 50%;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .step-content h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    color: #333;
+    font-weight: 600;
+  }
+
+  .step-content p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+  }
+
+  .success-actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .success-actions .btn {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.75rem 1.5rem;
+  }
+
+  .support-box {
+    background: #e7f3ff;
+    border: 1px solid #b3d9ff;
+    border-radius: 6px;
+    padding: 1rem;
+    color: #004085;
+    font-size: 0.9rem;
+  }
+
+  .support-box a {
+    color: #0056b3;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .support-box a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 768px) {
+    .success-container {
+      padding: 2rem;
+      margin: 1rem;
+    }
+
+    .success-title {
+      font-size: 1.5rem;
+    }
+
+    .success-icon {
+      font-size: 3rem;
+    }
+
+    .success-actions {
+      flex-direction: column;
+    }
+
+    .success-actions .btn {
+      min-width: 100%;
+    }
+  }
+</style>
+
+<script>
+  // Get order ID from URL parameter or session
+  async function initSuccessPage() {
+    try {
+      // Try to get order ID from URL params first
+      const urlParams = new URLSearchParams(window.location.search);
+      const orderId = urlParams.get("order_id");
+
+      // Get order details from localStorage (set by router after finalize-order)
+      const lastOrderFromStorage = localStorage.getItem("lastOrderId");
+      const lastOrderDetails = localStorage.getItem("lastOrderDetails");
+
+      let finalOrderId = orderId || lastOrderFromStorage;
+      let orderDetails = null;
+
+      if (lastOrderDetails) {
+        orderDetails = JSON.parse(lastOrderDetails);
+      }
+
+      if (!finalOrderId) {
+        // Fallback: show generic success message
+        displaySuccessMessage({
+          order_id: "Processing",
+          totals: { subtotal: 0, delivery: 0, assembly: 0 },
+        });
+        return;
+      }
+
+      if (orderDetails) {
+        displaySuccessMessage(orderDetails);
+      }
+
+      // Clear localStorage
+      localStorage.removeItem("lastOrderId");
+      localStorage.removeItem("lastOrderDetails");
+      localStorage.removeItem("zimCart");
+      // Note: updateCartBadge is not available on this standalone page
+      // It will be updated when user returns to main site
+    } catch (err) {
+      console.error("Error initializing success page:", err);
+    }
+  }
+
+  function displaySuccessMessage(order) {
+    const orderIdEl = document.getElementById("order-id");
+    const orderDateEl = document.getElementById("order-date");
+    const orderAmountEl = document.getElementById("order-amount");
+    const orderStatusEl = document.getElementById("order-status");
+
+    if (orderIdEl && order.order_id) {
+      orderIdEl.textContent = "#" + order.order_id;
+    }
+
+    if (orderDateEl) {
+      if (order.order_date) {
+        const date = new Date(order.order_date);
+        orderDateEl.textContent = date.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      } else {
+        orderDateEl.textContent = new Date().toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+      }
+    }
+
+    if (orderAmountEl) {
+      const currency = localStorage.getItem("currency") || "KM";
+      let total = 0;
+
+      if (order.totals) {
+        // Sum all components: subtotal + delivery + assembly
+        total =
+          (parseFloat(order.totals.subtotal) || 0) +
+          (parseFloat(order.totals.delivery) || 0) +
+          (parseFloat(order.totals.assembly) || 0);
+      } else if (order.total_amount) {
+        total = parseFloat(order.total_amount) || 0;
+      }
+
+      // Only display non-zero amounts
+      if (total > 0) {
+        orderAmountEl.textContent = total.toFixed(2) + " " + currency;
+      } else {
+        orderAmountEl.textContent = "0.00 " + currency;
+      }
+    }
+
+    if (orderStatusEl) {
+      const status = (order.status || "approved").toLowerCase();
+      orderStatusEl.textContent =
+        status.charAt(0).toUpperCase() + status.slice(1);
+
+      // Update status badge styling based on status
+      orderStatusEl.className = "detail-value status-badge status-" + status;
+    }
+  }
+
+  // Initialize on page load
+  document.addEventListener("DOMContentLoaded", initSuccessPage);
+</script>
