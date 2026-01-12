@@ -2137,17 +2137,21 @@ async function addToCart(productId, productName, price, quantity = 1) {
 
   const image = document.getElementById("mainProductImage")?.src || "";
 
+  // Try to add via CartService (backend/database)
   if (window.CartService && CartService.isAuthenticated()) {
     try {
       await CartService.add(productId, quantity);
       showToast(`${productName} added to cart!`, "success");
+      updateCartBadge();
       return;
     } catch (err) {
-      console.error("Backend cart add failed, falling back to local", err);
+      console.error("Backend cart add failed:", err);
       showToast(err.message || "Could not add to cart", "error");
+      return;
     }
   }
 
+  // Fallback to localStorage (should not happen if authenticated)
   let cart = appState.cart;
   const existingIndex = cart.findIndex((item) => item.id === productId);
 
@@ -2195,9 +2199,18 @@ function updateCartBadge() {
 }
 
 // Load cart items for cart page
-function loadCartItems() {
+async function loadCartItems() {
   const cartItemsContainer = document.getElementById("cartItems");
   if (!cartItemsContainer) return;
+
+  // Sync cart from server if user is authenticated
+  if (appState.user && CartService && CartService.isAuthenticated()) {
+    try {
+      await CartService.syncFromServer();
+    } catch (err) {
+      console.error("Failed to sync cart from server:", err);
+    }
+  }
 
   if (appState.cart.length === 0) {
     cartItemsContainer.innerHTML = `
@@ -2258,58 +2271,128 @@ function loadCartItems() {
 }
 
 // Update cart quantity
-function updateCartQuantity(productId, change) {
-  const itemIndex = appState.cart.findIndex((item) => item.id === productId);
-  if (itemIndex > -1) {
-    const newQuantity = appState.cart[itemIndex].quantity + change;
-    if (newQuantity < 1) return;
+async function updateCartQuantity(productId, change) {
+  // Normalize ID to string for comparison
+  const productIdStr = String(productId);
+  const itemIndex = appState.cart.findIndex(
+    (item) => String(item.id) === productIdStr
+  );
 
-    if (window.CartService && CartService.isAuthenticated()) {
-      const cartItemId = appState.cart[itemIndex].cart_item_id;
-      CartService.updateQuantity(cartItemId, newQuantity)
-        .then(function () {
-          showToast("Cart updated!", "success");
-          loadCartItems();
-        })
-        .catch(function (err) {
-          console.error("Failed to update server cart", err);
-          showToast(err.message || "Could not update cart", "error");
-        })
-        .finally(updateCartBadge);
-      return;
-    }
-
-    appState.cart[itemIndex].quantity = newQuantity;
-    localStorage.setItem("zimCart", JSON.stringify(appState.cart));
-    loadCartItems();
-    updateCartBadge();
-    showToast("Cart updated!", "success");
-  }
-}
-
-// Remove from cart
-function removeFromCart(productId) {
-  const target = appState.cart.find((item) => item.id === productId);
-
-  if (
-    window.CartService &&
-    CartService.isAuthenticated() &&
-    target?.cart_item_id
-  ) {
-    CartService.remove(target.cart_item_id)
-      .then(function () {
-        showToast("Item removed from cart", "success");
-        loadCartItems();
-      })
-      .catch(function (err) {
-        console.error("Failed to remove from server cart", err);
-        showToast(err.message || "Could not remove item", "error");
-      })
-      .finally(updateCartBadge);
+  if (itemIndex < 0) {
+    console.error("Item not found. Looking for productId:", productIdStr);
+    showToast("Item not found in cart", "error");
     return;
   }
 
-  appState.cart = appState.cart.filter((item) => item.id !== productId);
+  const newQuantity = appState.cart[itemIndex].quantity + change;
+  if (newQuantity < 1) {
+    showToast("Quantity must be at least 1", "error");
+    return;
+  }
+
+  // If user is authenticated, try to update on server
+  if (appState.user && window.CartService && CartService.isAuthenticated()) {
+    try {
+      const item = appState.cart[itemIndex];
+
+      // If we don't have cart_item_id, sync from server first
+      if (!item.cart_item_id) {
+        console.log("No cart_item_id, syncing from server...");
+        await CartService.syncFromServer();
+        // Re-find after sync
+        const updatedItem = appState.cart.find(
+          (i) => String(i.id) === productIdStr
+        );
+        if (updatedItem && updatedItem.cart_item_id) {
+          item.cart_item_id = updatedItem.cart_item_id;
+        }
+      }
+
+      // Update on server if we have cart_item_id
+      if (item.cart_item_id) {
+        await CartService.updateQuantity(item.cart_item_id, newQuantity);
+        showToast("Cart updated!", "success");
+        await loadCartItems();
+        updateCartBadge();
+        return;
+      } else {
+        console.warn(
+          "Still no cart_item_id after sync, falling back to local update"
+        );
+      }
+    } catch (err) {
+      console.error("Failed to update server cart:", err);
+      showToast(err.message || "Could not update cart", "error");
+      return;
+    }
+  }
+
+  // Fallback to localStorage update
+  appState.cart[itemIndex].quantity = newQuantity;
+  localStorage.setItem("zimCart", JSON.stringify(appState.cart));
+  loadCartItems();
+  updateCartBadge();
+  showToast("Cart updated!", "success");
+}
+
+// Remove from cart
+async function removeFromCart(productId) {
+  // Convert to string for comparison since IDs can come from different sources
+  const productIdStr = String(productId);
+  const target = appState.cart.find((item) => String(item.id) === productIdStr);
+
+  if (!target) {
+    console.error(
+      "Item not found. Looking for productId:",
+      productIdStr,
+      "Available items:",
+      appState.cart.map((i) => ({ id: String(i.id), name: i.name }))
+    );
+    showToast("Item not found in cart", "error");
+    return;
+  }
+
+  // If user is authenticated, try to remove from server
+  if (appState.user && window.CartService && CartService.isAuthenticated()) {
+    try {
+      // If we don't have cart_item_id, sync from server first
+      if (!target.cart_item_id) {
+        console.log("No cart_item_id, syncing from server...");
+        await CartService.syncFromServer();
+        // Re-find the target after sync to get cart_item_id
+        const updatedTarget = appState.cart.find(
+          (item) => String(item.id) === productIdStr
+        );
+        if (updatedTarget && updatedTarget.cart_item_id) {
+          target.cart_item_id = updatedTarget.cart_item_id;
+          console.log("Got cart_item_id:", target.cart_item_id);
+        }
+      }
+
+      // Now try to remove if we have cart_item_id
+      if (target.cart_item_id) {
+        console.log("Removing cart_item_id:", target.cart_item_id);
+        await CartService.remove(target.cart_item_id);
+        showToast("Item removed from cart", "success");
+        await loadCartItems();
+        updateCartBadge();
+        return;
+      } else {
+        console.warn(
+          "Still no cart_item_id after sync, falling back to local removal"
+        );
+      }
+    } catch (err) {
+      console.error("Failed to remove from server cart:", err);
+      showToast(err.message || "Could not remove item", "error");
+      return;
+    }
+  }
+
+  // Fallback to localStorage removal
+  appState.cart = appState.cart.filter(
+    (item) => String(item.id) !== productIdStr
+  );
   localStorage.setItem("zimCart", JSON.stringify(appState.cart));
   loadCartItems();
   updateCartBadge();

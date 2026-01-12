@@ -1,5 +1,4 @@
 <?php
-// Helper to resolve current user id from Flight::get('user')
 $getCurrentUserId = function () {
     $u = Flight::get('user');
     if (is_array($u)) {
