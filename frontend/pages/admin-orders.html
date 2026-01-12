@@ -11,7 +11,7 @@
     >
       <div>
         <h1>Orders</h1>
-        <p>Manage user's orders</p>
+        <p>Manage all customer orders</p>
       </div>
       <button
         class="table-action-btn secondary"
@@ -22,396 +22,201 @@
     </div>
   </div>
 
-  <!-- Simple Filter -->
-  <div class="admin-table-section" style="margin-bottom: 1.5rem">
-    <div class="filter-buttons">
-      <button class="filter-btn active" data-filter="pending">
-        Pending Approval
-      </button>
-      <button class="filter-btn" data-filter="approved">Approved</button>
-      <button class="filter-btn" data-filter="rejected">Rejected</button>
-      <button class="filter-btn" data-filter="all">All Orders</button>
-    </div>
+  <!-- Loading indicator -->
+  <div id="orders-loading" style="text-align: center; padding: 2rem">
+    <p>Loading orders...</p>
+  </div>
+
+  <!-- No orders message -->
+  <div
+    id="orders-empty"
+    style="text-align: center; padding: 2rem; display: none"
+  >
+    <p>No orders found.</p>
   </div>
 
   <!-- Orders List -->
   <div class="row" id="orders-list">
-    <!-- Order 1 - Pending -->
-    <div class="col-lg-6 mb-4">
+    <!-- Order cards will be loaded dynamically from API -->
+  </div>
+</main>
+
+<script>
+  var allOrders = [];
+  var filteredOrders = [];
+
+  // Initialize if DOM is already loaded (happens when injected into existing page)
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initAdminOrdersPage);
+  } else {
+    // DOM already loaded - page was dynamically injected
+    // Initialize after a small delay to ensure elements are in DOM
+    setTimeout(() => {
+      initAdminOrdersPage();
+    }, 100);
+  }
+
+  function initAdminOrdersPage() {
+    loadOrders();
+  }
+
+  // Load all orders from API
+  function loadOrders() {
+    const token = localStorage.getItem("user_token");
+    if (!token) {
+      showToast("Session expired. Please login again.", "error");
+      return;
+    }
+
+    const loadingDiv = document.getElementById("orders-loading");
+    const emptyDiv = document.getElementById("orders-empty");
+    const ordersList = document.getElementById("orders-list");
+
+    loadingDiv.style.display = "block";
+    emptyDiv.style.display = "none";
+    ordersList.innerHTML = "";
+
+    fetch("http://localhost/diplomski/backend/orders?limit=100", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authentication: token,
+      },
+    })
+      .then((response) => {
+        if (response.status === 401) {
+          showToast("Unauthorized. Please login again.", "error");
+          window.location.hash = "#login";
+          return null;
+        }
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (!data) return;
+        allOrders = Array.isArray(data) ? data : data.data || [];
+
+        loadingDiv.style.display = "none";
+
+        if (allOrders.length === 0) {
+          emptyDiv.style.display = "block";
+          return;
+        }
+
+        filteredOrders = allOrders;
+        renderOrders(allOrders);
+      })
+      .catch((error) => {
+        console.error("Error loading orders:", error);
+        loadingDiv.style.display = "none";
+        showToast("Error loading orders. Please try again.", "error");
+      });
+  }
+
+  // Render orders in the grid
+  function renderOrders(orders) {
+    const ordersList = document.getElementById("orders-list");
+    ordersList.innerHTML = "";
+
+    orders.forEach((order) => {
+      const orderCard = createOrderCard(order);
+      ordersList.appendChild(orderCard);
+    });
+  }
+
+  // Create an order card element
+  function createOrderCard(order) {
+    const col = document.createElement("div");
+    col.className = "col-lg-6 mb-4";
+
+    const orderDate = order.order_date
+      ? new Date(order.order_date).toLocaleDateString()
+      : "N/A";
+    const orderTime = order.order_date
+      ? new Date(order.order_date).toLocaleTimeString()
+      : "";
+    const statusClass =
+      order.status === "pending" ? "status-pending" : "status-delivered";
+    const statusText = order.status === "pending" ? "Pending" : "Approved";
+
+    col.innerHTML = `
       <div class="order-card-admin">
         <div class="order-header-admin">
           <div>
-            <h3>#ORD-001</h3>
-            <p class="order-date">Jan 15, 2024 • 14:30</p>
+            <h3>#ORD-${String(order.order_id).padStart(5, "0")}</h3>
+            <p class="order-date">${orderDate} • ${orderTime}</p>
           </div>
-          <span class="status-badge status-pending">Pending</span>
+          <span class="status-badge ${statusClass}">${statusText}</span>
         </div>
 
         <div class="order-customer-admin">
           <div class="customer-info">
             <i class="fas fa-user"></i>
             <div>
-              <strong>John Doe</strong>
-              <p>john@example.com</p>
+              <strong>${order.customer_name || "N/A"}</strong>
+              <p>${order.customer_email || "N/A"}</p>
             </div>
           </div>
-          <div class="customer-contact">
-            <i class="fas fa-phone"></i> +1 234 567 8900
-          </div>
-        </div>
-
-        <div class="order-items-admin">
-          <h4>Order Items:</h4>
-          <div class="order-item">
-            <img
-              src="https://images.unsplash.com/photo-1540574163026-643ea20ade25?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
-              alt="Modern Sofa"
-            />
-            <div>
-              <strong>Modern Leather Sofa</strong>
-              <p>Quantity: 1 × $1,299.99</p>
-            </div>
-          </div>
-          <div class="order-item">
-            <img
-              src="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
-              alt="Coffee Table"
-            />
-            <div>
-              <strong>Glass Coffee Table</strong>
-              <p>Quantity: 1 × $299.99</p>
-            </div>
-          </div>
+          ${
+            order.customer_phone
+              ? `<div class="customer-contact">
+              <i class="fas fa-phone"></i> ${order.customer_phone}
+            </div>`
+              : ""
+          }
         </div>
 
         <div class="order-summary-admin">
           <div class="summary-row">
             <span>Subtotal:</span>
-            <span>$1,599.98</span>
+            <span>${
+              order.subtotal ? parseFloat(order.subtotal).toFixed(2) : "0.00"
+            } KM</span>
           </div>
-          <div class="summary-row">
+          ${
+            order.delivery_fee
+              ? `<div class="summary-row">
             <span>Delivery:</span>
-            <span>$49.99</span>
-          </div>
-          <div class="summary-row">
+            <span>${parseFloat(order.delivery_fee).toFixed(2)} KM</span>
+          </div>`
+              : ""
+          }
+          ${
+            order.assembly_fee
+              ? `<div class="summary-row">
             <span>Assembly:</span>
-            <span>$79.99</span>
-          </div>
+            <span>${parseFloat(order.assembly_fee).toFixed(2)} KM</span>
+          </div>`
+              : ""
+          }
           <div class="summary-row total">
             <strong>Total:</strong>
-            <strong>$1,729.96</strong>
+            <strong>${
+              order.total_amount
+                ? parseFloat(order.total_amount).toFixed(2)
+                : "0.00"
+            } KM</strong>
           </div>
         </div>
 
         <div class="order-actions-admin">
-          <button class="table-action-btn" onclick="approveOrder(1)">
-            <i class="fas fa-check"></i> Approve
-          </button>
-          <button class="table-action-btn secondary" onclick="rejectOrder(1)">
-            <i class="fas fa-times"></i> Reject
-          </button>
-          <button
-            class="table-action-btn secondary"
-            onclick="viewOrderDetails(1)"
-          >
-            <i class="fas fa-eye"></i> Details
+          <button class="table-action-btn secondary" onclick="viewOrderDetails(${
+            order.order_id
+          })">
+            <i class="fas fa-eye"></i> View Details
           </button>
         </div>
       </div>
-    </div>
+    `;
 
-    <!-- You can add more orders here following the same pattern -->
-  </div>
-
-  <!-- Bottom Back Button for mobile -->
-  <div style="text-align: center; margin-top: 2rem; display: none">
-    <button
-      class="table-action-btn secondary"
-      onclick="window.location.hash='admin-dashboard'"
-      style="width: 100%; max-width: 300px"
-    >
-      <i class="fas fa-arrow-left"></i> Back to Dashboard
-    </button>
-  </div>
-</main>
-
-<!-- Rejection Reason Modal -->
-<div class="admin-modal-overlay" id="rejectModal">
-  <div class="admin-modal" style="max-width: 500px">
-    <div class="modal-header">
-      <h3>Reject Order</h3>
-      <button class="modal-close" onclick="closeModal('rejectModal')">
-        &times;
-      </button>
-    </div>
-    <div class="modal-body">
-      <form id="reject-order-form">
-        <input type="hidden" id="reject_order_id" />
-
-        <div class="form-group">
-          <label for="reject_reason">Reason for Rejection *</label>
-          <select id="reject_reason" class="form-input" required>
-            <option value="">Select a reason</option>
-            <option value="out_of_stock">Product out of stock</option>
-            <option value="payment_issue">Payment issue</option>
-            <option value="suspicious_activity">Suspicious activity</option>
-            <option value="customer_request">
-              Customer requested cancellation
-            </option>
-            <option value="delivery_unavailable">
-              Delivery unavailable in area
-            </option>
-            <option value="other">Other reason</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="reject_notes">Additional Notes (Optional)</label>
-          <textarea
-            id="reject_notes"
-            class="form-input"
-            rows="3"
-            placeholder="Provide additional details about the rejection..."
-          ></textarea>
-        </div>
-
-        <div class="form-group">
-          <label>
-            <input type="checkbox" id="notify_customer" checked />
-            Notify customer about this rejection
-          </label>
-        </div>
-
-        <button
-          type="submit"
-          class="table-action-btn"
-          style="width: 100%; margin-top: 1rem"
-        >
-          <i class="fas fa-times"></i> Confirm Rejection
-        </button>
-      </form>
-    </div>
-  </div>
-</div>
-
-<script>
-  let currentOrderId = null;
-
-  document.addEventListener("DOMContentLoaded", function () {
-    console.log("Admin orders page loaded");
-
-    // Filter buttons
-    document.querySelectorAll(".filter-btn").forEach((btn) => {
-      btn.addEventListener("click", function () {
-        document
-          .querySelectorAll(".filter-btn")
-          .forEach((b) => b.classList.remove("active"));
-        this.classList.add("active");
-        const filter = this.dataset.filter;
-        filterOrders(filter);
-      });
-    });
-
-    // Reject form
-    document
-      .getElementById("reject-order-form")
-      .addEventListener("submit", function (e) {
-        e.preventDefault();
-        confirmRejection();
-      });
-
-    // Show/hide bottom back button based on screen size
-    function handleResponsiveBackButton() {
-      const topButton = document.querySelector(
-        ".section-header .table-action-btn"
-      );
-      const bottomButton = document.querySelector(
-        ".container > div:last-child"
-      );
-
-      if (window.innerWidth <= 768) {
-        if (topButton) topButton.style.display = "none";
-        if (bottomButton) bottomButton.style.display = "block";
-      } else {
-        if (topButton) topButton.style.display = "flex";
-        if (bottomButton) bottomButton.style.display = "none";
-      }
-    }
-
-    handleResponsiveBackButton();
-    window.addEventListener("resize", handleResponsiveBackButton);
-  });
-
-  function filterOrders(filter) {
-    const orders = document.querySelectorAll("#orders-list .col-lg-6");
-    orders.forEach((order) => {
-      const statusBadge = order.querySelector(".status-badge");
-      if (filter === "all") {
-        order.style.display = "";
-      } else if (filter === "pending") {
-        order.style.display =
-          statusBadge.textContent === "Pending" ? "" : "none";
-      } else if (filter === "approved") {
-        order.style.display =
-          statusBadge.textContent === "Approved" ? "" : "none";
-      } else if (filter === "rejected") {
-        order.style.display =
-          statusBadge.textContent === "Rejected" ? "" : "none";
-      }
-    });
+    return col;
   }
 
-  function approveOrder(orderId) {
-    currentOrderId = orderId;
-
-    if (typeof showToast === "function") {
-      showToast("Approving order...", "info");
-    }
-
-    // Simulate API call
-    setTimeout(() => {
-      // Update order card
-      const orderCard = document
-        .querySelector(
-          `.order-card-admin .order-header-admin h3[data-order-id="${orderId}"]`
-        )
-        ?.closest(".order-card-admin");
-      if (orderCard) {
-        const statusBadge = orderCard.querySelector(".status-badge");
-        statusBadge.textContent = "Approved";
-        statusBadge.className = "status-badge status-delivered";
-
-        // Update action buttons
-        const actionsDiv = orderCard.querySelector(".order-actions-admin");
-        actionsDiv.innerHTML = `
-          <button class="table-action-btn secondary" onclick="viewOrderDetails(${orderId})">
-            <i class="fas fa-eye"></i> View Details
-          </button>
-          <button class="table-action-btn secondary" onclick="undoApproval(${orderId})">
-            <i class="fas fa-undo"></i> Undo
-          </button>
-        `;
-      }
-
-      if (typeof showToast === "function") {
-        showToast("Order approved successfully!", "success");
-      }
-    }, 1000);
-  }
-
-  function rejectOrder(orderId) {
-    currentOrderId = orderId;
-    document.getElementById("reject_order_id").value = orderId;
-    document.getElementById("reject-order-form").reset();
-    openModal("rejectModal");
-  }
-
-  function confirmRejection() {
-    const orderId = document.getElementById("reject_order_id").value;
-    const reason = document.getElementById("reject_reason").value;
-    const notes = document.getElementById("reject_notes").value;
-    const notify = document.getElementById("notify_customer").checked;
-
-    if (!reason) {
-      if (typeof showToast === "function") {
-        showToast("Please select a reason for rejection", "error");
-      }
-      return;
-    }
-
-    if (typeof showToast === "function") {
-      showToast("Rejecting order...", "info");
-    }
-
-    // Simulate API call
-    setTimeout(() => {
-      // Update order card
-      const orderCard = document
-        .querySelector(
-          `.order-card-admin .order-header-admin h3[data-order-id="${orderId}"]`
-        )
-        ?.closest(".order-card-admin");
-      if (orderCard) {
-        const statusBadge = orderCard.querySelector(".status-badge");
-        statusBadge.textContent = "Rejected";
-        statusBadge.className = "status-badge status-cancelled";
-
-        // Update action buttons
-        const actionsDiv = orderCard.querySelector(".order-actions-admin");
-        actionsDiv.innerHTML = `
-          <button class="table-action-btn secondary" onclick="viewOrderDetails(${orderId})">
-            <i class="fas fa-eye"></i> View Details
-          </button>
-          <button class="table-action-btn" onclick="approveOrder(${orderId})">
-            <i class="fas fa-check"></i> Approve
-          </button>
-        `;
-      }
-
-      if (typeof showToast === "function") {
-        showToast("Order rejected successfully!", "success");
-      }
-
-      closeModal("rejectModal");
-    }, 1000);
-  }
-
-  function undoApproval(orderId) {
-    if (typeof showToast === "function") {
-      showToast("Reverting approval...", "info");
-    }
-
-    // Simulate API call
-    setTimeout(() => {
-      // Update order card
-      const orderCard = document
-        .querySelector(
-          `.order-card-admin .order-header-admin h3[data-order-id="${orderId}"]`
-        )
-        ?.closest(".order-card-admin");
-      if (orderCard) {
-        const statusBadge = orderCard.querySelector(".status-badge");
-        statusBadge.textContent = "Pending";
-        statusBadge.className = "status-badge status-pending";
-
-        // Update action buttons
-        const actionsDiv = orderCard.querySelector(".order-actions-admin");
-        actionsDiv.innerHTML = `
-          <button class="table-action-btn" onclick="approveOrder(${orderId})">
-            <i class="fas fa-check"></i> Approve
-          </button>
-          <button class="table-action-btn secondary" onclick="rejectOrder(${orderId})">
-            <i class="fas fa-times"></i> Reject
-          </button>
-          <button class="table-action-btn secondary" onclick="viewOrderDetails(${orderId})">
-            <i class="fas fa-eye"></i> Details
-          </button>
-        `;
-      }
-
-      if (typeof showToast === "function") {
-        showToast("Approval reverted!", "success");
-      }
-    }, 1000);
-  }
-
+  // View order details
   function viewOrderDetails(orderId) {
-    // Redirect to order details page
     window.location.hash = `admin-order-detail/${orderId}`;
-  }
-
-  function openModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-      modal.classList.add("active");
-    }
-  }
-
-  function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-      modal.classList.remove("active");
-    }
   }
 </script>
 
@@ -484,55 +289,11 @@
     gap: 0.5rem;
     color: var(--medium-brown);
     font-size: 0.9rem;
+    margin-top: 0.5rem;
   }
 
   .customer-contact i {
     color: var(--burgundy-light);
-  }
-
-  .order-items-admin {
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--creme-dark);
-  }
-
-  .order-items-admin h4 {
-    color: var(--burgundy-primary);
-    margin-bottom: 1rem;
-    font-size: 1rem;
-  }
-
-  .order-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    padding: 0.5rem;
-    background: var(--creme-light);
-    border-radius: 4px;
-  }
-
-  .order-item:last-child {
-    margin-bottom: 0;
-  }
-
-  .order-item img {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 4px;
-    border: 1px solid var(--creme-dark);
-  }
-
-  .order-item strong {
-    color: var(--burgundy-primary);
-    display: block;
-    font-size: 0.95rem;
-  }
-
-  .order-item p {
-    color: var(--medium-brown);
-    margin: 0.2rem 0 0;
-    font-size: 0.85rem;
   }
 
   .order-summary-admin {
@@ -566,10 +327,34 @@
     text-align: center;
   }
 
+  /* Status Badges */
+  .status-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+
+  .status-pending {
+    background-color: rgba(243, 156, 18, 0.1);
+    color: #f39c12;
+  }
+
+  .status-delivered {
+    background-color: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+  }
+
+  .status-cancelled {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+  }
+
   /* Grid Layout */
   .row {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
     gap: 1.5rem;
   }
 
@@ -607,9 +392,5 @@
   .form-input:focus {
     outline: none;
     border-color: var(--burgundy-light);
-  }
-
-  .form-group label input[type="checkbox"] {
-    margin-right: 0.5rem;
   }
 </style>

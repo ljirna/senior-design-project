@@ -272,4 +272,42 @@ Flight::group('/orders', function () {
             Flight::json(['error' => $e->getMessage()], 400);
         }
     });
+
+    // Approve order - ADMIN ONLY (shortcut for updating status to approved)
+    Flight::route('PUT /@order_id/approve', function ($order_id) {
+        Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
+
+        try {
+            $result = Flight::orderService()->updateOrderStatus($order_id, 'approved');
+            Flight::json([
+                'success' => true,
+                'message' => 'Order approved successfully',
+                'data' => $result
+            ]);
+        } catch (Exception $e) {
+            Flight::json(['error' => $e->getMessage()], 400);
+        }
+    });
+
+    // Reject order - ADMIN ONLY (shortcut for updating status to rejected)
+    Flight::route('PUT /@order_id/reject', function ($order_id) {
+        Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
+
+        $data = Flight::request()->data->getData();
+        $reason = $data['reason'] ?? 'No reason provided';
+        $notes = $data['notes'] ?? '';
+
+        try {
+            $result = Flight::orderService()->updateOrderStatus($order_id, 'rejected');
+            Flight::json([
+                'success' => true,
+                'message' => 'Order rejected successfully',
+                'reason' => $reason,
+                'notes' => $notes,
+                'data' => $result
+            ]);
+        } catch (Exception $e) {
+            Flight::json(['error' => $e->getMessage()], 400);
+        }
+    });
 });

@@ -63,6 +63,62 @@ Flight::group('/users', function () {
         Flight::json($user_data);
     });
 
+    // --- SPECIFIC ROUTES MUST COME BEFORE GENERIC /@user_id ROUTE ---
+
+    // Get all users - ADMIN ONLY
+    Flight::route('GET /', function () {
+        Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
+
+        $limit = Flight::request()->query['limit'] ?? 20;
+        $offset = Flight::request()->query['offset'] ?? 0;
+
+        $users = Flight::userService()->getAllUsers($limit, $offset);
+
+        // Remove sensitive data before sending
+        foreach ($users as &$user) {
+            unset($user['password_hash']);
+        }
+
+        Flight::json($users);
+    });
+
+    // Get all customers (non-admin users) - ADMIN ONLY
+    Flight::route('GET /customers', function () {
+        Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
+
+        $limit = Flight::request()->query['limit'] ?? 20;
+        $offset = Flight::request()->query['offset'] ?? 0;
+
+        $customers = Flight::userService()->getCustomers($limit, $offset);
+
+        // Remove sensitive data before sending
+        foreach ($customers as &$customer) {
+            unset($customer['password_hash']);
+        }
+
+        Flight::json($customers);
+    });
+
+    // Search users - ADMIN ONLY
+    Flight::route('GET /search', function () {
+        Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
+
+        $search_term = Flight::request()->query['q'] ?? '';
+        $limit = Flight::request()->query['limit'] ?? 20;
+        $offset = Flight::request()->query['offset'] ?? 0;
+
+        $users = Flight::userService()->searchUsers($search_term, $limit, $offset);
+
+        // Remove sensitive data before sending
+        foreach ($users as &$user) {
+            unset($user['password_hash']);
+        }
+
+        Flight::json($users);
+    });
+
+    // --- GENERIC ROUTES (MUST COME AFTER SPECIFIC ROUTES) ---
+
     // Get user by ID - ADMIN or own profile
     Flight::route('GET /@user_id', function ($user_id) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
@@ -173,23 +229,6 @@ Flight::group('/users', function () {
 
     // --- ADMIN ONLY ROUTES BELOW ---
 
-    // Get all users - ADMIN ONLY
-    Flight::route('GET /', function () {
-        Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
-
-        $limit = Flight::request()->query['limit'] ?? 20;
-        $offset = Flight::request()->query['offset'] ?? 0;
-
-        $users = Flight::userService()->getAllUsers($limit, $offset);
-
-        // Remove sensitive data before sending
-        foreach ($users as &$user) {
-            unset($user['password_hash']);
-        }
-
-        Flight::json($users);
-    });
-
     // Create user - ADMIN ONLY (customers register via /auth/register)
     Flight::route('POST /', function () {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
@@ -262,24 +301,6 @@ Flight::group('/users', function () {
         } catch (Exception $e) {
             Flight::json(['error' => $e->getMessage()], 400);
         }
-    });
-
-    // Search users - ADMIN ONLY
-    Flight::route('GET /search', function () {
-        Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
-
-        $search_term = Flight::request()->query['q'] ?? '';
-        $limit = Flight::request()->query['limit'] ?? 20;
-        $offset = Flight::request()->query['offset'] ?? 0;
-
-        $users = Flight::userService()->searchUsers($search_term, $limit, $offset);
-
-        // Remove sensitive data
-        foreach ($users as &$user) {
-            unset($user['password_hash']);
-        }
-
-        Flight::json($users);
     });
 
     // Delete user - ADMIN ONLY

@@ -25,6 +25,11 @@ class UserService extends BaseService
         return $this->dao->getAllUsers($limit, $offset);
     }
 
+    public function getCustomers($limit = 20, $offset = 0)
+    {
+        return $this->dao->getCustomers($limit, $offset);
+    }
+
     public function searchUsers($search_term, $limit = 20, $offset = 0)
     {
         return $this->dao->searchUsers($search_term, $limit, $offset);

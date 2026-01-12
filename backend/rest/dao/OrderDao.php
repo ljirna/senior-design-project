@@ -13,9 +13,9 @@ class OrderDao extends BaseDao
     {
         $stmt = $this->connection->prepare("
             SELECT o.*, 
-                   u.full_name as user_name,
-                   u.email as user_email,
-                   u.phone_number as user_phone
+                   u.full_name as customer_name,
+                   u.email as customer_email,
+                   u.phone_number as customer_phone
             FROM orders o
             JOIN users u ON o.user_id = u.user_id
             WHERE o.order_id = :order_id
@@ -48,9 +48,11 @@ class OrderDao extends BaseDao
     {
         $stmt = $this->connection->prepare("
             SELECT o.*, 
-                   u.full_name as user_name,
-                   u.email as user_email,
-                   (SELECT COUNT(*) FROM order_items WHERE order_id = o.order_id) as item_count
+                   u.full_name as customer_name,
+                   u.email as customer_email,
+                   u.phone_number as customer_phone,
+                   (SELECT COUNT(*) FROM order_items WHERE order_id = o.order_id) as item_count,
+                   COALESCE((SELECT SUM(quantity * price) FROM order_items WHERE order_id = o.order_id), 0) as subtotal
             FROM orders o
             JOIN users u ON o.user_id = u.user_id
             ORDER BY o.order_date DESC

@@ -1,0 +1,456 @@
+<div class="order-detail-container">
+  <div class="order-detail-header">
+    <button class="btn btn-secondary" onclick="history.back()">
+      <i class="fas fa-arrow-left"></i> Back
+    </button>
+  </div>
+
+  <div class="order-detail-content">
+    <div id="order-detail-loading" class="loading-container">
+      <div class="spinner"></div>
+      <p>Loading order details...</p>
+    </div>
+
+    <div id="order-detail-empty" class="empty-state" style="display: none">
+      <i class="fas fa-inbox"></i>
+      <h2>Order not found</h2>
+      <p>The order you're looking for doesn't exist.</p>
+    </div>
+
+    <div id="order-detail-card" style="display: none">
+      <!-- Order will be loaded here -->
+    </div>
+  </div>
+</div>
+
+<script>
+  function initAdminOrderDetailPage() {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", function () {
+        setTimeout(() => loadOrderDetail(), 100);
+      });
+    } else {
+      setTimeout(() => loadOrderDetail(), 100);
+    }
+  }
+
+  // Extract order ID from URL
+  function getOrderIdFromUrl() {
+    const hash = window.location.hash;
+    const match = hash.match(/admin-order-detail\/(\d+)/);
+    return match ? parseInt(match[1]) : null;
+  }
+
+  // Load order details from API
+  function loadOrderDetail() {
+    const orderId = getOrderIdFromUrl();
+    if (!orderId) {
+      document.getElementById("order-detail-empty").style.display = "block";
+      document.getElementById("order-detail-loading").style.display = "none";
+      return;
+    }
+
+    const token = localStorage.getItem("user_token");
+    if (!token) {
+      showToast("Session expired. Please login again.", "error");
+      window.location.hash = "#login";
+      return;
+    }
+
+    const loadingDiv = document.getElementById("order-detail-loading");
+    const emptyDiv = document.getElementById("order-detail-empty");
+    const cardDiv = document.getElementById("order-detail-card");
+
+    loadingDiv.style.display = "block";
+    emptyDiv.style.display = "none";
+    cardDiv.style.display = "none";
+
+    fetch(`http://localhost/diplomski/backend/orders/${orderId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authentication: token,
+      },
+    })
+      .then((response) => {
+        if (response.status === 401) {
+          showToast("Unauthorized. Please login again.", "error");
+          window.location.hash = "#login";
+          return null;
+        }
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((order) => {
+        if (!order) return;
+
+        loadingDiv.style.display = "none";
+        cardDiv.style.display = "block";
+
+        renderOrderDetail(order);
+      })
+      .catch((error) => {
+        console.error("Error loading order:", error);
+        loadingDiv.style.display = "none";
+        emptyDiv.style.display = "block";
+        showToast("Error loading order details. Please try again.", "error");
+      });
+  }
+
+  // Render order detail
+  function renderOrderDetail(order) {
+    const cardDiv = document.getElementById("order-detail-card");
+
+    const orderDate = order.order_date
+      ? new Date(order.order_date).toLocaleDateString()
+      : "N/A";
+    const orderTime = order.order_date
+      ? new Date(order.order_date).toLocaleTimeString()
+      : "";
+
+    const statusClass =
+      order.status === "pending" ? "status-pending" : "status-delivered";
+    const statusText = order.status === "pending" ? "Pending" : "Approved";
+
+    let itemsHtml = "";
+    if (order.items && Array.isArray(order.items)) {
+      itemsHtml = order.items
+        .map(
+          (item) => `
+        <tr>
+          <td>${item.product_name || "N/A"}</td>
+          <td>${item.quantity}</td>
+          <td>${parseFloat(item.price).toFixed(2)} KM</td>
+          <td>${(parseFloat(item.quantity) * parseFloat(item.price)).toFixed(
+            2
+          )} KM</td>
+        </tr>
+      `
+        )
+        .join("");
+    }
+
+    const subtotal = order.items
+      ? order.items
+          .reduce(
+            (sum, item) =>
+              sum + parseFloat(item.quantity) * parseFloat(item.price),
+            0
+          )
+          .toFixed(2)
+      : "0.00";
+
+    cardDiv.innerHTML = `
+      <div class="order-detail-header-info">
+        <div>
+          <h2>#ORD-${String(order.order_id).padStart(5, "0")}</h2>
+          <p class="order-date">${orderDate} • ${orderTime}</p>
+        </div>
+        <span class="status-badge ${statusClass}">${statusText}</span>
+      </div>
+
+      <div class="order-detail-section">
+        <h3>Customer Information</h3>
+        <div class="customer-details">
+          <div class="detail-row">
+            <span class="label">Name:</span>
+            <span>${order.customer_name || "N/A"}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Email:</span>
+            <span>${order.customer_email || "N/A"}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Phone:</span>
+            <span>${order.customer_phone || "N/A"}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Shipping Address:</span>
+            <span>${order.shipping_address || "N/A"}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="order-detail-section">
+        <h3>Order Items</h3>
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Quantity</th>
+              <th>Price</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsHtml}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="order-detail-section">
+        <h3>Order Summary</h3>
+        <div class="order-summary-detail">
+          <div class="summary-row">
+            <span>Subtotal:</span>
+            <span>${subtotal} KM</span>
+          </div>
+          ${
+            order.delivery_fee
+              ? `<div class="summary-row">
+            <span>Delivery:</span>
+            <span>${parseFloat(order.delivery_fee).toFixed(2)} KM</span>
+          </div>`
+              : ""
+          }
+          ${
+            order.assembly_fee
+              ? `<div class="summary-row">
+            <span>Assembly:</span>
+            <span>${parseFloat(order.assembly_fee).toFixed(2)} KM</span>
+          </div>`
+              : ""
+          }
+          ${
+            order.tax_amount
+              ? `<div class="summary-row">
+            <span>Tax:</span>
+            <span>${parseFloat(order.tax_amount).toFixed(2)} KM</span>
+          </div>`
+              : ""
+          }
+          <div class="summary-row total">
+            <strong>Total:</strong>
+            <strong>${
+              order.total_amount
+                ? parseFloat(order.total_amount).toFixed(2)
+                : "0.00"
+            } KM</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="order-detail-section">
+        <h3>Delivery & Assembly</h3>
+        <div class="delivery-details">
+          <div class="detail-row">
+            <span class="label">Delivery Type:</span>
+            <span>${
+              order.delivery_type === "home" ? "Home Delivery" : "Store Pickup"
+            }</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Assembly Option:</span>
+            <span>${
+              order.assembly_option === "worker_assembly"
+                ? "Worker Assembly"
+                : "Package Only"
+            }</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Call init when page loads
+  initAdminOrderDetailPage();
+</script>
+
+<style>
+  .order-detail-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  .order-detail-header {
+    margin-bottom: 2rem;
+  }
+
+  .order-detail-header .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .order-detail-content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(62, 39, 35, 0.1);
+    overflow: hidden;
+  }
+
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    color: var(--medium-brown);
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    color: var(--medium-brown);
+    text-align: center;
+  }
+
+  .empty-state i {
+    font-size: 4rem;
+    color: var(--creme-dark);
+    margin-bottom: 1rem;
+  }
+
+  .order-detail-header-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem;
+    border-bottom: 1px solid var(--creme-dark);
+    background: var(--creme-light);
+  }
+
+  .order-detail-header-info h2 {
+    color: var(--burgundy-primary);
+    margin: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  .order-date {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--medium-brown);
+  }
+
+  .order-detail-section {
+    padding: 2rem;
+    border-bottom: 1px solid var(--creme-dark);
+  }
+
+  .order-detail-section:last-child {
+    border-bottom: none;
+  }
+
+  .order-detail-section h3 {
+    color: var(--burgundy-primary);
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    font-size: 1.2rem;
+  }
+
+  .customer-details,
+  .delivery-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .customer-details,
+    .delivery-details {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--creme-dark);
+  }
+
+  .detail-row .label {
+    font-weight: 600;
+    color: var(--burgundy-primary);
+    min-width: 150px;
+  }
+
+  .items-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .items-table thead {
+    background-color: var(--creme-light);
+    border-bottom: 2px solid var(--creme-dark);
+  }
+
+  .items-table th {
+    padding: 1rem;
+    text-align: left;
+    color: var(--burgundy-primary);
+    font-weight: 600;
+  }
+
+  .items-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--creme-dark);
+    color: var(--medium-brown);
+  }
+
+  .items-table tbody tr:hover {
+    background-color: var(--creme-light);
+  }
+
+  .order-summary-detail {
+    background-color: var(--creme-light);
+    padding: 1.5rem;
+    border-radius: 4px;
+    max-width: 400px;
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    color: var(--medium-brown);
+  }
+
+  .summary-row.total {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 2px solid var(--creme-dark);
+    color: var(--burgundy-primary);
+    font-size: 1.1rem;
+  }
+
+  .status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+
+  .status-pending {
+    background-color: rgba(243, 156, 18, 0.1);
+    color: #f39c12;
+  }
+
+  .status-delivered {
+    background-color: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+  }
+
+  .btn-secondary {
+    background-color: var(--medium-brown);
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: background-color 0.3s ease;
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--burgundy-primary);
+  }
+</style>

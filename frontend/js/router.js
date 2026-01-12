@@ -2021,8 +2021,18 @@ function initAdminProducts() {
   }
 }
 
+function initAdminOrders() {
+  enableAdminCSS();
+
+  // The actual functionality is loaded directly in the admin-orders.html page
+  // This function just needs to enable the admin CSS
+}
+
 function initAdminUsers() {
   enableAdminCSS();
+
+  // The actual functionality is loaded directly in the admin-users.html page
+  // This function just needs to enable the admin CSS
 }
 
 function initAdminCategories() {

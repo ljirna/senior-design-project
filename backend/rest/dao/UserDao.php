@@ -47,6 +47,23 @@ class UserDao extends BaseDao
         return $stmt->fetchAll();
     }
 
+    // Get only customers (role = 'customer')
+    public function getCustomers($limit = 20, $offset = 0)
+    {
+        $stmt = $this->connection->prepare("
+            SELECT user_id, full_name, email, phone_number, address, 
+                   city, postal_code, role, created_at 
+            FROM users 
+            WHERE role = 'customer'
+            ORDER BY created_at DESC 
+            LIMIT :limit OFFSET :offset
+        ");
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
     // Count all users
     public function countAllUsers()
     {
