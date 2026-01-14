@@ -2,7 +2,7 @@ FROM php:8.2-apache
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    mysql-client \
+    mariadb-client \
     git \
     curl \
     libxml2-dev \
