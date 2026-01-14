@@ -93,4 +93,17 @@ require_once __DIR__ . '/rest/routes/OrderRoutes.php';
 require_once __DIR__ . '/rest/routes/FavoriteRoutes.php';
 require_once __DIR__ . '/rest/routes/PaymentRoutes.php';
 require_once __DIR__ . '/rest/routes/AuthRoutes.php';
+
+// Handle /api/ prefix by delegating to the non-api routes
+Flight::group('/api', function () {
+    require_once __DIR__ . '/rest/routes/ProductRoutes.php';
+    require_once __DIR__ . '/rest/routes/CategoryRoutes.php';
+    require_once __DIR__ . '/rest/routes/UserRoutes.php';
+    require_once __DIR__ . '/rest/routes/CartRoutes.php';
+    require_once __DIR__ . '/rest/routes/OrderRoutes.php';
+    require_once __DIR__ . '/rest/routes/FavoriteRoutes.php';
+    require_once __DIR__ . '/rest/routes/PaymentRoutes.php';
+    require_once __DIR__ . '/rest/routes/AuthRoutes.php';
+});
+
 Flight::start();

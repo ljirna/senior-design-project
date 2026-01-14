@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../services/CategoryService.php';
 
+// Handle both /categories and /api/categories paths
 Flight::group('/categories', function () {
     Flight::route('GET /', function () {
         Flight::json(Flight::categoryService()->getAllCategoriesWithCount());
