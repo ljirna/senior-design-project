@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
-RUN docker-php-ext-install mysqli pdo pdo_mysql xml json
+RUN docker-php-ext-install mysqli pdo pdo_mysql json
 
 # Enable Apache mod_rewrite for routing
 RUN a2enmod rewrite
