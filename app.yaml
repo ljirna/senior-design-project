@@ -11,16 +11,10 @@ services:
   envs:
   - key: DB_NAME
     value: zim_furniture_store
-  - key: DB_USER
-    value: doadmin
-  - key: DB_PASSWORD
-    value: AVNS_VHAcFVWrKGS-1g3_M3E
-  - key: DB_HOST
-    value: db-mysql-fra1-63317-do-user-31993296-0.h.db.ondigitalocean.com
   - key: DB_PORT
     value: "25060"
   - key: JWT_SECRET
-    value: thisismyextrasecuresecret_2026_zim_furniture_store_secure
+    value: ${JWT_SECRET}
 
 - name: frontend
   source_dir: frontend
