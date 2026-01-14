@@ -76,7 +76,7 @@
     emptyDiv.style.display = "none";
     ordersList.innerHTML = "";
 
-    fetch("http://localhost/diplomski/backend/orders?limit=100", {
+    fetch(Constants.get_api_base_url() + "orders?limit=100", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

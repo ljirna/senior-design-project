@@ -211,7 +211,7 @@
           } else {
             const token = localStorage.getItem("token");
             fetch(
-              `http://localhost/diplomski/backend/api/orders/${finalOrderId}`,
+              Constants.get_api_base_url() + `orders/${finalOrderId}`,
               {
                 method: "GET",
                 headers: {

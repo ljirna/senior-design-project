@@ -65,7 +65,7 @@
     emptyDiv.style.display = "none";
     cardDiv.style.display = "none";
 
-    fetch(`http://localhost/diplomski/backend/orders/${orderId}`, {
+    fetch(Constants.get_api_base_url() + `orders/${orderId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

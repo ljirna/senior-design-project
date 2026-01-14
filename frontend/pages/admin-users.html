@@ -161,7 +161,7 @@
     usersGrid.innerHTML = "";
 
     // Load only customers (non-admin users)
-    fetch("http://localhost/diplomski/backend/users/customers?limit=100", {
+    fetch(Constants.get_api_base_url() + "users/customers?limit=100", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

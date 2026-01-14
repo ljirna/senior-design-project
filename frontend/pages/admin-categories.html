@@ -165,7 +165,7 @@
     if (emptyDiv) emptyDiv.style.display = "none";
     if (grid) grid.innerHTML = "";
 
-    fetch("http://localhost/diplomski/backend/categories", {
+    fetch(Constants.get_api_base_url() + "categories", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -300,7 +300,7 @@
       showToast("Updating category...", "info");
 
       fetch(
-        `http://localhost/diplomski/backend/categories/${window.adminCategoriesState.currentEditingCategoryId}`,
+        Constants.get_api_base_url() + `categories/${window.adminCategoriesState.currentEditingCategoryId}`,
         {
           method: "PUT",
           headers: {
@@ -331,7 +331,7 @@
       // Add new category
       showToast("Adding category...", "info");
 
-      fetch("http://localhost/diplomski/backend/categories", {
+      fetch(Constants.get_api_base_url() + "categories", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -403,7 +403,7 @@
 
     showToast("Deleting category...", "info");
 
-    fetch(`http://localhost/diplomski/backend/categories/${categoryId}`, {
+    fetch(Constants.get_api_base_url() + `categories/${categoryId}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

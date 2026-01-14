@@ -563,7 +563,7 @@
     }
 
     // Load categories
-    fetch("http://localhost/diplomski/backend/categories", {
+    fetch(Constants.get_api_base_url() + "categories", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -797,7 +797,7 @@
     if (emptyDiv) emptyDiv.style.display = "none";
     if (grid) grid.innerHTML = "";
 
-    const apiUrl = "http://localhost/diplomski/backend/products?limit=100";
+    const apiUrl = Constants.get_api_base_url() + "products?limit=100";
 
     fetch(apiUrl, {
       method: "GET",
@@ -1118,7 +1118,7 @@
 
     showToast("Adding product...", "info");
 
-    fetch("http://localhost/diplomski/backend/products", {
+    fetch(Constants.get_api_base_url() + "products", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -1291,7 +1291,7 @@
     const formData = new FormData();
     formData.append("itemImage", file);
 
-    fetch("http://localhost/diplomski/backend/api/upload/item-image/", {
+    fetch(Constants.get_api_base_url() + "api/upload/item-image/", {
       method: "POST",
       headers: {
         Authentication: token,
@@ -1354,7 +1354,7 @@
 
     showToast("Updating product...", "info");
 
-    fetch(`http://localhost/diplomski/backend/products/${productId}`, {
+    fetch(Constants.get_api_base_url() + `products/${productId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -1406,7 +1406,7 @@
 
     showToast("Deleting product...", "info");
 
-    fetch(`http://localhost/diplomski/backend/products/${productId}`, {
+    fetch(Constants.get_api_base_url() + `products/${productId}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -1452,7 +1452,7 @@
     const container = document.getElementById("images-gallery-container");
     container.innerHTML = "<p>Loading images...</p>";
 
-    fetch(`http://localhost/diplomski/backend/products/${productId}`, {
+    fetch(Constants.get_api_base_url() + `products/${productId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -1526,7 +1526,7 @@
   function addImageToProduct(productId, imageUrl, token) {
     showToast("Adding image...", "info");
 
-    fetch(`http://localhost/diplomski/backend/products/${productId}/images`, {
+    fetch(Constants.get_api_base_url() + `products/${productId}/images`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -1565,7 +1565,7 @@
     showToast("Deleting image...", "info");
 
     fetch(
-      `http://localhost/diplomski/backend/products/${productId}/images/${imageId}`,
+      Constants.get_api_base_url() + `products/${productId}/images/${imageId}`,
       {
         method: "DELETE",
         headers: {
