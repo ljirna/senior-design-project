@@ -2,29 +2,23 @@
 require_once __DIR__ . '/../services/ProductService.php';
 
 Flight::group('/products', function () {
-    // --- PUBLIC ROUTES (no auth needed) ---
-    // NOTE: Specific routes MUST come before wildcard routes (/@product_id)
 
-    // Get all products with pagination - PUBLIC
     Flight::route('GET /', function () {
         $limit = Flight::request()->query['limit'] ?? 20;
         $offset = Flight::request()->query['offset'] ?? 0;
         Flight::json(Flight::productService()->getAllProducts($limit, $offset));
     });
 
-    // Get featured products - PUBLIC
     Flight::route('GET /featured', function () {
         $limit = Flight::request()->query['limit'] ?? 8;
         Flight::json(Flight::productService()->getFeaturedProducts($limit));
     });
 
-    // Get new arrivals - PUBLIC
     Flight::route('GET /new-arrivals', function () {
         $limit = Flight::request()->query['limit'] ?? 8;
         Flight::json(Flight::productService()->getNewArrivals($limit));
     });
 
-    // Search products - PUBLIC
     Flight::route('GET /search', function () {
         $search_term = Flight::request()->query['q'] ?? '';
         $limit = Flight::request()->query['limit'] ?? 20;
@@ -33,7 +27,6 @@ Flight::group('/products', function () {
         Flight::json(Flight::productService()->searchProducts($search_term, $limit, $offset));
     });
 
-    // Get products by price range - PUBLIC
     Flight::route('GET /price-range', function () {
         $min_price = Flight::request()->query['min'] ?? 0;
         $max_price = Flight::request()->query['max'] ?? 10000;
@@ -42,7 +35,6 @@ Flight::group('/products', function () {
         Flight::json(Flight::productService()->getProductsByPriceRange($min_price, $max_price, $category_id));
     });
 
-    // Get products by category - PUBLIC
     Flight::route('GET /category/@category_id', function ($category_id) {
         $limit = Flight::request()->query['limit'] ?? 20;
         $offset = Flight::request()->query['offset'] ?? 0;
@@ -50,7 +42,6 @@ Flight::group('/products', function () {
         Flight::json(Flight::productService()->getProductsByCategory($category_id, $limit, $offset));
     });
 
-    // Get product with fees calculation - PUBLIC
     Flight::route('GET /@product_id/fees', function ($product_id) {
         $quantity = Flight::request()->query['quantity'] ?? 1;
 
@@ -62,7 +53,6 @@ Flight::group('/products', function () {
         }
     });
 
-    // Get product details with fees - PUBLIC
     Flight::route('GET /@product_id/details', function ($product_id) {
         $product = Flight::productService()->getProductWithFees($product_id);
         if ($product) {
@@ -72,7 +62,6 @@ Flight::group('/products', function () {
         }
     });
 
-    // Get related products - PUBLIC
     Flight::route('GET /@product_id/related', function ($product_id) {
         $limit = Flight::request()->query['limit'] ?? 4;
 
@@ -92,7 +81,6 @@ Flight::group('/products', function () {
         Flight::json($related);
     });
 
-    // Get single product - PUBLIC (MUST be last among GET routes)
     Flight::route('GET /@product_id', function ($product_id) {
         $product = Flight::productService()->getProductById($product_id);
         if ($product) {
@@ -102,7 +90,6 @@ Flight::group('/products', function () {
         }
     });
 
-    // Validate product stock - BOTH admin and customer
     Flight::route('POST /@product_id/validate-stock', function ($product_id) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -115,7 +102,6 @@ Flight::group('/products', function () {
 
     // --- ADMIN ONLY ROUTES BELOW ---
 
-    // Create product - ADMIN ONLY
     Flight::route('POST /', function () {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
@@ -140,13 +126,11 @@ Flight::group('/products', function () {
         }
     });
 
-    // Update product - ADMIN ONLY
     Flight::route('PUT /@product_id', function ($product_id) {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
         $data = Flight::request()->data->getData();
 
-        // Basic validation
         if (isset($data['price']) && $data['price'] < 0) {
             Flight::json(['error' => 'Price cannot be negative'], 400);
             return;
@@ -160,7 +144,6 @@ Flight::group('/products', function () {
         }
     });
 
-    // Delete product - ADMIN ONLY
     Flight::route('DELETE /@product_id', function ($product_id) {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
@@ -175,7 +158,6 @@ Flight::group('/products', function () {
         }
     });
 
-    // Update product stock - ADMIN ONLY
     Flight::route('PUT /@product_id/stock', function ($product_id) {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
@@ -187,14 +169,12 @@ Flight::group('/products', function () {
         }
 
         try {
-            // Get current product
             $product = Flight::productService()->getProductById($product_id);
             if (!$product) {
                 Flight::json(['error' => 'Product not found'], 404);
                 return;
             }
 
-            // Update with new stock quantity
             $updated = Flight::productService()->update($product_id, ['stock_quantity' => $data['quantity']]);
             Flight::json([
                 'success' => true,
@@ -206,7 +186,6 @@ Flight::group('/products', function () {
         }
     });
 
-    // Add product image - ADMIN ONLY
     Flight::route('POST /@product_id/images', function ($product_id) {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
@@ -233,7 +212,6 @@ Flight::group('/products', function () {
         }
     });
 
-    // Delete product image - ADMIN ONLY
     Flight::route('DELETE /@product_id/images/@image_id', function ($product_id, $image_id) {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
@@ -250,17 +228,5 @@ Flight::group('/products', function () {
         } catch (Exception $e) {
             Flight::json(['error' => $e->getMessage()], 400);
         }
-    });
-
-    // Get product statistics - ADMIN ONLY
-    Flight::route('GET /statistics', function () {
-        Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
-
-        // This would return product statistics
-        Flight::json([
-            'total_products' => 0,
-            'low_stock' => 0,
-            'out_of_stock' => 0
-        ]);
     });
 });

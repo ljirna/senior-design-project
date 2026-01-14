@@ -80,9 +80,6 @@ class FavoriteService extends BaseService
         if (!$product) {
             return ['valid' => false, 'message' => 'Product not found'];
         }
-
-        // You could add more validation here (e.g., product must be active)
-
         return ['valid' => true, 'product' => $product];
     }
 }

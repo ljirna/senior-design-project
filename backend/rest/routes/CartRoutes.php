@@ -11,7 +11,6 @@ $getCurrentUserId = function () {
 };
 
 Flight::group('/cart', function () use ($getCurrentUserId) {
-    // GET user's cart with items - BOTH admin and customer (their own cart)
     Flight::route('GET /', function () use ($getCurrentUserId) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -23,7 +22,6 @@ Flight::group('/cart', function () use ($getCurrentUserId) {
         Flight::json(Flight::cartService()->getCartWithItems($userId));
     });
 
-    // Get cart total - BOTH admin and customer
     Flight::route('GET /total', function () use ($getCurrentUserId) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -35,7 +33,6 @@ Flight::group('/cart', function () use ($getCurrentUserId) {
         Flight::json(Flight::cartService()->getCartTotal($userId));
     });
 
-    // Add item to cart - BOTH admin and customer
     Flight::route('POST /add', function () use ($getCurrentUserId) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -67,7 +64,6 @@ Flight::group('/cart', function () use ($getCurrentUserId) {
         }
     });
 
-    // Update cart item quantity - BOTH admin and customer
     Flight::route('PUT /items/@cart_item_id', function ($cart_item_id) use ($getCurrentUserId) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -99,7 +95,6 @@ Flight::group('/cart', function () use ($getCurrentUserId) {
         }
     });
 
-    // Remove item from cart - BOTH admin and customer
     Flight::route('DELETE /items/@cart_item_id', function ($cart_item_id) use ($getCurrentUserId) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -120,7 +115,6 @@ Flight::group('/cart', function () use ($getCurrentUserId) {
         }
     });
 
-    // Clear cart - BOTH admin and customer
     Flight::route('DELETE /clear', function () use ($getCurrentUserId) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -141,7 +135,6 @@ Flight::group('/cart', function () use ($getCurrentUserId) {
         }
     });
 
-    // Validate cart for checkout - BOTH admin and customer
     Flight::route('GET /validate', function () use ($getCurrentUserId) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 

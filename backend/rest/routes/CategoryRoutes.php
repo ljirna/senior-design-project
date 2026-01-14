@@ -2,12 +2,10 @@
 require_once __DIR__ . '/../services/CategoryService.php';
 
 Flight::group('/categories', function () {
-    // Get all categories with product count - PUBLIC
     Flight::route('GET /', function () {
         Flight::json(Flight::categoryService()->getAllCategoriesWithCount());
     });
 
-    // Get single category - PUBLIC
     Flight::route('GET /@category_id', function ($category_id) {
         $category = Flight::categoryService()->getCategoryById($category_id);
         if ($category) {
@@ -17,13 +15,11 @@ Flight::group('/categories', function () {
         }
     });
 
-    // Get popular categories (with products) - PUBLIC
     Flight::route('GET /popular', function () {
         $limit = Flight::request()->query['limit'] ?? 5;
         Flight::json(Flight::categoryService()->getCategoriesWithProducts($limit));
     });
 
-    // Search categories - PUBLIC
     Flight::route('GET /search', function () {
         $search_term = Flight::request()->query['q'] ?? '';
         Flight::json(Flight::categoryService()->searchCategories($search_term));
@@ -31,7 +27,6 @@ Flight::group('/categories', function () {
 
     // --- ADMIN ONLY ROUTES BELOW ---
 
-    // Create category - ADMIN ONLY
     Flight::route('POST /', function () {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
@@ -51,7 +46,6 @@ Flight::group('/categories', function () {
         }
     });
 
-    // Update category - ADMIN ONLY
     Flight::route('PUT /@category_id', function ($category_id) {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
@@ -71,7 +65,6 @@ Flight::group('/categories', function () {
         }
     });
 
-    // Delete category - ADMIN ONLY
     Flight::route('DELETE /@category_id', function ($category_id) {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
@@ -83,7 +76,6 @@ Flight::group('/categories', function () {
         }
     });
 
-    // Validate category data - ADMIN ONLY
     Flight::route('POST /validate', function () {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 

@@ -15,7 +15,6 @@ class StreamHttpClient implements \Stripe\HttpClient\ClientInterface
     {
         $method = strtoupper($method);
 
-        // Prepare request body
         $body = '';
         if (!empty($params)) {
             if ($method === 'GET') {
@@ -25,14 +24,11 @@ class StreamHttpClient implements \Stripe\HttpClient\ClientInterface
             }
         }
 
-        // Build headers list - Stripe SDK passes headers as indexed array with formatted strings
         $headersList = [];
         foreach ($headers as $key => $value) {
-            // If headers are already formatted as strings (indexed array), use them directly
             if (is_numeric($key) && is_string($value)) {
                 $headersList[] = $value;
             } else {
-                // Otherwise, format as key: value
                 if (is_array($value)) {
                     $value = implode(', ', $value);
                 }
@@ -40,9 +36,7 @@ class StreamHttpClient implements \Stripe\HttpClient\ClientInterface
             }
         }
 
-        // Add content headers for POST/PUT
         if (($method === 'POST' || $method === 'PUT' || $method === 'PATCH') && !empty($body)) {
-            // Only add if not already present
             $hasContentType = false;
             foreach ($headersList as $header) {
                 if (stripos($header, 'Content-Type:') === 0) {
@@ -56,7 +50,6 @@ class StreamHttpClient implements \Stripe\HttpClient\ClientInterface
             $headersList[] = 'Content-Length: ' . strlen($body);
         }
 
-        // Create stream context
         $opts = [
             'http' => [
                 'method' => $method,
@@ -66,14 +59,13 @@ class StreamHttpClient implements \Stripe\HttpClient\ClientInterface
                 'ignore_errors' => true
             ],
             'ssl' => [
-                'verify_peer' => false,  // Disable SSL verification for development
+                'verify_peer' => false,
                 'verify_peer_name' => false
             ]
         ];
 
         $context = stream_context_create($opts);
 
-        // Make the request
         $response = @file_get_contents($absUrl, false, $context);
 
         if ($response === false) {
@@ -83,7 +75,6 @@ class StreamHttpClient implements \Stripe\HttpClient\ClientInterface
             );
         }
 
-        // Parse response headers
         $statusCode = 200;
         $responseHeaders = [];
 
@@ -100,7 +91,6 @@ class StreamHttpClient implements \Stripe\HttpClient\ClientInterface
             }
         }
 
-        // Ensure we always return an array for headers
         if (!is_array($responseHeaders)) {
             $responseHeaders = [];
         }

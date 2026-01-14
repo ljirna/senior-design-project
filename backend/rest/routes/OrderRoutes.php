@@ -2,7 +2,6 @@
 require_once __DIR__ . '/../services/OrderService.php';
 
 Flight::group('/orders', function () {
-    // Helper to get current user id safely
     $getCurrentUserId = function () {
         $u = Flight::get('user');
         if (is_array($u)) {
@@ -14,7 +13,6 @@ Flight::group('/orders', function () {
         return null;
     };
 
-    // Get user's orders - BOTH admin and customer (their own)
     Flight::route('GET /', function () {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -31,7 +29,6 @@ Flight::group('/orders', function () {
         Flight::json($orders);
     });
 
-    // Get order by ID - ADMIN or own order
     Flight::route('GET /@order_id', function ($order_id) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -43,7 +40,6 @@ Flight::group('/orders', function () {
             return;
         }
 
-        // Check if user has access
         if ($user['role'] !== Roles::ADMIN && $order['user_id'] != $user['id']) {
             Flight::json(['error' => 'Access denied'], 403);
             return;
@@ -52,7 +48,6 @@ Flight::group('/orders', function () {
         Flight::json($order);
     });
 
-    // Create order from cart - BOTH admin and customer
     Flight::route('POST /from-cart', function () use ($getCurrentUserId) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -88,7 +83,6 @@ Flight::group('/orders', function () {
         }
     });
 
-    // Get orders by user ID - ADMIN or own orders
     Flight::route('GET /user/@user_id', function ($user_id) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -96,7 +90,6 @@ Flight::group('/orders', function () {
         $limit = Flight::request()->query['limit'] ?? 20;
         $offset = Flight::request()->query['offset'] ?? 0;
 
-        // Check if user has access
         if ($current_user['role'] !== Roles::ADMIN && $current_user['id'] != $user_id) {
             Flight::json(['error' => 'Access denied'], 403);
             return;
@@ -106,22 +99,7 @@ Flight::group('/orders', function () {
         Flight::json($orders);
     });
 
-    // Get order statistics - ADMIN sees all, CUSTOMER sees only their own
-    Flight::route('GET /statistics', function () {
-        Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
-        $user = Flight::get('user');
-
-        if ($user['role'] === Roles::ADMIN) {
-            $statistics = Flight::orderService()->getOrderStatistics();
-        } else {
-            $statistics = Flight::orderService()->getOrderStatistics($user['id']);
-        }
-
-        Flight::json($statistics);
-    });
-
-    // Cancel order - ADMIN or own order
     Flight::route('POST /@order_id/cancel', function ($order_id) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -152,7 +130,6 @@ Flight::group('/orders', function () {
         }
     });
 
-    // Validate order data - BOTH admin and customer
     Flight::route('POST /validate', function () {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -163,7 +140,6 @@ Flight::group('/orders', function () {
 
     // --- ADMIN ONLY ROUTES BELOW ---
 
-    // Create order (admin can create for any user) - ADMIN ONLY
     Flight::route('POST /', function () {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
@@ -188,7 +164,6 @@ Flight::group('/orders', function () {
         }
     });
 
-    // Update order status - ADMIN ONLY
     Flight::route('PUT /@order_id/status', function ($order_id) {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
@@ -211,7 +186,6 @@ Flight::group('/orders', function () {
         }
     });
 
-    // Update order details - ADMIN ONLY
     Flight::route('PUT /@order_id', function ($order_id) {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
@@ -231,7 +205,6 @@ Flight::group('/orders', function () {
         }
     });
 
-    // Get orders by status - ADMIN ONLY
     Flight::route('GET /status/@status', function ($status) {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
@@ -246,7 +219,6 @@ Flight::group('/orders', function () {
         }
     });
 
-    // Search orders - ADMIN ONLY
     Flight::route('GET /search', function () {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
@@ -258,7 +230,6 @@ Flight::group('/orders', function () {
         Flight::json($orders);
     });
 
-    // Delete order - ADMIN ONLY (only pending orders)
     Flight::route('DELETE /@order_id', function ($order_id) {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
@@ -273,7 +244,6 @@ Flight::group('/orders', function () {
         }
     });
 
-    // Approve order - ADMIN ONLY (shortcut for updating status to approved)
     Flight::route('PUT /@order_id/approve', function ($order_id) {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
@@ -289,7 +259,6 @@ Flight::group('/orders', function () {
         }
     });
 
-    // Reject order - ADMIN ONLY (shortcut for updating status to rejected)
     Flight::route('PUT /@order_id/reject', function ($order_id) {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 

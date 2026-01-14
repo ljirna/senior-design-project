@@ -8,7 +8,6 @@ class OrderDao extends BaseDao
         parent::__construct("orders");
     }
 
-    // Get order by ID with user details
     public function getOrderById($order_id)
     {
         $stmt = $this->connection->prepare("
@@ -25,7 +24,6 @@ class OrderDao extends BaseDao
         return $stmt->fetch();
     }
 
-    // Get orders by user ID
     public function getOrdersByUserId($user_id, $limit = 20, $offset = 0)
     {
         $stmt = $this->connection->prepare("
@@ -43,7 +41,6 @@ class OrderDao extends BaseDao
         return $stmt->fetchAll();
     }
 
-    // Get all orders with user info (Admin)
     public function getAllOrders($limit = 20, $offset = 0)
     {
         $stmt = $this->connection->prepare("
@@ -64,7 +61,6 @@ class OrderDao extends BaseDao
         return $stmt->fetchAll();
     }
 
-    // Get order items with product details
     public function getOrderItems($order_id)
     {
         $stmt = $this->connection->prepare("
@@ -84,13 +80,11 @@ class OrderDao extends BaseDao
         return $stmt->fetchAll();
     }
 
-    // Create order with items
     public function createOrderWithItems($order_data, $items)
     {
         $this->connection->beginTransaction();
 
         try {
-            // Insert order
             $columns = implode(", ", array_keys($order_data));
             $placeholders = ":" . implode(", :", array_keys($order_data));
             $sql = "INSERT INTO orders ($columns) VALUES ($placeholders)";
@@ -98,7 +92,6 @@ class OrderDao extends BaseDao
             $stmt->execute($order_data);
             $order_id = $this->connection->lastInsertId();
 
-            // Insert order items
             foreach ($items as $item) {
                 $item['order_id'] = $order_id;
                 $columns = implode(", ", array_keys($item));
@@ -116,7 +109,6 @@ class OrderDao extends BaseDao
         }
     }
 
-    // Update order status
     public function updateOrderStatus($order_id, $status)
     {
         $stmt = $this->connection->prepare("
@@ -129,35 +121,6 @@ class OrderDao extends BaseDao
         return $stmt->execute();
     }
 
-    // Get order statistics
-    public function getOrderStatistics($user_id = null)
-    {
-        $sql = "
-            SELECT 
-                COUNT(*) as total_orders,
-                SUM(total_amount) as total_revenue,
-                AVG(total_amount) as average_order_value,
-                MIN(order_date) as first_order_date,
-                MAX(order_date) as last_order_date
-            FROM orders
-            WHERE status = 'completed'
-        ";
-
-        if ($user_id) {
-            $sql .= " AND user_id = :user_id";
-        }
-
-        $stmt = $this->connection->prepare($sql);
-
-        if ($user_id) {
-            $stmt->bindParam(':user_id', $user_id);
-        }
-
-        $stmt->execute();
-        return $stmt->fetch();
-    }
-
-    // Get orders by status
     public function getOrdersByStatus($status, $limit = 20, $offset = 0)
     {
         $stmt = $this->connection->prepare("
@@ -175,7 +138,6 @@ class OrderDao extends BaseDao
         return $stmt->fetchAll();
     }
 
-    // Search orders
     public function searchOrders($search_term, $limit = 20, $offset = 0)
     {
         $stmt = $this->connection->prepare("
@@ -197,7 +159,6 @@ class OrderDao extends BaseDao
         return $stmt->fetchAll();
     }
 
-    // Count orders
     public function countOrders($user_id = null)
     {
         $sql = "SELECT COUNT(*) as total FROM orders";

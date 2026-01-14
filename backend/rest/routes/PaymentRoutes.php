@@ -3,7 +3,6 @@ require_once __DIR__ . '/../services/PaymentService.php';
 require_once __DIR__ . '/../services/StripeService.php';
 require_once __DIR__ . '/../dao/OrderDao.php';
 
-// Helper to resolve current user id from Flight::get('user')
 $getCurrentUserId = function () {
     $u = Flight::get('user');
     if (is_array($u)) {
@@ -16,7 +15,6 @@ $getCurrentUserId = function () {
 };
 
 Flight::group('/payments', function () use ($getCurrentUserId) {
-    // Get payment by ID - ADMIN or user who owns the order
     Flight::route('GET /@payment_id', function ($payment_id) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -28,11 +26,8 @@ Flight::group('/payments', function () use ($getCurrentUserId) {
             return;
         }
 
-        // Check if user has access: ADMIN or payment belongs to user's order
         if ($user['role'] !== Roles::ADMIN) {
-            // Need to check if payment belongs to user's order
-            // You'll need to implement this check in your service
-            $hasAccess = false; // Replace with actual check
+            $hasAccess = false;
             if (!$hasAccess) {
                 Flight::json(['error' => 'Access denied'], 403);
                 return;
@@ -42,15 +37,12 @@ Flight::group('/payments', function () use ($getCurrentUserId) {
         Flight::json($payment);
     });
 
-    // Get payments for order - ADMIN or user who owns the order
     Flight::route('GET /order/@order_id', function ($order_id) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
         $user = Flight::get('user');
 
-        // Check if user has access to this order
         if ($user['role'] === Roles::CUSTOMER) {
-            // Verify order belongs to user
             $order = Flight::orderService()->getOrderById($order_id);
             if (!$order || $order['user_id'] != $user['id']) {
                 Flight::json(['error' => 'Access denied'], 403);
@@ -66,7 +58,6 @@ Flight::group('/payments', function () use ($getCurrentUserId) {
         }
     });
 
-    // Get user payments - ADMIN or user themselves
     Flight::route('GET /user/@user_id', function ($user_id) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -74,7 +65,6 @@ Flight::group('/payments', function () use ($getCurrentUserId) {
         $limit = Flight::request()->query['limit'] ?? 20;
         $offset = Flight::request()->query['offset'] ?? 0;
 
-        // Check if user has access
         if ($current_user['role'] !== Roles::ADMIN && $current_user['id'] != $user_id) {
             Flight::json(['error' => 'Access denied'], 403);
             return;
@@ -88,7 +78,6 @@ Flight::group('/payments', function () use ($getCurrentUserId) {
         }
     });
 
-    // Get my payments (current user) - BOTH admin and customer
     Flight::route('GET /my-payments', function () {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -106,7 +95,6 @@ Flight::group('/payments', function () use ($getCurrentUserId) {
 
     // --- ADMIN ONLY ROUTES (sensitive financial operations) ---
 
-    // Get all payments - ADMIN ONLY
     Flight::route('GET /', function () {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
@@ -114,7 +102,6 @@ Flight::group('/payments', function () use ($getCurrentUserId) {
         Flight::json($payments);
     });
 
-    // Update payment status - ADMIN ONLY
     Flight::route('PUT /@payment_id/status', function ($payment_id) {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
@@ -137,7 +124,6 @@ Flight::group('/payments', function () use ($getCurrentUserId) {
         }
     });
 
-    // Update payment details - ADMIN ONLY
     Flight::route('PUT /@payment_id', function ($payment_id) {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
@@ -151,12 +137,10 @@ Flight::group('/payments', function () use ($getCurrentUserId) {
         }
     });
 
-    // Delete payment - ADMIN ONLY (only pending payments)
     Flight::route('DELETE /@payment_id', function ($payment_id) {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
         try {
-            // Check if payment can be deleted
             $payment = Flight::paymentService()->getPaymentById($payment_id);
             if (!$payment) {
                 Flight::json(['error' => 'Payment not found'], 404);
@@ -178,13 +162,11 @@ Flight::group('/payments', function () use ($getCurrentUserId) {
         }
     });
 
-    // Process payment - ADMIN or user who owns the order
     Flight::route('POST /@payment_id/process', function ($payment_id) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
         $user = Flight::get('user');
 
-        // For customers, check if payment belongs to their order
         if ($user['role'] === Roles::CUSTOMER) {
             $payment = Flight::paymentService()->getPaymentById($payment_id);
             if (!$payment) {
@@ -192,7 +174,6 @@ Flight::group('/payments', function () use ($getCurrentUserId) {
                 return;
             }
 
-            // Check if payment belongs to user's order
             $order = Flight::orderService()->getOrderById($payment['order_id']);
             if (!$order || $order['user_id'] != $user['id']) {
                 Flight::json(['error' => 'Access denied'], 403);
@@ -201,7 +182,6 @@ Flight::group('/payments', function () use ($getCurrentUserId) {
         }
 
         try {
-            // Process payment logic
             $result = Flight::paymentService()->updatePaymentStatus($payment_id, 'completed');
             Flight::json([
                 'success' => true,
@@ -213,7 +193,6 @@ Flight::group('/payments', function () use ($getCurrentUserId) {
         }
     });
 
-    // Refund payment - ADMIN ONLY
     Flight::route('POST /@payment_id/refund', function ($payment_id) {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
@@ -231,7 +210,6 @@ Flight::group('/payments', function () use ($getCurrentUserId) {
                 return;
             }
 
-            // Update payment status to refunded
             $result = Flight::paymentService()->updatePaymentStatus($payment_id, 'refunded');
             Flight::json([
                 'success' => true,

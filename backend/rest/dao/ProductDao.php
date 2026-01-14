@@ -21,13 +21,9 @@ class ProductDao extends BaseDao
         return $this->hasStockQuantityColumn;
     }
 
-    // Override add() to use product_id instead of id
     public function add($entity)
     {
-        // Call parent's add method
         $result = parent::add($entity);
-
-        // Rename 'id' to 'product_id' if parent set it
         if (isset($result['id'])) {
             $result['product_id'] = $result['id'];
             unset($result['id']);
@@ -36,7 +32,6 @@ class ProductDao extends BaseDao
         return $result;
     }
 
-    // Override delete() to use product_id instead of id
     public function delete($product_id)
     {
         $stmt = $this->connection->prepare("DELETE FROM products WHERE product_id = :product_id");
@@ -44,7 +39,6 @@ class ProductDao extends BaseDao
         return $stmt->execute();
     }
 
-    // Basic CRUD
     public function getProductById($product_id)
     {
         $stmt = $this->connection->prepare("
@@ -58,7 +52,6 @@ class ProductDao extends BaseDao
         return $stmt->fetch();
     }
 
-    // 1. Product Listing & Filtering
     public function getAllProducts($limit = 20, $offset = 0)
     {
         $stmt = $this->connection->prepare("
@@ -93,7 +86,6 @@ class ProductDao extends BaseDao
         return $stmt->fetchAll();
     }
 
-    // 2. Search Functionality
     public function searchProducts($search_term, $limit = 20, $offset = 0)
     {
         $stmt = $this->connection->prepare("
@@ -127,7 +119,6 @@ class ProductDao extends BaseDao
         return $stmt->fetchAll();
     }
 
-    // 3. Price Filtering
     public function getProductsByPriceRange($min_price, $max_price, $category_id = null)
     {
         $sql = "
@@ -154,7 +145,6 @@ class ProductDao extends BaseDao
         return $stmt->fetchAll();
     }
 
-    // 4. Featured & Popular Products
     public function getFeaturedProducts($limit = 8)
     {
         $stmt = $this->connection->prepare("
@@ -185,7 +175,6 @@ class ProductDao extends BaseDao
         return $stmt->fetchAll();
     }
 
-    // 5. Related Products
     public function getRelatedProducts($product_id, $category_id, $limit = 4)
     {
         $stmt = $this->connection->prepare("
@@ -205,7 +194,6 @@ class ProductDao extends BaseDao
         return $stmt->fetchAll();
     }
 
-    // 6. Pagination Counts
     public function countAllProducts()
     {
         $stmt = $this->connection->prepare("SELECT COUNT(*) as total FROM products");
@@ -237,7 +225,6 @@ class ProductDao extends BaseDao
         return $stmt->fetch()['total'];
     }
 
-    // 7. Product Images (if separate table)
     public function getProductImages($product_id)
     {
         $stmt = $this->connection->prepare("
@@ -307,7 +294,6 @@ class ProductDao extends BaseDao
         return $stmt->execute();
     }
 
-    // 8. Product with Fees (from our previous discussion)
     public function getProductWithFees($product_id)
     {
         $stmt = $this->connection->prepare("
@@ -328,11 +314,9 @@ class ProductDao extends BaseDao
         return $stmt->fetch();
     }
 
-    // 9. Update Stock/Inventory
     public function updateStock($product_id, $quantity)
     {
         if (!$this->hasStockColumn()) {
-            // If the column does not exist, treat as no-op to avoid SQL errors
             return true;
         }
 

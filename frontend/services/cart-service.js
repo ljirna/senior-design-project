@@ -9,7 +9,7 @@ var CartService = {
       var priceNumber = parseFloat(item.price ?? item.unit_price ?? 0) || 0;
       var productId = parseInt(item.product_id || item.id, 10);
       return {
-        id: productId, // Ensure it's a number for consistent comparison
+        id: productId,
         cart_item_id: item.cart_item_id || null,
         name: item.name || item.product_name || "",
         price: "$" + priceNumber.toFixed(2),

@@ -1,16 +1,13 @@
 var UserService = {
   init: function () {
-    // Sync appState with localStorage if needed
     if (!window.appState.user && localStorage.getItem("zimUser")) {
       window.appState.user = JSON.parse(localStorage.getItem("zimUser"));
     }
 
     var token = localStorage.getItem("user_token");
     if (token && token !== undefined) {
-      // Already logged in — only redirect from login/register pages
       const currentHash = window.location.hash.substring(1);
       if (currentHash === "login" || currentHash === "register") {
-        // Redirect to appropriate dashboard based on role
         const user =
           window.appState.user || JSON.parse(localStorage.getItem("zimUser"));
         const redirectHash =
@@ -22,7 +19,6 @@ var UserService = {
       return;
     }
 
-    // Initialize form validation for both possible login form IDs
     const loginSelector = "#loginForm, #login-form";
     $(loginSelector).each(function () {
       $(this).validate({
@@ -33,7 +29,6 @@ var UserService = {
       });
     });
 
-    // Initialize register form validation if present
     const registerSelector = "#registerForm";
     $(registerSelector).each(function () {
       $(this).validate({
@@ -83,7 +78,6 @@ var UserService = {
             localStorage.getItem("user_token")
           );
 
-          // Store complete user object without token
           var user = Object.assign({}, result.data);
           delete user.token;
           console.log("[UserService.login] User object to store:", user);
@@ -93,10 +87,8 @@ var UserService = {
             localStorage.getItem("zimUser")
           );
 
-          // Update appState if available
           if (window.appState) appState.user = user;
 
-          // Redirect based on user role
           let redirectHash = sessionStorage.getItem("prevHash") || "home";
           if (user.role === Constants.ADMIN_ROLE) {
             redirectHash = "admin-dashboard";
@@ -104,7 +96,6 @@ var UserService = {
           console.log("[UserService.login] Redirecting to:", redirectHash);
           window.location.hash = redirectHash;
 
-          // Update header/menu
           if (window.UserService && UserService.generateMenuItems)
             UserService.generateMenuItems();
         } else {
@@ -130,7 +121,6 @@ var UserService = {
         );
         try {
           var txt = XMLHttpRequest?.responseText;
-          // If JSON with message
           try {
             var parsed = JSON.parse(txt);
             if (parsed?.message) txt = parsed.message;
@@ -144,19 +134,16 @@ var UserService = {
   },
 
   register: function (entity) {
-    // Map frontend field names to backend expectations
     var payload = {
       email: entity.email,
       password: entity.password,
       fullName: entity.fullName,
     };
 
-    // Map phone to phone_number if provided
     if (entity.phone) {
       payload.phone_number = entity.phone;
     }
 
-    // Map address fields if provided
     if (entity.street) {
       payload.address = entity.street;
     }
@@ -176,7 +163,6 @@ var UserService = {
       success: function (result) {
         if (result && result.data) {
           toastr.success("Account created successfully! Please sign in.");
-          // Redirect to login page
           window.location.hash = "login";
         } else {
           toastr.error("Unexpected response from server");
@@ -198,7 +184,6 @@ var UserService = {
   },
 
   logout: function () {
-    // Check if already logged out (localStorage empty or no token)
     const token = localStorage.getItem("user_token");
     if (!token) {
       showToast("Already logged out", "info");
@@ -214,7 +199,6 @@ var UserService = {
       Object.keys(localStorage)
     );
 
-    // Log all items that will be removed
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       console.log(
@@ -224,7 +208,6 @@ var UserService = {
       );
     }
 
-    // COMPLETELY CLEAR ALL localStorage
     localStorage.clear();
     console.log("[UserService.logout] Executed localStorage.clear()");
 

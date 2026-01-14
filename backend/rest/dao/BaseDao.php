@@ -53,10 +53,6 @@ class BaseDao
         return reset($results);
     }
 
-    /**
-     * Method used to get add entity to database
-     * string $first_name: First name is the first name of the course
-     */
     public function add($entity)
     {
         $query = "INSERT INTO " . $this->table_name . " (";
@@ -77,9 +73,6 @@ class BaseDao
         return $entity;
     }
 
-    /**
-     * Method used to update entity in database
-     */
     public function update($entity, $id, $id_column = "id")
     {
         $query = "UPDATE " . $this->table_name . " SET ";
@@ -94,9 +87,7 @@ class BaseDao
         return $entity;
     }
 
-    /**
-     * Method used to delete entity from database
-     */
+
     public function delete($id)
     {
         $stmt = $this->connection->prepare("DELETE FROM " . $this->table_name . " WHERE id = :id");

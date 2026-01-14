@@ -2,7 +2,6 @@
 require_once __DIR__ . '/../services/FavoriteService.php';
 
 Flight::group('/favorites', function () {
-    // Get user's favorites - BOTH admin and customer (their own)
     Flight::route('GET /', function () {
         try {
             Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
@@ -18,7 +17,6 @@ Flight::group('/favorites', function () {
         }
     });
 
-    // Check if product is favorited - BOTH admin and customer
     Flight::route('GET /check/@product_id', function ($product_id) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -28,7 +26,6 @@ Flight::group('/favorites', function () {
         ]);
     });
 
-    // Add to favorites - BOTH admin and customer
     Flight::route('POST /add', function () {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -52,7 +49,6 @@ Flight::group('/favorites', function () {
         }
     });
 
-    // Remove from favorites - BOTH admin and customer
     Flight::route('DELETE /remove/@product_id', function ($product_id) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -69,7 +65,6 @@ Flight::group('/favorites', function () {
         }
     });
 
-    // Toggle favorite - BOTH admin and customer
     Flight::route('POST /toggle', function () {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -93,7 +88,6 @@ Flight::group('/favorites', function () {
         }
     });
 
-    // Toggle favorite by ID - BOTH admin and customer
     Flight::route('POST /toggle/@product_id', function ($product_id) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -111,7 +105,6 @@ Flight::group('/favorites', function () {
         }
     });
 
-    // Get user's favorite count - BOTH admin and customer
     Flight::route('GET /count', function () {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -121,7 +114,6 @@ Flight::group('/favorites', function () {
         ]);
     });
 
-    // Validate product for favorite - BOTH admin and customer
     Flight::route('POST /validate/@product_id', function ($product_id) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 

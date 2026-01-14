@@ -8,7 +8,6 @@ class UserDao extends BaseDao
         parent::__construct("users");
     }
 
-    // Get user by email
     public function getUserByEmail($email)
     {
         $stmt = $this->connection->prepare("SELECT * FROM users WHERE email = :email");
@@ -17,7 +16,6 @@ class UserDao extends BaseDao
         return $stmt->fetch();
     }
 
-    // Get user by ID (without password)
     public function getUserById($user_id)
     {
         $stmt = $this->connection->prepare("
@@ -31,7 +29,6 @@ class UserDao extends BaseDao
         return $stmt->fetch();
     }
 
-    // Get all users with pagination
     public function getAllUsers($limit = 20, $offset = 0)
     {
         $stmt = $this->connection->prepare("
@@ -47,7 +44,6 @@ class UserDao extends BaseDao
         return $stmt->fetchAll();
     }
 
-    // Get only customers (role = 'customer')
     public function getCustomers($limit = 20, $offset = 0)
     {
         $stmt = $this->connection->prepare("
@@ -64,7 +60,6 @@ class UserDao extends BaseDao
         return $stmt->fetchAll();
     }
 
-    // Count all users
     public function countAllUsers()
     {
         $stmt = $this->connection->prepare("SELECT COUNT(*) as total FROM users");
@@ -72,7 +67,6 @@ class UserDao extends BaseDao
         return $stmt->fetch()['total'];
     }
 
-    // Search users
     public function searchUsers($search_term, $limit = 20, $offset = 0)
     {
         $stmt = $this->connection->prepare("
@@ -93,7 +87,6 @@ class UserDao extends BaseDao
         return $stmt->fetchAll();
     }
 
-    // Update password
     public function updatePassword($user_id, $password_hash)
     {
         $stmt = $this->connection->prepare("
@@ -106,22 +99,6 @@ class UserDao extends BaseDao
         return $stmt->execute();
     }
 
-    // Get user statistics
-    public function getUserStatistics($user_id)
-    {
-        $stmt = $this->connection->prepare("
-            SELECT 
-                (SELECT COUNT(*) FROM orders WHERE user_id = :user_id) as total_orders,
-                (SELECT COUNT(*) FROM reviews WHERE user_id = :user_id) as total_reviews,
-                (SELECT COUNT(*) FROM favorites WHERE user_id = :user_id) as total_favorites,
-                (SELECT SUM(total_amount) FROM orders WHERE user_id = :user_id AND status = 'completed') as total_spent
-        ");
-        $stmt->bindParam(':user_id', $user_id);
-        $stmt->execute();
-        return $stmt->fetch();
-    }
-
-    // Check if email exists
     public function emailExists($email, $exclude_user_id = null)
     {
         $sql = "SELECT COUNT(*) as count FROM users WHERE email = :email";

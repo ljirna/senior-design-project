@@ -1,10 +1,8 @@
 <?php
 require_once __DIR__ . '/../services/UserService.php';
 
-// Helper to normalize request body into an associative array
 function parse_request_body()
 {
-    // Try raw JSON body first
     $raw = Flight::request()->getBody();
     if (!$raw) {
         $raw = file_get_contents('php://input');
@@ -17,20 +15,17 @@ function parse_request_body()
         }
     }
 
-    // Fallback to Flight parsed data
     $data = Flight::request()->data->getData();
     if (is_object($data)) {
         $data = (array)$data;
     }
 
     if (is_string($data)) {
-        // Attempt to parse querystring style payloads
         $tmp = [];
         parse_str($data, $tmp);
         if (!empty($tmp)) {
             return $tmp;
         }
-        // As a last resort, return empty array to avoid foreach on string
         return [];
     }
 
@@ -38,7 +33,6 @@ function parse_request_body()
 }
 
 Flight::group('/users', function () {
-    // Get current user profile - BOTH admin and customer
     Flight::route('GET /profile/me', function () {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -57,15 +51,12 @@ Flight::group('/users', function () {
             return;
         }
 
-        // Remove sensitive data
         unset($user_data['password_hash']);
 
         Flight::json($user_data);
     });
 
-    // --- SPECIFIC ROUTES MUST COME BEFORE GENERIC /@user_id ROUTE ---
 
-    // Get all users - ADMIN ONLY
     Flight::route('GET /', function () {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
@@ -74,7 +65,6 @@ Flight::group('/users', function () {
 
         $users = Flight::userService()->getAllUsers($limit, $offset);
 
-        // Remove sensitive data before sending
         foreach ($users as &$user) {
             unset($user['password_hash']);
         }
@@ -82,7 +72,6 @@ Flight::group('/users', function () {
         Flight::json($users);
     });
 
-    // Get all customers (non-admin users) - ADMIN ONLY
     Flight::route('GET /customers', function () {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
@@ -91,7 +80,6 @@ Flight::group('/users', function () {
 
         $customers = Flight::userService()->getCustomers($limit, $offset);
 
-        // Remove sensitive data before sending
         foreach ($customers as &$customer) {
             unset($customer['password_hash']);
         }
@@ -99,7 +87,6 @@ Flight::group('/users', function () {
         Flight::json($customers);
     });
 
-    // Search users - ADMIN ONLY
     Flight::route('GET /search', function () {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
@@ -109,7 +96,6 @@ Flight::group('/users', function () {
 
         $users = Flight::userService()->searchUsers($search_term, $limit, $offset);
 
-        // Remove sensitive data before sending
         foreach ($users as &$user) {
             unset($user['password_hash']);
         }
@@ -117,9 +103,7 @@ Flight::group('/users', function () {
         Flight::json($users);
     });
 
-    // --- GENERIC ROUTES (MUST COME AFTER SPECIFIC ROUTES) ---
 
-    // Get user by ID - ADMIN or own profile
     Flight::route('GET /@user_id', function ($user_id) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -127,7 +111,6 @@ Flight::group('/users', function () {
         $current_user_role = is_array($current_user) ? ($current_user['role'] ?? null) : ($current_user->role ?? null);
         $current_user_id = is_array($current_user) ? ($current_user['id'] ?? $current_user['user_id'] ?? null) : ($current_user->id ?? $current_user->user_id ?? null);
 
-        // Check if user has access
         if ($current_user_role !== Roles::ADMIN && $current_user_id != $user_id) {
             Flight::json(['error' => 'Access denied'], 403);
             return;
@@ -139,13 +122,11 @@ Flight::group('/users', function () {
             return;
         }
 
-        // Remove sensitive data
         unset($user['password_hash']);
 
         Flight::json($user);
     });
 
-    // Get user statistics - ADMIN or own statistics
     Flight::route('GET /@user_id/statistics', function ($user_id) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -153,7 +134,6 @@ Flight::group('/users', function () {
         $current_user_role = is_array($current_user) ? ($current_user['role'] ?? null) : ($current_user->role ?? null);
         $current_user_id = is_array($current_user) ? ($current_user['id'] ?? $current_user['user_id'] ?? null) : ($current_user->id ?? $current_user->user_id ?? null);
 
-        // Check if user has access
         if ($current_user_role !== Roles::ADMIN && $current_user_id != $user_id) {
             Flight::json(['error' => 'Access denied'], 403);
             return;
@@ -163,7 +143,6 @@ Flight::group('/users', function () {
         Flight::json($statistics);
     });
 
-    // Update user profile - ADMIN or own profile
     Flight::route('PUT /@user_id', function ($user_id) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -172,13 +151,11 @@ Flight::group('/users', function () {
         $current_user_id = is_array($current_user) ? ($current_user['id'] ?? $current_user['user_id'] ?? null) : ($current_user->id ?? $current_user->user_id ?? null);
         $data = parse_request_body();
 
-        // Check if user has access
         if ($current_user_role !== Roles::ADMIN && $current_user_id != $user_id) {
             Flight::json(['error' => 'Access denied'], 403);
             return;
         }
 
-        // Remove fields that shouldn't be updated through this endpoint
         unset($data['role']);
         unset($data['password']);
         unset($data['password_hash']);
@@ -196,7 +173,6 @@ Flight::group('/users', function () {
         }
     });
 
-    // Change password - ADMIN or own profile
     Flight::route('POST /@user_id/change-password', function ($user_id) {
         Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CUSTOMER]);
 
@@ -205,7 +181,6 @@ Flight::group('/users', function () {
         $current_user_id = is_array($current_user) ? ($current_user['id'] ?? $current_user['user_id'] ?? null) : ($current_user->id ?? $current_user->user_id ?? null);
         $data = parse_request_body();
 
-        // Check if user has access
         if ($current_user_role !== Roles::ADMIN && $current_user_id != $user_id) {
             Flight::json(['error' => 'Access denied'], 403);
             return;
@@ -229,30 +204,25 @@ Flight::group('/users', function () {
 
     // --- ADMIN ONLY ROUTES BELOW ---
 
-    // Create user - ADMIN ONLY (customers register via /auth/register)
     Flight::route('POST /', function () {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
         $data = Flight::request()->data->getData();
 
-        // Validate required fields
         if (empty($data['full_name']) || empty($data['email']) || empty($data['password'])) {
             Flight::json(['error' => 'Full name, email and password are required'], 400);
             return;
         }
 
-        // Check if email already exists
         $existing_user = Flight::userService()->getUserByEmail($data['email']);
         if ($existing_user) {
             Flight::json(['error' => 'Email already registered'], 400);
             return;
         }
 
-        // Hash password
         $data['password_hash'] = password_hash($data['password'], PASSWORD_BCRYPT);
         unset($data['password']);
 
-        // Set default role if not specified
         if (!isset($data['role'])) {
             $data['role'] = Roles::CUSTOMER;
         }
@@ -266,7 +236,6 @@ Flight::group('/users', function () {
         }
     });
 
-    // Update user role - ADMIN ONLY
     Flight::route('PUT /@user_id/role', function ($user_id) {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
@@ -277,13 +246,11 @@ Flight::group('/users', function () {
             return;
         }
 
-        // Validate role
         if (!in_array($data['role'], [Roles::ADMIN, Roles::CUSTOMER])) {
             Flight::json(['error' => 'Invalid role'], 400);
             return;
         }
 
-        // Prevent admin from removing their own admin role
         $current_user = Flight::get('user');
         if ($current_user['id'] == $user_id && $data['role'] !== Roles::ADMIN) {
             Flight::json(['error' => 'Cannot remove your own admin role'], 400);
@@ -303,13 +270,11 @@ Flight::group('/users', function () {
         }
     });
 
-    // Delete user - ADMIN ONLY
     Flight::route('DELETE /@user_id', function ($user_id) {
         Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
 
         $current_user = Flight::get('user');
 
-        // Prevent admin from deleting themselves
         if ($current_user['id'] == $user_id) {
             Flight::json(['error' => 'Cannot delete your own account'], 400);
             return;

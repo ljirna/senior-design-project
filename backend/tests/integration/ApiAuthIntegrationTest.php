@@ -4,9 +4,7 @@ class ApiAuthIntegrationTest extends PHPUnit\Framework\TestCase
 {
     private $baseUrl = 'http://localhost/diplomski/backend';
 
-    /**
-     * Test: Get public products (no auth required)
-     */
+
     public function testPublicProductsEndpoint()
     {
         $url = $this->baseUrl . '/products';
@@ -18,13 +16,9 @@ class ApiAuthIntegrationTest extends PHPUnit\Framework\TestCase
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        // Should be accessible without authentication
-        $this->assertContains($httpCode, [200, 400, 500]); // Server is running
+        $this->assertContains($httpCode, [200, 400, 500]);
     }
 
-    /**
-     * Test: Get categories (public endpoint)
-     */
     public function testPublicCategoriesEndpoint()
     {
         $url = $this->baseUrl . '/categories';
@@ -36,13 +30,9 @@ class ApiAuthIntegrationTest extends PHPUnit\Framework\TestCase
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        // Should return success
         $this->assertEquals(200, $httpCode);
     }
 
-    /**
-     * Test: Products endpoint returns JSON
-     */
     public function testProductsEndpointReturnsJson()
     {
         $url = $this->baseUrl . '/products';
@@ -54,14 +44,10 @@ class ApiAuthIntegrationTest extends PHPUnit\Framework\TestCase
         $response = curl_exec($ch);
         curl_close($ch);
 
-        // Response should be valid JSON
         $decoded = json_decode($response, true);
         $this->assertIsArray($decoded);
     }
 
-    /**
-     * Test: API responds to requests
-     */
     public function testApiIsResponsive()
     {
         $url = $this->baseUrl . '/products';
@@ -75,10 +61,9 @@ class ApiAuthIntegrationTest extends PHPUnit\Framework\TestCase
         $response = curl_exec($ch);
         $endTime = microtime(true);
 
-        $responseTime = ($endTime - $startTime) * 1000; // Convert to ms
+        $responseTime = ($endTime - $startTime) * 1000; 
         curl_close($ch);
 
-        // Response should be within 5 seconds
         $this->assertLessThan(5000, $responseTime);
     }
 }

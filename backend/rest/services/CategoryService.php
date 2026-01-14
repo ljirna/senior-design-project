@@ -47,7 +47,6 @@ class CategoryService extends BaseService
 
     public function delete($category_id)
     {
-        // Check if category has products before deleting
         if ($this->dao->hasProducts($category_id)) {
             throw new Exception("Cannot delete category with existing products");
         }

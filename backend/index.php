@@ -1,7 +1,6 @@
 <?php
 require 'vendor/autoload.php';
 
-// Register ALL services
 require_once __DIR__ . '/data/roles.php';
 require_once __DIR__ . '/rest/services/ProductService.php';
 require_once __DIR__ . '/rest/services/CategoryService.php';
@@ -23,11 +22,9 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// This wildcard route intercepts all requests and applies authentication checks before proceeding.
 Flight::route('/*', function () {
     $url = Flight::request()->url;
 
-    // Public routes that don't require authentication
     if (
         strpos($url, '/auth/login') === 0 ||
         strpos($url, '/auth/register') === 0 ||
@@ -70,12 +67,10 @@ Flight::register('auth_service', 'AuthService');
 
 
 
-// Define base route
 Flight::route('/', function () {
     echo 'Welcome to Furniture E-commerce API!';
 });
 
-// Include ALL route files
 require_once __DIR__ . '/rest/routes/ProductRoutes.php';
 require_once __DIR__ . '/rest/routes/CategoryRoutes.php';
 require_once __DIR__ . '/rest/routes/UserRoutes.php';
@@ -84,5 +79,4 @@ require_once __DIR__ . '/rest/routes/OrderRoutes.php';
 require_once __DIR__ . '/rest/routes/FavoriteRoutes.php';
 require_once __DIR__ . '/rest/routes/PaymentRoutes.php';
 require_once __DIR__ . '/rest/routes/AuthRoutes.php';
-// require_once __DIR__ . '/rest/routes/WebhookRoutes.php'; // Disabled for now, enable when webhooks needed
 Flight::start();

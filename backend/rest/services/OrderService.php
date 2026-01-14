@@ -250,12 +250,9 @@ class OrderService extends BaseService
             throw new Exception("Cannot cancel a completed order");
         }
 
-        // Restore product stock if cancelling
         if (in_array($order['status'], ['pending', 'processing'])) {
             $items = $this->dao->getOrderItems($order_id);
             foreach ($items as $item) {
-                // Note: You might need to implement a method to increase stock
-                // $this->productDao->restoreStock($item['product_id'], $item['quantity']);
             }
         }
 
@@ -312,7 +309,6 @@ class OrderService extends BaseService
 
     public function delete($order_id)
     {
-        // Check if order can be deleted (only pending orders)
         $order = $this->dao->getById($order_id);
         if (!$order) {
             throw new Exception("Order not found");

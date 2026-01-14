@@ -43,22 +43,18 @@ class UserService extends BaseService
 
     public function update($user_id, $data)
     {
-        // Validate input
         $validation = $this->validateUserData($data, false);
         if (!$validation['valid']) {
             throw new Exception(implode(", ", $validation['errors']));
         }
 
-        // Check if email is being changed and already exists
         if (isset($data['email']) && $this->dao->emailExists($data['email'], $user_id)) {
             throw new Exception("Email already in use");
         }
 
-        // Don't allow role change through regular update
         unset($data['role']);
         unset($data['password_hash']);
 
-        // BaseDao::update signature: update(entity_array, id, id_column = 'id')
         return $this->dao->update($data, $user_id, 'user_id');
     }
 
@@ -76,8 +72,6 @@ class UserService extends BaseService
 
     public function delete($user_id)
     {
-        // Optional: Check if user has orders before deleting
-        // Or implement soft delete
         return $this->dao->delete($user_id);
     }
 
@@ -112,7 +106,6 @@ class UserService extends BaseService
         }
 
         if (isset($data['phone_number']) && $data['phone_number'] !== "") {
-            // Allow common phone chars with a shorter minimum to reduce false negatives
             if (!preg_match('/^[0-9+\-\s()]{6,20}$/', $data['phone_number'])) {
                 $errors[] = "Invalid phone number format";
             }

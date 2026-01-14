@@ -8,7 +8,6 @@ class FavoriteDao extends BaseDao
         parent::__construct("favorites");
     }
 
-    // Get user's favorites
     public function getUserFavorites($user_id, $limit = 20, $offset = 0)
     {
         $stmt = $this->connection->prepare("
@@ -34,7 +33,6 @@ class FavoriteDao extends BaseDao
         return $stmt->fetchAll();
     }
 
-    // Check if product is favorited by user
     public function isProductFavorited($user_id, $product_id)
     {
         $stmt = $this->connection->prepare("
@@ -47,10 +45,8 @@ class FavoriteDao extends BaseDao
         return $stmt->fetch();
     }
 
-    // Add product to favorites
     public function addToFavorites($user_id, $product_id)
     {
-        // Check if already favorited
         if ($this->isProductFavorited($user_id, $product_id)) {
             throw new Exception("Product already in favorites");
         }
@@ -64,7 +60,6 @@ class FavoriteDao extends BaseDao
         return $stmt->execute();
     }
 
-    // Remove from favorites
     public function removeFromFavorites($user_id, $product_id)
     {
         $stmt = $this->connection->prepare("
@@ -76,7 +71,6 @@ class FavoriteDao extends BaseDao
         return $stmt->execute();
     }
 
-    // Get favorite count for product
     public function getFavoriteCount($product_id)
     {
         $stmt = $this->connection->prepare("
@@ -89,7 +83,6 @@ class FavoriteDao extends BaseDao
         return $stmt->fetch()['count'];
     }
 
-    // Get user's favorite count
     public function getUserFavoriteCount($user_id)
     {
         $stmt = $this->connection->prepare("
@@ -102,7 +95,6 @@ class FavoriteDao extends BaseDao
         return $stmt->fetch()['count'];
     }
 
-    // Get popular favorites (most favorited products)
     public function getPopularFavorites($limit = 10)
     {
         $stmt = $this->connection->prepare("

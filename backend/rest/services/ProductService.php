@@ -19,27 +19,20 @@ class ProductService extends BaseService
         return $product;
     }
 
-    // Override update to use product_id as the ID column and handle image_url
     public function update($product_id, $data)
     {
         $imageUrl = $data['image_url'] ?? null;
 
-        // Remove image_url from product data since it goes to product_images table
         unset($data['image_url']);
 
-        // Update the product
         $result = $this->dao->update($data, $product_id, 'product_id');
 
-        // If image_url is provided, update the product image
         if ($imageUrl) {
-            // Get existing images
             $images = $this->dao->getProductImages($product_id);
 
             if (!empty($images)) {
-                // Update the first (primary) image
                 $this->dao->updateProductImage($images[0]['image_id'], $imageUrl);
             } else {
-                // Insert new image
                 $this->dao->insertProductImage($product_id, $imageUrl, 1);
             }
         }
@@ -47,22 +40,18 @@ class ProductService extends BaseService
         return $result;
     }
 
-    // Override create to handle image_url if provided
     public function create($data)
     {
         $imageUrl = $data['image_url'] ?? null;
 
-        // Remove image_url from product data since it goes to product_images table
         unset($data['image_url']);
 
-        // Create the product
         $result = $this->dao->add($data);
 
         if (!$result) {
             return false;
         }
 
-        // If image_url is provided, insert it into product_images table
         if ($imageUrl && isset($result['product_id'])) {
             $this->dao->insertProductImage($result['product_id'], $imageUrl, 1);
         }
@@ -146,7 +135,6 @@ class ProductService extends BaseService
         return $this->dao->getProductsByPriceRange($min_price, $max_price, $category_id);
     }
 
-    // Business logic for stock validation
     public function validateStock($product_id, $requested_quantity)
     {
         $product = $this->dao->getProductById($product_id);
@@ -164,7 +152,6 @@ class ProductService extends BaseService
         return ['valid' => true, 'product' => $product];
     }
 
-    // Calculate total with fees
     public function calculateTotalPrice($product_id, $quantity = 1)
     {
         $product = $this->dao->getProductWithFees($product_id);
@@ -185,36 +172,28 @@ class ProductService extends BaseService
         ];
     }
 
-    // Add new image to product
     public function addProductImage($product_id, $image_url)
     {
-        // Verify product exists
         $product = $this->dao->getProductById($product_id);
         if (!$product) {
             throw new Exception('Product not found');
         }
 
-        // Get existing images to determine if this should be primary
         $images = $this->dao->getProductImages($product_id);
-        $is_primary = empty($images) ? 1 : 0; // Only primary if no images exist
+        $is_primary = empty($images) ? 1 : 0; 
 
         return $this->dao->insertProductImage($product_id, $image_url, $is_primary);
     }
 
-    // Delete product image
     public function deleteProductImage($image_id, $product_id)
     {
-        // Verify image belongs to the product
         $image = $this->dao->getProductImage($image_id);
         if (!$image || $image['product_id'] != $product_id) {
             return false;
         }
 
-        // Get remaining images for the product
         $images = $this->dao->getProductImages($product_id);
 
-        // If we're deleting the primary image and there are other images, 
-        // make the first remaining image primary
         if ($image['is_primary'] && count($images) > 1) {
             foreach ($images as $img) {
                 if ($img['image_id'] != $image_id) {

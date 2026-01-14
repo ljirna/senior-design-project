@@ -8,7 +8,7 @@ class CategoryDao extends BaseDao
         parent::__construct("categories");
     }
 
-    // Basic CRUD
+
     public function getCategoryById($category_id)
     {
         $stmt = $this->connection->prepare("SELECT * FROM categories WHERE category_id = :category_id");
@@ -17,7 +17,6 @@ class CategoryDao extends BaseDao
         return $stmt->fetch();
     }
 
-    // Get all categories with product count
     public function getAllCategoriesWithCount()
     {
         $stmt = $this->connection->prepare("
@@ -31,7 +30,6 @@ class CategoryDao extends BaseDao
         return $stmt->fetchAll();
     }
 
-    // Get categories with products
     public function getCategoriesWithProducts($limit = 5)
     {
         $stmt = $this->connection->prepare("
@@ -47,7 +45,6 @@ class CategoryDao extends BaseDao
         return $stmt->fetchAll();
     }
 
-    // Check if category has products
     public function hasProducts($category_id)
     {
         $stmt = $this->connection->prepare("
@@ -60,7 +57,6 @@ class CategoryDao extends BaseDao
         return $stmt->fetch()['count'] > 0;
     }
 
-    // Search categories
     public function searchCategories($search_term)
     {
         $stmt = $this->connection->prepare("
@@ -75,7 +71,6 @@ class CategoryDao extends BaseDao
         return $stmt->fetchAll();
     }
 
-    // Override add() to use correct primary key
     public function add($entity)
     {
         $query = "INSERT INTO categories (";
@@ -96,7 +91,6 @@ class CategoryDao extends BaseDao
         return $entity;
     }
 
-    // Override update() to use correct primary key
     public function update($entity, $id, $id_column = "category_id")
     {
         $query = "UPDATE categories SET ";
@@ -113,7 +107,6 @@ class CategoryDao extends BaseDao
         return $entity;
     }
 
-    // Override delete() to use correct primary key
     public function delete($category_id)
     {
         $stmt = $this->connection->prepare("DELETE FROM categories WHERE category_id = :id");

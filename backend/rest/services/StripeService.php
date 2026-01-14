@@ -16,11 +16,9 @@ class StripeService
 
     public function __construct()
     {
-        // Load Stripe config
         $config = require __DIR__ . '/../../stripe.php';
         \Stripe\Stripe::setApiKey($config['secret_key']);
 
-        // Use stream-based HTTP client as fallback when cURL is not available
         if (!function_exists('curl_version')) {
             \Stripe\ApiRequestor::setHttpClient(new \StripeCustom\StreamHttpClient());
         }
@@ -29,7 +27,6 @@ class StripeService
         if (in_array($requested, $this->supportedCurrencies, true)) {
             $this->currency = $requested;
         } else {
-            // Fallback to default currency
             $this->currency = $this->currencyFallback;
         }
 

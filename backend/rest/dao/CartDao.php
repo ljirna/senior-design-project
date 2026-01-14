@@ -8,7 +8,6 @@ class CartDao extends BaseDao
         parent::__construct("cart");
     }
 
-    // Get cart by user ID
     public function getCartByUserId($user_id)
     {
         $stmt = $this->connection->prepare("
@@ -22,7 +21,6 @@ class CartDao extends BaseDao
         return $stmt->fetch();
     }
 
-    // Create or get cart for user
     public function getOrCreateCart($user_id)
     {
         $cart = $this->getCartByUserId($user_id);
@@ -34,14 +32,12 @@ class CartDao extends BaseDao
             ");
             $stmt->bindParam(':user_id', $user_id);
             $stmt->execute();
-            // Refresh cart so callers always get the persisted row
             $cart = $this->getCartByUserId($user_id);
         }
 
         return $cart;
     }
 
-    // Get cart items with product details
     public function getCartItems($cart_id)
     {
         $stmt = $this->connection->prepare("
@@ -66,10 +62,8 @@ class CartDao extends BaseDao
         return $stmt->fetchAll();
     }
 
-    // Add item to cart
     public function addItemToCart($cart_id, $product_id, $quantity = 1)
     {
-        // Check if item already exists in cart
         $stmt = $this->connection->prepare("
             SELECT * FROM cart_items 
             WHERE cart_id = :cart_id AND product_id = :product_id
@@ -80,7 +74,6 @@ class CartDao extends BaseDao
         $existing = $stmt->fetch();
 
         if ($existing) {
-            // Update quantity
             $stmt = $this->connection->prepare("
                 UPDATE cart_items 
                 SET quantity = quantity + :quantity 
@@ -90,7 +83,6 @@ class CartDao extends BaseDao
             $stmt->bindParam(':cart_item_id', $existing['cart_item_id']);
             return $stmt->execute();
         } else {
-            // Add new item
             $stmt = $this->connection->prepare("
                 INSERT INTO cart_items (cart_id, product_id, quantity) 
                 VALUES (:cart_id, :product_id, :quantity)
@@ -102,7 +94,6 @@ class CartDao extends BaseDao
         }
     }
 
-    // Update cart item quantity
     public function updateCartItem($cart_item_id, $quantity)
     {
         if ($quantity <= 0) {
@@ -119,7 +110,6 @@ class CartDao extends BaseDao
         return $stmt->execute();
     }
 
-    // Remove item from cart
     public function removeCartItem($cart_item_id)
     {
         $stmt = $this->connection->prepare("
@@ -130,7 +120,7 @@ class CartDao extends BaseDao
         return $stmt->execute();
     }
 
-    // Clear cart
+
     public function clearCart($cart_id)
     {
         $stmt = $this->connection->prepare("
@@ -141,7 +131,7 @@ class CartDao extends BaseDao
         return $stmt->execute();
     }
 
-    // Get cart total
+
     public function getCartTotal($cart_id)
     {
         $stmt = $this->connection->prepare("
@@ -159,7 +149,7 @@ class CartDao extends BaseDao
         return $stmt->fetch();
     }
 
-    // Check if cart item belongs to user
+
     public function cartItemBelongsToUser($cart_item_id, $user_id)
     {
         $stmt = $this->connection->prepare("

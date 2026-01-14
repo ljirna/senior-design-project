@@ -22,8 +22,6 @@ class PaymentService extends BaseService
 
     public function getUserPayments($user_id, $limit = 20, $offset = 0)
     {
-        // You'll need to implement this in PaymentDao
-        // For now, return empty array
         return [];
     }
 
