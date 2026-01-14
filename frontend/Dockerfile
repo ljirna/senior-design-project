@@ -12,6 +12,10 @@ RUN npm run build || echo "No build script"
 
 FROM nginx:alpine
 
+# Copy Nginx config
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy built files
 COPY --from=build /app /usr/share/nginx/html
 
 EXPOSE 80
