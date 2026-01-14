@@ -461,7 +461,7 @@ async function loadPage(page, params = {}) {
     // TRY DIFFERENT PATHS for your structure
     const paths = [
       `./pages/${viewName}.html`, // Relative path
-      `/diplomski/frontend/pages/${viewName}.html`, // Absolute path
+      `/pages/${viewName}.html`, // Root absolute path (production)
       `pages/${viewName}.html`, // Simple path
       `${viewName}.html`, // Root path
     ];
@@ -2928,8 +2928,7 @@ async function initPaymentPage() {
 
       // Redirect to success page after 2 seconds
       setTimeout(() => {
-        window.location.href =
-          "/diplomski/frontend/pages/success.html?order_id=" + orderIdValue;
+        window.location.href = "/pages/success.html?order_id=" + orderIdValue;
       }, 2000);
     }
 
