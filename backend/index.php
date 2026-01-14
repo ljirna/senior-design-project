@@ -25,17 +25,21 @@ error_reporting(E_ALL);
 
 Flight::route('/*', function () {
     $url = Flight::request()->url;
+    error_log("Middleware check for URL: " . $url);
 
-    if (
-        strpos($url, '/auth/login') === 0 ||
-        strpos($url, '/auth/register') === 0 ||
-        strpos($url, '/products') === 0 ||
-        strpos($url, '/categories') === 0 ||
-        strpos($url, '/api/auth/login') === 0 ||
-        strpos($url, '/api/auth/register') === 0 ||
-        strpos($url, '/api/products') === 0 ||
-        strpos($url, '/api/categories') === 0
-    ) {
+    // Check if URL starts with any of the public endpoints (with or without /api prefix)
+    $public_routes = ['/auth/login', '/auth/register', '/products', '/categories', '/api/auth/login', '/api/auth/register', '/api/products', '/api/categories'];
+    
+    $is_public = FALSE;
+    foreach ($public_routes as $route) {
+        if (strpos($url, $route) === 0) {
+            $is_public = TRUE;
+            error_log("Matched public route: " . $route);
+            break;
+        }
+    }
+    
+    if ($is_public) {
         return TRUE;
     } else {
         try {
