@@ -5,11 +5,10 @@ RUN apt-get update && apt-get install -y \
     mariadb-client \
     git \
     curl \
-    libxml2-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
-RUN docker-php-ext-install mysqli pdo pdo_mysql json
+RUN docker-php-ext-install pdo pdo_mysql mysqli
 
 # Enable Apache mod_rewrite for routing
 RUN a2enmod rewrite
