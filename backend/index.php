@@ -30,7 +30,11 @@ Flight::route('/*', function () {
         strpos($url, '/auth/login') === 0 ||
         strpos($url, '/auth/register') === 0 ||
         strpos($url, '/products') === 0 ||
-        strpos($url, '/categories') === 0
+        strpos($url, '/categories') === 0 ||
+        strpos($url, '/api/auth/login') === 0 ||
+        strpos($url, '/api/auth/register') === 0 ||
+        strpos($url, '/api/products') === 0 ||
+        strpos($url, '/api/categories') === 0
     ) {
         return TRUE;
     } else {
