@@ -25,14 +25,16 @@ error_reporting(E_ALL);
 
 Flight::route('/*', function () {
     $url = Flight::request()->url;
-    error_log("Middleware check for URL: " . $url);
+    // Get just the path without query parameters
+    $url_path = parse_url($url, PHP_URL_PATH);
+    error_log("Middleware check - Full URL: " . $url . " | Path only: " . $url_path);
 
     // Check if URL starts with any of the public endpoints (with or without /api prefix)
     $public_routes = ['/auth/login', '/auth/register', '/products', '/categories', '/api/auth/login', '/api/auth/register', '/api/products', '/api/categories'];
     
     $is_public = FALSE;
     foreach ($public_routes as $route) {
-        if (strpos($url, $route) === 0) {
+        if (strpos($url_path, $route) === 0 || strpos($url, $route) === 0) {
             $is_public = TRUE;
             error_log("Matched public route: " . $route);
             break;
@@ -40,8 +42,10 @@ Flight::route('/*', function () {
     }
     
     if ($is_public) {
+        error_log("Allowing public route");
         return TRUE;
     } else {
+        error_log("Route is protected, checking token");
         try {
             $token = Flight::request()->getHeader("Authentication");
             if (!$token)
