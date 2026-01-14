@@ -1,5 +1,6 @@
 <?php
 require 'vendor/autoload.php';
+require_once __DIR__ . '/config.php';
 
 require_once __DIR__ . '/data/roles.php';
 require_once __DIR__ . '/rest/services/ProductService.php';

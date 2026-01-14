@@ -9,39 +9,30 @@ class Config
 {
     public static function DB_NAME()
     {
-        return 'zim_furniture_store';
+        return self::get_env("DB_NAME", "zim_furniture_store");
     }
     public static function DB_PORT()
     {
-        return  3306;
+        return self::get_env("DB_PORT", 3306);
     }
     public static function DB_USER()
     {
-        return 'root';
+        return self::get_env("DB_USER", 'root');
     }
     public static function DB_PASSWORD()
     {
-        return 'rootroot';
+        return self::get_env("DB_PASSWORD", 'rootroot');
     }
     public static function DB_HOST()
     {
-        return '127.0.0.1';
+        return self::get_env("DB_HOST", '127.0.0.1');
     }
-
     public static function JWT_SECRET()
     {
-        // Prefer environment variable in production
-        $env = getenv('JWT_SECRET');
-        if ($env !== false) {
-            if (strlen($env) < 32) {
-                throw new \RuntimeException('JWT_SECRET environment variable is too short; use at least 32 characters (256 bits)');
-            }
-            return $env;
-        }
-
-        // Fallback for local/dev: use a hardcoded value only if long enough,
-        // otherwise use a stable, sufficiently long secret.
-        $fallback = 'my_jwt_strong_secret_development_only_32_chars_min';
-        return $fallback;
+        return self::get_env("JWT_SECRET", 'my_jwt_strong_secret_development_only_32_chars_min');
+    }
+    public static function get_env($name, $default)
+    {
+        return isset($_ENV[$name]) && trim($_ENV[$name]) != "" ? $_ENV[$name] : $default;
     }
 }
