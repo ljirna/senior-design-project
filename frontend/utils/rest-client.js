@@ -1,12 +1,12 @@
 // Simple REST client wrapper using jQuery $.ajax
-// Automatically prepends Constants.PROJECT_BASE_URL and sets Authentication header
+// Automatically prepends Constants.get_api_base_url() and sets Authentication header
 const RestClient = {
   request: function (url, method, data, callback, error_callback) {
     const token = localStorage.getItem("user_token");
 
     // Prepare ajax settings
     const settings = {
-      url: Constants.PROJECT_BASE_URL + url,
+      url: Constants.get_api_base_url() + url,
       type: method,
       dataType: "json",
       beforeSend: function (xhr) {
@@ -50,7 +50,7 @@ const RestClient = {
   get: function (url, callback, error_callback) {
     const token = localStorage.getItem("user_token");
     $.ajax({
-      url: Constants.PROJECT_BASE_URL + url,
+      url: Constants.get_api_base_url() + url,
       type: "GET",
       dataType: "json",
       beforeSend: function (xhr) {

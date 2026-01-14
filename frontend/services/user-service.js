@@ -55,7 +55,7 @@ var UserService = {
   login: function (entity) {
     console.log("[UserService.login] Starting login with email:", entity.email);
     $.ajax({
-      url: Constants.PROJECT_BASE_URL + "auth/login",
+      url: Constants.get_api_base_url() + "auth/login",
       type: "POST",
       data: JSON.stringify(entity),
       contentType: "application/json",
@@ -155,7 +155,7 @@ var UserService = {
     }
 
     $.ajax({
-      url: Constants.PROJECT_BASE_URL + "auth/register",
+      url: Constants.get_api_base_url() + "auth/register",
       type: "POST",
       data: JSON.stringify(payload),
       contentType: "application/json",
@@ -242,7 +242,7 @@ var UserService = {
   ) {
     const token = localStorage.getItem("user_token");
     $.ajax({
-      url: Constants.PROJECT_BASE_URL + "users/" + userId + "/change-password",
+      url: Constants.get_api_base_url() + "users/" + userId + "/change-password",
       type: "POST",
       data: JSON.stringify({
         current_password: currentPassword,
