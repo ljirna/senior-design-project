@@ -85,18 +85,6 @@ Flight::route('/', function () {
     echo 'Welcome to Furniture E-commerce API!';
 });
 
-// Handle requests that come in as /apicategories, /apiproducts, etc (missing slash after /api)
-// This happens when DigitalOcean's rewrite path is configured incorrectly
-Flight::route('GET /api@resource', function ($resource) {
-    // Redirect to the correct path with slash
-    Flight::redirect('/' . $resource);
-});
-
-Flight::route('POST /api@resource', function ($resource) {
-    // Redirect to the correct path with slash
-    Flight::redirect('/' . $resource);
-});
-
 require_once __DIR__ . '/rest/routes/ProductRoutes.php';
 require_once __DIR__ . '/rest/routes/CategoryRoutes.php';
 require_once __DIR__ . '/rest/routes/UserRoutes.php';
@@ -105,6 +93,52 @@ require_once __DIR__ . '/rest/routes/OrderRoutes.php';
 require_once __DIR__ . '/rest/routes/FavoriteRoutes.php';
 require_once __DIR__ . '/rest/routes/PaymentRoutes.php';
 require_once __DIR__ . '/rest/routes/AuthRoutes.php';
+
+// Handle /api/ prefix by delegating to the non-api routes
+Flight::group('/api', function () {
+    require_once __DIR__ . '/rest/routes/ProductRoutes.php';
+    require_once __DIR__ . '/rest/routes/CategoryRoutes.php';
+    require_once __DIR__ . '/rest/routes/UserRoutes.php';
+    require_once __DIR__ . '/rest/routes/CartRoutes.php';
+    require_once __DIR__ . '/rest/routes/OrderRoutes.php';
+    require_once __DIR__ . '/rest/routes/FavoriteRoutes.php';
+    require_once __DIR__ . '/rest/routes/PaymentRoutes.php';
+    require_once __DIR__ . '/rest/routes/AuthRoutes.php';
+});
+
+// Handle malformed paths from DigitalOcean (no slash after /api)
+// /apicategories -> same as /categories, /apiproducts -> same as /products
+Flight::route('GET /apicategories/@id?', function ($id = null) {
+    if ($id) {
+        $category = Flight::categoryService()->getCategoryById($id);
+        if ($category) {
+            Flight::json($category);
+        } else {
+            Flight::json(['error' => 'Category not found'], 404);
+        }
+    } else {
+        Flight::json(Flight::categoryService()->getAllCategoriesWithCount());
+    }
+});
+
+Flight::route('GET /apiproducts/@id?', function ($id = null) {
+    if ($id) {
+        $product = Flight::productService()->getProductById($id);
+        if ($product) {
+            Flight::json($product);
+        } else {
+            Flight::json(['error' => 'Product not found'], 404);
+        }
+    } else {
+        Flight::json(Flight::productService()->getAllProducts());
+    }
+});
+
+Flight::route('POST /apiauth/login', function () {
+    // Call the actual login handler
+    require_once __DIR__ . '/rest/routes/AuthRoutes.php';
+    Flight::getMethod()['GET'](function () { Flight::notFound(); });
+});
 
 // Handle /api/ prefix by delegating to the non-api routes
 Flight::group('/api', function () {
