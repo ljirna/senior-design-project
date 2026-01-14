@@ -85,6 +85,18 @@ Flight::route('/', function () {
     echo 'Welcome to Furniture E-commerce API!';
 });
 
+// Handle requests that come in as /apicategories, /apiproducts, etc (missing slash after /api)
+// This happens when DigitalOcean's rewrite path is configured incorrectly
+Flight::route('GET /api@resource', function ($resource) {
+    // Redirect to the correct path with slash
+    Flight::redirect('/' . $resource);
+});
+
+Flight::route('POST /api@resource', function ($resource) {
+    // Redirect to the correct path with slash
+    Flight::redirect('/' . $resource);
+});
+
 require_once __DIR__ . '/rest/routes/ProductRoutes.php';
 require_once __DIR__ . '/rest/routes/CategoryRoutes.php';
 require_once __DIR__ . '/rest/routes/UserRoutes.php';
