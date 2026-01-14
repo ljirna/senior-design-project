@@ -16,14 +16,23 @@ class StripeService
 
     public function __construct()
     {
-        $config = require __DIR__ . '/../../stripe.php';
-        \Stripe\Stripe::setApiKey($config['secret_key']);
+        // Get Stripe keys from environment or stripe.php fallback
+        $stripe_secret = Config::get_env('STRIPE_SECRET_KEY', null);
+        if (!$stripe_secret && file_exists(__DIR__ . '/../../stripe.php')) {
+            $config = require __DIR__ . '/../../stripe.php';
+            $stripe_secret = $config['secret_key'];
+            $stripe_currency = $config['currency'] ?? 'usd';
+        } else {
+            $stripe_currency = Config::get_env('STRIPE_CURRENCY', 'eur');
+        }
+        
+        \Stripe\Stripe::setApiKey($stripe_secret);
 
         if (!function_exists('curl_version')) {
             \Stripe\ApiRequestor::setHttpClient(new \StripeCustom\StreamHttpClient());
         }
 
-        $requested = strtolower($config['currency'] ?? 'usd');
+        $requested = strtolower($stripe_currency ?? 'usd');
         if (in_array($requested, $this->supportedCurrencies, true)) {
             $this->currency = $requested;
         } else {
@@ -296,10 +305,19 @@ class StripeService
      */
     public function getConfig()
     {
-        $config = require __DIR__ . '/../../stripe.php';
+        // Get Stripe keys from environment or stripe.php fallback
+        $stripe_publishable = Config::get_env('STRIPE_PUBLISHABLE_KEY', null);
+        $stripe_currency = Config::get_env('STRIPE_CURRENCY', 'eur');
+        
+        if (!$stripe_publishable && file_exists(__DIR__ . '/../../stripe.php')) {
+            $config = require __DIR__ . '/../../stripe.php';
+            $stripe_publishable = $config['publishable_key'];
+            $stripe_currency = $config['currency'] ?? 'eur';
+        }
+        
         return [
-            'publishableKey' => trim($config['publishable_key']),
-            'currency' => strtolower($config['currency'] ?? 'usd')
+            'publishableKey' => trim($stripe_publishable),
+            'currency' => strtolower($stripe_currency)
         ];
     }
 }
