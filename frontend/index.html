@@ -245,10 +245,10 @@
       // Load router with timeout
       function loadRouter() {
         const script = document.createElement("script");
-        script.src = "/JS/router.js?v=1.1";
+        script.src = "/js/router.js?v=1.1";
         script.onerror = () => {
           showError(
-            "Failed to load router.js. Please check if the file exists in JS/ folder."
+            "Failed to load router.js. Please check if the file exists in js/ folder."
           );
         };
         script.onload = () => {
