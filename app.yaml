@@ -1,0 +1,35 @@
+name: zim-furniture-store
+services:
+- name: backend
+  github:
+    repo: YOUR_GITHUB_USERNAME/diplomski
+    branch: main
+    deploy_on_push: true
+  dockerfile_path: backend/Dockerfile
+  http_port: 80
+  envs:
+  - key: DB_NAME
+    value: zim_furniture_store
+  - key: DB_USER
+    value: ${db.username}
+  - key: DB_PASSWORD
+    value: ${db.password}
+  - key: DB_HOST
+    value: ${db.host}
+  - key: DB_PORT
+    value: "3306"
+  - key: JWT_SECRET
+    value: your_very_long_secret_key_min_32_chars_random_string_here
+  
+- name: frontend
+  github:
+    repo: YOUR_GITHUB_USERNAME/diplomski
+    branch: main
+    deploy_on_push: true
+  dockerfile_path: frontend/Dockerfile
+  http_port: 80
+
+databases:
+- name: db
+  engine: MYSQL
+  version: "8"
