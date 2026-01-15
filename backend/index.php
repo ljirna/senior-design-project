@@ -150,6 +150,11 @@ Flight::group('/api', function () {
     require_once __DIR__ . '/rest/routes/FavoriteRoutes.php';
     require_once __DIR__ . '/rest/routes/PaymentRoutes.php';
     require_once __DIR__ . '/rest/routes/AuthRoutes.php';
+    
+    // Handle upload endpoint - delegate to the upload file
+    Flight::route('POST /upload/item-image/@', function () {
+        require_once __DIR__ . '/api/upload/item-image/index.php';
+    });
 });
 
 Flight::start();

@@ -1291,7 +1291,7 @@
     const formData = new FormData();
     formData.append("itemImage", file);
 
-    fetch(Constants.get_api_base_url() + "api/upload/item-image/", {
+    fetch(Constants.get_api_base_url() + "upload/item-image/", {
       method: "POST",
       headers: {
         Authentication: token,
