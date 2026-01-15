@@ -122,21 +122,38 @@ try {
 
     // Save file - use backend uploads directory
     $dir = __DIR__ . "/../../uploads/products/";
+    
+    // Log the directory path
+    error_log("Upload directory: " . $dir);
+    error_log("Directory exists: " . (file_exists($dir) ? 'YES' : 'NO'));
+    
     if (!file_exists($dir)) {
+        error_log("Creating directory: " . $dir);
         if (!@mkdir($dir, 0777, true)) {
             http_response_code(500);
-            die(json_encode(["success" => false, "message" => "Cannot create upload directory"]));
+            error_log("Failed to create directory: " . $dir);
+            die(json_encode(["success" => false, "message" => "Cannot create upload directory: " . $dir]));
         }
+        error_log("Directory created successfully");
     }
 
     // Make sure directory is writable
     if (!is_writable($dir)) {
-        @chmod($dir, 0777);
+        error_log("Directory not writable, attempting chmod: " . $dir);
+        if (!@chmod($dir, 0777)) {
+            error_log("Failed to chmod directory");
+        }
     }
+    
+    error_log("Directory writable: " . (is_writable($dir) ? 'YES' : 'NO'));
 
     $ext = strtolower(pathinfo($file["name"], PATHINFO_EXTENSION));
     $name = uniqid() . "." . $ext;
     $path = $dir . $name;
+    
+    error_log("File path: " . $path);
+    error_log("Temp file: " . $file["tmp_name"]);
+    error_log("Attempting move_uploaded_file...");
 
     if (move_uploaded_file($file["tmp_name"], $path)) {
         // Determine the correct protocol - check multiple sources
@@ -168,7 +185,7 @@ try {
         }
         
         // Log successful upload
-        error_log("Image uploaded successfully: " . $name . " to " . $path . " URL: " . $imageUrl);
+        error_log("✓ Image uploaded successfully: " . $name . " to " . $path . " URL: " . $imageUrl);
         
         http_response_code(200);
         die(json_encode([
@@ -178,10 +195,15 @@ try {
         ]));
     }
 
-    // Log upload failure
-    error_log("Failed to move uploaded file from " . $file["tmp_name"] . " to " . $path);
+    // Log upload failure with detailed info
+    error_log("✗ Failed to move_uploaded_file from " . $file["tmp_name"] . " to " . $path);
+    error_log("File size: " . $file["size"]);
+    error_log("File error code: " . $file["error"]);
+    error_log("Directory exists: " . (file_exists($dir) ? 'YES' : 'NO'));
+    error_log("Directory writable: " . (is_writable($dir) ? 'YES' : 'NO'));
+    
     http_response_code(500);
-    die(json_encode(["success" => false, "message" => "Failed to save file"]));
+    die(json_encode(["success" => false, "message" => "Failed to save file to: " . $path]));
 } catch (Throwable $e) {
     http_response_code(500);
     die(json_encode(["success" => false, "message" => $e->getMessage()]));
