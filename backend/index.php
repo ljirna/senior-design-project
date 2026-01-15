@@ -1,4 +1,11 @@
 <?php
+// Handle upload endpoint before Flight processes anything
+$request_path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+if (strpos($request_path, '/api/upload/item-image') !== false || strpos($request_path, '/upload/item-image') !== false) {
+    require_once __DIR__ . '/api/upload/item-image/index.php';
+    exit;
+}
+
 require 'vendor/autoload.php';
 require_once __DIR__ . '/config.php';
 
@@ -150,11 +157,6 @@ Flight::group('/api', function () {
     require_once __DIR__ . '/rest/routes/FavoriteRoutes.php';
     require_once __DIR__ . '/rest/routes/PaymentRoutes.php';
     require_once __DIR__ . '/rest/routes/AuthRoutes.php';
-    
-    // Handle upload endpoint - delegate to the upload file
-    Flight::route('POST /upload/item-image/@', function () {
-        require_once __DIR__ . '/api/upload/item-image/index.php';
-    });
 });
 
 Flight::start();
