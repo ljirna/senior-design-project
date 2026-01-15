@@ -143,8 +143,15 @@ try {
         $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
         $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
         
-        // Build the full image URL
-        $imageUrl = $protocol . '://' . $host . '/diplomski/api/uploads/products/' . $name;
+        // Check if this is production (no /diplomski in the path) or local
+        $request_uri = $_SERVER['REQUEST_URI'] ?? '';
+        if (strpos($request_uri, '/diplomski/') !== false) {
+            // Local development
+            $imageUrl = $protocol . '://' . $host . '/diplomski/api/uploads/products/' . $name;
+        } else {
+            // Production
+            $imageUrl = $protocol . '://' . $host . '/api/uploads/products/' . $name;
+        }
         
         http_response_code(200);
         die(json_encode([

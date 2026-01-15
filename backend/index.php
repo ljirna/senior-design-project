@@ -16,6 +16,19 @@ if ($is_upload && $_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
+// Check for image serving in uploads directory
+$is_image_request = (
+    strpos($request_path, '/uploads/products') !== false ||
+    strpos($request_path, 'uploads/products') !== false ||
+    strpos($request_uri, '/uploads/products') !== false ||
+    strpos($request_uri, 'uploads/products') !== false
+);
+
+if ($is_image_request && $_SERVER['REQUEST_METHOD'] === 'GET') {
+    require_once __DIR__ . '/api/uploads/products/index.php';
+    exit;
+}
+
 require 'vendor/autoload.php';
 require_once __DIR__ . '/config.php';
 
@@ -101,44 +114,6 @@ Flight::register('auth_service', 'AuthService');
 Flight::route('/', function () {
     echo 'Welcome to Furniture E-commerce API!';
 });
-
-Flight::route('GET /uploads/products/@filename', function ($filename) {
-    serveUploadedImage($filename);
-});
-
-// Also handle the /api prefix for uploaded images
-Flight::group('/api', function () {
-    Flight::route('GET /uploads/products/@filename', function ($filename) {
-        serveUploadedImage($filename);
-    });
-});
-
-function serveUploadedImage($filename) {
-    $filepath = __DIR__ . '/uploads/products/' . basename($filename);
-    
-    if (!file_exists($filepath)) {
-        http_response_code(404);
-        die(json_encode(['error' => 'File not found']));
-    }
-    
-    // Set appropriate content type
-    $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-    $contentTypes = [
-        'jpg' => 'image/jpeg',
-        'jpeg' => 'image/jpeg',
-        'png' => 'image/png',
-        'gif' => 'image/gif',
-        'webp' => 'image/webp'
-    ];
-    
-    $contentType = $contentTypes[$ext] ?? 'application/octet-stream';
-    header('Content-Type: ' . $contentType);
-    header('Cache-Control: public, max-age=31536000');
-    header('Access-Control-Allow-Origin: *');
-    
-    readfile($filepath);
-    exit;
-}
 
 require_once __DIR__ . '/rest/routes/ProductRoutes.php';
 require_once __DIR__ . '/rest/routes/CategoryRoutes.php';
