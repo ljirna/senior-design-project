@@ -118,8 +118,13 @@
 </div>
 
 <script>
-  let allUsers = [];
-  let currentEditingUserId = null;
+  // Use window object to avoid redeclaration errors
+  if (typeof window.allUsers === 'undefined') {
+    window.allUsers = [];
+  }
+  if (typeof window.currentEditingUserId === 'undefined') {
+    window.currentEditingUserId = null;
+  }
 
   // Initialize if DOM is already loaded (happens when injected into existing page)
   if (document.readyState === "loading") {
@@ -136,12 +141,13 @@
     loadUsers();
 
     // Edit user form
-    document
-      .getElementById("edit-user-form")
-      .addEventListener("submit", function (e) {
+    const editForm = document.getElementById("edit-user-form");
+    if (editForm) {
+      editForm.addEventListener("submit", function (e) {
         e.preventDefault();
         saveUserChanges();
       });
+    }
   }
 
   // Load all users from API
@@ -156,9 +162,9 @@
     const emptyDiv = document.getElementById("users-empty");
     const usersGrid = document.getElementById("users-on-admin-dashboard");
 
-    loadingDiv.style.display = "block";
-    emptyDiv.style.display = "none";
-    usersGrid.innerHTML = "";
+    if (loadingDiv) loadingDiv.style.display = "block";
+    if (emptyDiv) emptyDiv.style.display = "none";
+    if (usersGrid) usersGrid.innerHTML = "";
 
     // Load only customers (non-admin users)
     fetch(Constants.get_api_base_url() + "users/customers?limit=100", {
@@ -181,20 +187,20 @@
       })
       .then((data) => {
         if (!data) return;
-        allUsers = Array.isArray(data) ? data : data.data || [];
+        window.allUsers = Array.isArray(data) ? data : data.data || [];
 
-        loadingDiv.style.display = "none";
+        if (loadingDiv) loadingDiv.style.display = "none";
 
-        if (allUsers.length === 0) {
-          emptyDiv.style.display = "block";
+        if (window.allUsers.length === 0) {
+          if (emptyDiv) emptyDiv.style.display = "block";
           return;
         }
 
-        renderUsers(allUsers);
+        renderUsers(window.allUsers);
       })
       .catch((error) => {
         console.error("Error loading users:", error);
-        loadingDiv.style.display = "none";
+        if (loadingDiv) loadingDiv.style.display = "none";
         showToast("Error loading users. Please try again.", "error");
       });
   }
@@ -257,13 +263,13 @@
 
   // Open edit user modal
   function editUser(userId) {
-    const user = allUsers.find((u) => u.user_id === userId);
+    const user = window.allUsers.find((u) => u.user_id === userId);
     if (!user) {
       showToast("User not found", "error");
       return;
     }
 
-    currentEditingUserId = userId;
+    window.currentEditingUserId = userId;
     document.getElementById("edit_user_id").value = userId;
     document.getElementById("edit_user_name").value = user.full_name || "";
     document.getElementById("edit_user_email").value = user.email || "";
