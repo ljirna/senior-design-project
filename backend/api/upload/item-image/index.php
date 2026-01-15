@@ -153,6 +153,9 @@ try {
             $imageUrl = $protocol . '://' . $host . '/api/uploads/products/' . $name;
         }
         
+        // Log successful upload
+        error_log("Image uploaded successfully: " . $name . " to " . $path);
+        
         http_response_code(200);
         die(json_encode([
             "success" => true,
@@ -161,6 +164,8 @@ try {
         ]));
     }
 
+    // Log upload failure
+    error_log("Failed to move uploaded file from " . $file["tmp_name"] . " to " . $path);
     http_response_code(500);
     die(json_encode(["success" => false, "message" => "Failed to save file"]));
 } catch (Throwable $e) {
