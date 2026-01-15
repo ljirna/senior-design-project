@@ -1,1 +1,13 @@
 RewriteEngine Off
+
+<FilesMatch "\.php$">
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authentication, Authorization"
+</FilesMatch>
+
+# Allow OPTIONS requests directly
+<Limit OPTIONS>
+    Order allow,deny
+    Allow from all
+</Limit>
