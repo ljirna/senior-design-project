@@ -1,36 +1,48 @@
 <?php
 // Serve uploaded product images
-// This file handles requests like /api/uploads/products/filename.jpg
+error_reporting(0);
+ini_set('log_errors', 1);
 
+// Get the requested filename from the URL
 $filename = basename($_SERVER['REQUEST_URI']);
-// Extract just the filename part (remove query string)
 $filename = explode('?', $filename)[0];
 $filename = explode('#', $filename)[0];
 
-// Security: only allow alphanumeric, dots, hyphens, underscores
+// Log the request
+error_log("Image request: " . $_SERVER['REQUEST_URI'] . " | filename: " . $filename);
+
+// Security: only allow safe filenames (no path traversal)
 if (!preg_match('/^[a-zA-Z0-9._-]+$/', $filename)) {
     http_response_code(403);
-    die('Forbidden');
+    error_log("Invalid filename: " . $filename);
+    header('Content-Type: text/plain');
+    die('Invalid filename');
 }
 
-// The actual files are stored in /backend/uploads/products/
-// From /backend/api/uploads/products/ go up 3 levels to get /backend
-$uploadsDir = __DIR__ . '/../../../../uploads/products/';
-$filepath = $uploadsDir . $filename;
+// Try multiple possible locations
+$possiblePaths = [
+    __DIR__ . '/../../../../uploads/products/' . $filename,  // From /backend/api/uploads/products/
+    dirname(__DIR__) . '/uploads/products/' . $filename,      // From /backend/api/uploads/
+    dirname(dirname(__DIR__)) . '/uploads/products/' . $filename,  // From /backend/api/
+];
 
-// Make sure the file is within the uploads directory (prevent directory traversal)
-$realUploadDir = realpath($uploadsDir);
-$realFilePath = realpath(dirname($filepath)) . '/' . basename($filepath);
+error_log("Checking paths: " . json_encode($possiblePaths));
 
-if (!$realUploadDir || strpos($realFilePath, $realUploadDir) !== 0) {
-    http_response_code(403);
-    die('Forbidden');
+$filepath = null;
+foreach ($possiblePaths as $path) {
+    error_log("Checking: " . $path . " exists=" . (file_exists($path) ? 'YES' : 'NO'));
+    if (file_exists($path)) {
+        $filepath = $path;
+        error_log("Found file at: " . $filepath);
+        break;
+    }
 }
 
-if (!file_exists($filepath)) {
+if (!$filepath) {
     http_response_code(404);
     header('Content-Type: application/json');
-    die(json_encode(['error' => 'File not found: ' . $filename]));
+    error_log("File not found for: " . $filename);
+    die(json_encode(['error' => 'File not found']));
 }
 
 // Set appropriate content type
@@ -51,4 +63,5 @@ header('Content-Length: ' . filesize($filepath));
 
 readfile($filepath);
 exit;
+
 
