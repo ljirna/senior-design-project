@@ -139,8 +139,22 @@ try {
     $path = $dir . $name;
 
     if (move_uploaded_file($file["tmp_name"], $path)) {
-        // Determine the correct API base URL based on the request
-        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        // Determine the correct protocol - check multiple sources
+        $protocol = 'http';
+        
+        // Check for HTTPS
+        if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+            $protocol = 'https';
+        }
+        // Check X-Forwarded-Proto header (common with reverse proxies)
+        elseif (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+            $protocol = $_SERVER['HTTP_X_FORWARDED_PROTO'];
+        }
+        // Check X-Forwarded-SSL header
+        elseif (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on') {
+            $protocol = 'https';
+        }
+        
         $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
         
         // Check if this is production (no /diplomski in the path) or local
@@ -154,7 +168,7 @@ try {
         }
         
         // Log successful upload
-        error_log("Image uploaded successfully: " . $name . " to " . $path);
+        error_log("Image uploaded successfully: " . $name . " to " . $path . " URL: " . $imageUrl);
         
         http_response_code(200);
         die(json_encode([
