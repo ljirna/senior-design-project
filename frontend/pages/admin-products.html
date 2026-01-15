@@ -1135,6 +1135,8 @@
         return response.json();
       })
       .then((data) => {
+        console.log("Product creation response:", data);
+        
         // Get the product ID from the response
         const productId = data.product_id || data.id;
 
