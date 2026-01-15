@@ -1,27 +1,36 @@
 <?php
+// CRITICAL: Set all headers and error handling FIRST
+header('Content-Type: application/json; charset=utf-8');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authentication, Authorization');
+
+// Prevent any HTML error output
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+error_reporting(E_ALL);
+
+// Start output buffering BEFORE anything else that might output
+ob_start();
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
-// Set headers FIRST, before any includes
-header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-
-// Start output buffering to catch any errors from includes
-ob_start();
-ini_set('display_errors', 0);
-
-// Load dependencies
+// Load dependencies with try-catch
 try {
     $baseDir = dirname(dirname(dirname(__DIR__)));  // Go up to backend directory
     $autoloadPath = $baseDir . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
     $configPath = $baseDir . DIRECTORY_SEPARATOR . 'config.php';
 
     if (!file_exists($autoloadPath)) {
-        throw new Exception("Autoload file not found at: " . $autoloadPath);
+        ob_end_clean();
+        http_response_code(500);
+        die(json_encode(["success" => false, "message" => "Autoload not found"]));
     }
     if (!file_exists($configPath)) {
-        throw new Exception("Config file not found at: " . $configPath);
+        ob_end_clean();
+        http_response_code(500);
+        die(json_encode(["success" => false, "message" => "Config not found"]));
     }
 
     require_once $autoloadPath;
@@ -29,19 +38,19 @@ try {
 } catch (Throwable $e) {
     ob_end_clean();
     http_response_code(500);
-    die(json_encode(["success" => false, "message" => $e->getMessage()]));
+    die(json_encode(["success" => false, "message" => "Error loading dependencies: " . $e->getMessage()]));
 }
 
-// Clear any output from includes
+// Clear any output buffered during includes
 ob_end_clean();
 
 // Handle preflight
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
     exit;
 }
 
 try {
-
     // Get token from headers
     $token = null;
     if (!empty($_SERVER['HTTP_AUTHENTICATION'])) {
@@ -86,19 +95,19 @@ try {
     // Check file
     if (!isset($_FILES["itemImage"]) || $_FILES["itemImage"]["error"] !== UPLOAD_ERR_OK) {
         http_response_code(400);
-        die(json_encode(["success" => false, "message" => "No file"]));
+        die(json_encode(["success" => false, "message" => "No file or upload error"]));
     }
 
     $file = $_FILES["itemImage"];
 
-    // Validate image using getimagesize (more universal than finfo)
+    // Validate image using getimagesize
     $imageInfo = @getimagesize($file['tmp_name']);
     if (!$imageInfo) {
         http_response_code(400);
         die(json_encode(["success" => false, "message" => "Not a valid image"]));
     }
 
-    // Check MIME type from getimagesize
+    // Check MIME type
     $mimeType = $imageInfo['mime'] ?? '';
     $allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!in_array($mimeType, $allowed)) {
@@ -108,13 +117,13 @@ try {
 
     if ($file['size'] > 5242880) {
         http_response_code(400);
-        die(json_encode(["success" => false, "message" => "Too large"]));
+        die(json_encode(["success" => false, "message" => "File too large"]));
     }
 
     // Save file
     $dir = __DIR__ . "/../../../../frontend/assets/img/products/";
     if (!file_exists($dir)) {
-        if (!mkdir($dir, 0777, true)) {
+        if (!@mkdir($dir, 0777, true)) {
             http_response_code(500);
             die(json_encode(["success" => false, "message" => "Cannot create directory"]));
         }
@@ -125,6 +134,7 @@ try {
     $path = $dir . $name;
 
     if (move_uploaded_file($file["tmp_name"], $path)) {
+        http_response_code(200);
         die(json_encode([
             "success" => true,
             "filename" => $name,
@@ -133,15 +143,8 @@ try {
     }
 
     http_response_code(500);
-    die(json_encode(["success" => false, "message" => "Save failed"]));
+    die(json_encode(["success" => false, "message" => "Failed to save file"]));
 } catch (Throwable $e) {
-    // Clear any buffered output
-    ob_end_clean();
-
-    // Log the actual error for debugging
-    error_log("Upload endpoint error: " . $e->getMessage());
-    error_log("Stack trace: " . $e->getTraceAsString());
-
     http_response_code(500);
     die(json_encode(["success" => false, "message" => $e->getMessage()]));
 }

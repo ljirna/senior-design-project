@@ -1,7 +1,17 @@
 <?php
 // Handle upload endpoint before Flight processes anything
-$request_path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-if (strpos($request_path, '/api/upload/item-image') !== false || strpos($request_path, '/upload/item-image') !== false) {
+$request_uri = $_SERVER['REQUEST_URI'] ?? '';
+$request_path = parse_url($request_uri, PHP_URL_PATH) ?? '';
+
+// Check for upload endpoint in multiple ways
+$is_upload = (
+    strpos($request_path, '/upload/item-image') !== false ||
+    strpos($request_path, 'upload/item-image') !== false ||
+    strpos($request_uri, '/upload/item-image') !== false ||
+    strpos($request_uri, 'upload/item-image') !== false
+);
+
+if ($is_upload && $_SERVER['REQUEST_METHOD'] === 'POST') {
     require_once __DIR__ . '/api/upload/item-image/index.php';
     exit;
 }
