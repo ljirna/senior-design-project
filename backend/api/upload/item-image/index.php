@@ -129,13 +129,18 @@ try {
     ];
     
     $dir = null;
+    $uploadLog = "Upload attempt for: " . $file["name"] . "\n";
     foreach ($dirs as $d) {
         @mkdir($d, 0777, true);
         if (file_exists($d) && is_writable($d)) {
             $dir = $d;
+            $uploadLog .= "Using directory: " . $d . "\n";
             break;
         }
+        $uploadLog .= "Not usable: " . $d . " (exists=" . (file_exists($d) ? 'YES' : 'NO') . ", writable=" . (is_writable($d) ? 'YES' : 'NO') . ")\n";
     }
+    
+    file_put_contents('/tmp/upload_log.txt', date('Y-m-d H:i:s') . " " . $uploadLog, FILE_APPEND);
     
     if (!$dir) {
         http_response_code(500);
@@ -147,6 +152,8 @@ try {
     $path = $dir . $name;
 
     if (move_uploaded_file($file["tmp_name"], $path)) {
+        file_put_contents('/tmp/upload_log.txt', date('Y-m-d H:i:s') . " Successfully saved: " . $path . "\n", FILE_APPEND);
+        
         // Determine the correct protocol
         $protocol = 'http';
         if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {

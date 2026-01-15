@@ -7,14 +7,20 @@ $filename = basename($_SERVER['REQUEST_URI']);
 $filename = explode('?', $filename)[0];
 $filename = explode('#', $filename)[0];
 
+// Log the request with full context
+$logEntry = date('Y-m-d H:i:s') . " - Request: " . $filename . " | CWD: " . getcwd() . " | __DIR__: " . __DIR__;
+file_put_contents('/tmp/image_requests.log', $logEntry . "\n", FILE_APPEND);
+
 // Only allow safe filenames
 if (!preg_match('/^[a-zA-Z0-9._-]+$/', $filename)) {
     http_response_code(403);
+    file_put_contents('/tmp/image_requests.log', date('Y-m-d H:i:s') . " - Invalid filename: " . $filename . "\n", FILE_APPEND);
     die('Invalid');
 }
 
 // Try to find the file - search everywhere
 $searchPaths = [
+    __DIR__ . '/../../uploads/products/' . $filename,
     __DIR__ . '/../../../../uploads/products/' . $filename,
     '/backend/uploads/products/' . $filename,
     '/tmp/uploads/products/' . $filename,
@@ -22,46 +28,44 @@ $searchPaths = [
     '/var/www/html/api/uploads/products/' . $filename,
     '/app/uploads/products/' . $filename,
     '/home/uploads/products/' . $filename,
+    getcwd() . '/uploads/products/' . $filename,
+    dirname(getcwd()) . '/uploads/products/' . $filename,
 ];
-
-// Also try using glob to find the file anywhere under common roots
-$globPaths = [];
-foreach (['/backend', '/tmp', '/var/www/html', '/app', '/home'] as $root) {
-    $globPaths = array_merge($globPaths, @glob($root . '/**/uploads/products/' . $filename, GLOB_BRACE));
-}
 
 $found = null;
 
-// Check direct paths first
+// Check each path and log it
+file_put_contents('/tmp/image_requests.log', date('Y-m-d H:i:s') . " - Searching paths:\n", FILE_APPEND);
 foreach ($searchPaths as $p) {
-    if (@file_exists($p) && is_file($p)) {
+    $exists = @file_exists($p);
+    $isFile = $exists && is_file($p);
+    $log = date('Y-m-d H:i:s') . "   - " . $p . " (exists=" . ($exists ? "YES" : "NO") . ", isFile=" . ($isFile ? "YES" : "NO");
+    if ($exists && $isFile) {
+        $log .= ", SIZE=" . filesize($p);
+    }
+    $log .= ")\n";
+    file_put_contents('/tmp/image_requests.log', $log, FILE_APPEND);
+    
+    if ($isFile) {
         $found = $p;
+        file_put_contents('/tmp/image_requests.log', date('Y-m-d H:i:s') . " - FOUND at: " . $p . "\n", FILE_APPEND);
         break;
-    }
-}
-
-// Then check glob results
-if (!$found && !empty($globPaths)) {
-    foreach ($globPaths as $p) {
-        if (is_file($p)) {
-            $found = $p;
-            break;
-        }
-    }
-}
-
-// Last resort - use find command to search
-if (!$found) {
-    $result = @shell_exec('find / -name "' . escapeshellarg($filename) . '" -type f 2>/dev/null | head -1');
-    if ($result) {
-        $found = trim($result);
     }
 }
 
 if (!$found) {
     http_response_code(404);
     header('Content-Type: application/json');
-    die(json_encode(['error' => 'File not found', 'searched' => count($searchPaths) + count($globPaths)]));
+    file_put_contents('/tmp/image_requests.log', date('Y-m-d H:i:s') . " - FILE NOT FOUND after checking all paths\n", FILE_APPEND);
+    
+    // List directory contents for debugging
+    $debugDir = __DIR__ . '/../../uploads/products/';
+    if (is_dir($debugDir)) {
+        $files = @scandir($debugDir);
+        file_put_contents('/tmp/image_requests.log', date('Y-m-d H:i:s') . " - Directory listing of " . $debugDir . ": " . json_encode($files) . "\n", FILE_APPEND);
+    }
+    
+    die(json_encode(['error' => 'File not found']));
 }
 
 // Serve the file
