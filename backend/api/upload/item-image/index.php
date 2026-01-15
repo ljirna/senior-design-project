@@ -139,12 +139,18 @@ try {
     $path = $dir . $name;
 
     if (move_uploaded_file($file["tmp_name"], $path)) {
-        // Return path relative to backend for API access
+        // Determine the correct API base URL based on the request
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        
+        // Build the full image URL
+        $imageUrl = $protocol . '://' . $host . '/diplomski/api/uploads/products/' . $name;
+        
         http_response_code(200);
         die(json_encode([
             "success" => true,
             "filename" => $name,
-            "path" => "uploads/products/" . $name
+            "path" => $imageUrl
         ]));
     }
 
