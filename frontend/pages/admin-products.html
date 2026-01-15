@@ -1303,7 +1303,8 @@
       .then((response) => response.json())
       .then((data) => {
         if (data.success) {
-          callback("assets/img/products/" + data.filename);
+          // Use the full URL path returned from the upload endpoint
+          callback(data.path);
         } else {
           throw new Error(data.message || "Image upload failed");
         }
