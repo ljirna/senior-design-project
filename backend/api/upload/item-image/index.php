@@ -120,72 +120,51 @@ try {
         die(json_encode(["success" => false, "message" => "File too large"]));
     }
 
-    // Save file - use backend uploads directory
-    $dir = __DIR__ . "/../../uploads/products/";
+    // Save file - try multiple directories
+    $dirs = [
+        __DIR__ . "/../../uploads/products/",
+        "/tmp/uploads/products/",
+        "/var/www/html/diplomski/backend/uploads/products/",
+        "/var/www/html/api/uploads/products/",
+    ];
     
-    // Log the directory path
-    error_log("Upload directory: " . $dir);
-    error_log("Directory exists: " . (file_exists($dir) ? 'YES' : 'NO'));
-    
-    if (!file_exists($dir)) {
-        error_log("Creating directory: " . $dir);
-        if (!@mkdir($dir, 0777, true)) {
-            http_response_code(500);
-            error_log("Failed to create directory: " . $dir);
-            die(json_encode(["success" => false, "message" => "Cannot create upload directory: " . $dir]));
-        }
-        error_log("Directory created successfully");
-    }
-
-    // Make sure directory is writable
-    if (!is_writable($dir)) {
-        error_log("Directory not writable, attempting chmod: " . $dir);
-        if (!@chmod($dir, 0777)) {
-            error_log("Failed to chmod directory");
+    $dir = null;
+    foreach ($dirs as $d) {
+        @mkdir($d, 0777, true);
+        if (file_exists($d) && is_writable($d)) {
+            $dir = $d;
+            break;
         }
     }
     
-    error_log("Directory writable: " . (is_writable($dir) ? 'YES' : 'NO'));
+    if (!$dir) {
+        http_response_code(500);
+        die(json_encode(["success" => false, "message" => "No writable directory"]));
+    }
 
     $ext = strtolower(pathinfo($file["name"], PATHINFO_EXTENSION));
     $name = uniqid() . "." . $ext;
     $path = $dir . $name;
-    
-    error_log("File path: " . $path);
-    error_log("Temp file: " . $file["tmp_name"]);
-    error_log("Attempting move_uploaded_file...");
 
     if (move_uploaded_file($file["tmp_name"], $path)) {
-        // Determine the correct protocol - check multiple sources
+        // Determine the correct protocol
         $protocol = 'http';
-        
-        // Check for HTTPS
         if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
             $protocol = 'https';
-        }
-        // Check X-Forwarded-Proto header (common with reverse proxies)
-        elseif (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
             $protocol = $_SERVER['HTTP_X_FORWARDED_PROTO'];
-        }
-        // Check X-Forwarded-SSL header
-        elseif (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on') {
+        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on') {
             $protocol = 'https';
         }
         
         $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        
-        // Check if this is production (no /diplomski in the path) or local
         $request_uri = $_SERVER['REQUEST_URI'] ?? '';
+        
         if (strpos($request_uri, '/diplomski/') !== false) {
-            // Local development
             $imageUrl = $protocol . '://' . $host . '/diplomski/api/uploads/products/' . $name;
         } else {
-            // Production
             $imageUrl = $protocol . '://' . $host . '/api/uploads/products/' . $name;
         }
-        
-        // Log successful upload
-        error_log("✓ Image uploaded successfully: " . $name . " to " . $path . " URL: " . $imageUrl);
         
         http_response_code(200);
         die(json_encode([
@@ -195,15 +174,8 @@ try {
         ]));
     }
 
-    // Log upload failure with detailed info
-    error_log("✗ Failed to move_uploaded_file from " . $file["tmp_name"] . " to " . $path);
-    error_log("File size: " . $file["size"]);
-    error_log("File error code: " . $file["error"]);
-    error_log("Directory exists: " . (file_exists($dir) ? 'YES' : 'NO'));
-    error_log("Directory writable: " . (is_writable($dir) ? 'YES' : 'NO'));
-    
     http_response_code(500);
-    die(json_encode(["success" => false, "message" => "Failed to save file to: " . $path]));
+    die(json_encode(["success" => false, "message" => "Upload failed"]));
 } catch (Throwable $e) {
     http_response_code(500);
     die(json_encode(["success" => false, "message" => $e->getMessage()]));
