@@ -102,6 +102,32 @@ Flight::route('/', function () {
     echo 'Welcome to Furniture E-commerce API!';
 });
 
+// Serve uploaded images
+Flight::route('GET /uploads/products/@filename', function ($filename) {
+    $filepath = __DIR__ . '/uploads/products/' . basename($filename);
+    
+    if (!file_exists($filepath)) {
+        Flight::json(['error' => 'File not found'], 404);
+        return;
+    }
+    
+    // Set appropriate content type
+    $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+    $contentTypes = [
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+        'gif' => 'image/gif',
+        'webp' => 'image/webp'
+    ];
+    
+    $contentType = $contentTypes[$ext] ?? 'application/octet-stream';
+    header('Content-Type: ' . $contentType);
+    header('Cache-Control: public, max-age=31536000');
+    
+    readfile($filepath);
+});
+
 require_once __DIR__ . '/rest/routes/ProductRoutes.php';
 require_once __DIR__ . '/rest/routes/CategoryRoutes.php';
 require_once __DIR__ . '/rest/routes/UserRoutes.php';

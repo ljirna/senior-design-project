@@ -120,13 +120,18 @@ try {
         die(json_encode(["success" => false, "message" => "File too large"]));
     }
 
-    // Save file
-    $dir = __DIR__ . "/../../../../frontend/assets/img/products/";
+    // Save file - use backend uploads directory
+    $dir = __DIR__ . "/../../uploads/products/";
     if (!file_exists($dir)) {
         if (!@mkdir($dir, 0777, true)) {
             http_response_code(500);
-            die(json_encode(["success" => false, "message" => "Cannot create directory"]));
+            die(json_encode(["success" => false, "message" => "Cannot create upload directory"]));
         }
+    }
+
+    // Make sure directory is writable
+    if (!is_writable($dir)) {
+        @chmod($dir, 0777);
     }
 
     $ext = strtolower(pathinfo($file["name"], PATHINFO_EXTENSION));
@@ -134,11 +139,12 @@ try {
     $path = $dir . $name;
 
     if (move_uploaded_file($file["tmp_name"], $path)) {
+        // Return path relative to backend for API access
         http_response_code(200);
         die(json_encode([
             "success" => true,
             "filename" => $name,
-            "path" => "assets/img/products/" . $name
+            "path" => "uploads/products/" . $name
         ]));
     }
 
