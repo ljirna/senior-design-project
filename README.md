@@ -101,13 +101,3 @@ npm test
 - `POST /api/orders` - Create order
 - `GET /api/uploads/products/{filename}` - Serve product images
 
-## Contributing
-
-1. Create a feature branch
-2. Make your changes
-3. Write tests
-4. Submit a pull request
-
-## License
-
-MIT
